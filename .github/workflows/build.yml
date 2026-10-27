@@ -11,6 +11,9 @@ on:
       - main
     paths-ignore:
       - '**/README.md'
+      # Solo la ISO: no hace falta reconstruir la imagen.
+      - 'disk_config/**'
+      - '.github/workflows/build-disk.yml'
   workflow_dispatch:
 
 env:
