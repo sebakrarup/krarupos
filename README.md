@@ -14,8 +14,9 @@ Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
 - **Apps** (Flatpak, se instalan solas en el primer arranque): ver
   [`flatpaks.txt`](system_files/usr/share/krarupos/flatpaks.txt).
 - **Programas**: `nmap`, `htop`, `amdgpu_top` y `rocm-smi` (para que `btop` muestre GPUs AMD).
-- **Tema**: estilo Darkly, colores Breeze oscuro (bordes sin contraste), pantalla de inicio Vapor, letra 15, íconos Tela-circle-dracula-dark, cursor Bibata-Modern-Ice
+- **Tema**: estilo Darkly, colores Breeze oscuro (bordes sin contraste), pantalla de inicio Vapor con el logo de krarupOS, letra 15, íconos Tela-circle-dracula-dark, cursor Bibata-Modern-Ice
   y el wallpaper Vía Láctea. Aparece como el aspecto global "krarupOS".
+- **Logo krarupOS** (letra MuseoModerno, la del logo de Bazzite) en la pantalla de arranque y en la de inicio de KDE.
 - **input-remapper** activado, con los presets de un Logitech G502 X LS.
 - **Dolphin** con íconos y vistas previas grandes, ruta completa y barra de herramientas propia.
 - **Apps predeterminadas**: videos con mpv y Firefox como navegador.

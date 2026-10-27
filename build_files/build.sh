@@ -83,11 +83,26 @@ grep -q '^Image=MilkyWay$' "$lnf/contents/defaults"
 grep -q '^cursorTheme=Bibata-Modern-Ice$' "$lnf/contents/defaults"
 grep -q '^ColorScheme=BreezeDarkSeba$' "$lnf/contents/defaults"
 grep -q '^widgetStyle=Darkly$' "$lnf/contents/defaults"
-# Pantalla de inicio Vapor (la de Steam Deck). Va en el aspecto global porque
-# Plasma copia sus valores a ~/.config/kdedefaults, que manda sobre /etc/xdg.
-sed -i '/^\[ksplashrc\]\[KSplash\]/,/^\[/ s/^Theme=.*/Theme=com.valve.vapor.desktop/' "$lnf/contents/defaults"
-grep -A1 '^\[ksplashrc\]\[KSplash\]' "$lnf/contents/defaults" | grep -q '^Theme=com.valve.vapor.desktop$'
-test -d /usr/share/plasma/look-and-feel/com.valve.vapor.desktop
+# Pantalla de inicio: la Vapor de Bazzite con el logo de krarupOS en vez del
+# de Bazzite. Va en el aspecto global porque Plasma copia sus valores a
+# ~/.config/kdedefaults, que manda sobre /etc/xdg.
+splash="$lnf/contents/splash"
+cp -a /usr/share/plasma/look-and-feel/com.valve.vapor.desktop/contents/splash "$splash"
+rm "$splash/images/bazzite_logo.svgz"
+cp /usr/share/krarupos/krarupos-logo.svg "$splash/images/krarupos_logo.svg"
+# El logo de Bazzite es cuadrado; el de krarupOS es ancho, así que solo se fija
+# el ancho y Qt mantiene la proporción.
+sed -i \
+    -e 's|source: "images/bazzite_logo.svgz"|source: "images/krarupos_logo.svg"|' \
+    -e 's|sourceSize.width: size$|sourceSize.width: size * 2.4|' \
+    -e '/sourceSize.height: size$/d' \
+    "$splash/Splash.qml"
+grep -q 'source: "images/krarupos_logo.svg"' "$splash/Splash.qml"
+grep -q 'sourceSize.width: size \* 2.4$' "$splash/Splash.qml"
+if grep -q 'sourceSize.height: size$' "$splash/Splash.qml"; then exit 1; fi
+cp /usr/share/krarupos/splash-preview.png "$lnf/contents/previews/splash.png"
+sed -i '/^\[ksplashrc\]\[KSplash\]/,/^\[/ s/^Theme=.*/Theme=com.krarupos.desktop/' "$lnf/contents/defaults"
+grep -A1 '^\[ksplashrc\]\[KSplash\]' "$lnf/contents/defaults" | grep -q '^Theme=com.krarupos.desktop$'
 
 # Predeterminados del sistema (cuentan para cualquier usuario nuevo).
 kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key LookAndFeelPackage com.krarupos.desktop
@@ -99,7 +114,7 @@ kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key widgetStyle Darkly
 kwriteconfig6 --file /etc/xdg/kdeglobals --group Icons --key Theme Tela-circle-dracula-dark
 kwriteconfig6 --file /etc/xdg/kcminputrc --group Mouse --key cursorTheme Bibata-Modern-Ice
 kwriteconfig6 --file /etc/xdg/kcminputrc --group Mouse --key cursorSize 28
-kwriteconfig6 --file /etc/xdg/ksplashrc --group KSplash --key Theme com.valve.vapor.desktop
+kwriteconfig6 --file /etc/xdg/ksplashrc --group KSplash --key Theme com.krarupos.desktop
 
 # Letra más grande (15 en vez de 10) y suavizado sin subpíxeles.
 for clave in font menuFont toolBarFont; do
@@ -211,3 +226,16 @@ rm -f /etc/xdg/autostart/bazzite-announcement.desktop
 # input-remapper: los presets del G502 X LS vienen en /etc/skel.
 systemctl enable input-remapper.service
 systemctl enable krarupos-flatpaks.service
+
+### Pantalla de arranque
+
+# Plymouth muestra system_files/usr/share/plymouth/themes/spinner/watermark.png
+# (krarupOS en vez de bazzite). Vive dentro del initramfs, así que hay que
+# rehacerlo igual que Bazzite (build_files/build-initramfs de ublue-os/bazzite).
+kernels=(/usr/lib/modules/*)
+test ${#kernels[@]} -eq 1
+kver=$(basename "${kernels[0]}")
+initramfs=/usr/lib/modules/$kver/initramfs.img
+dracut --no-hostonly --kver "$kver" --reproducible --zstd -v --add ostree --add fido2 -f "$initramfs"
+chmod 0600 "$initramfs"
+lsinitrd "$initramfs" usr/share/plymouth/themes/spinner/watermark.png | cmp - /usr/share/plymouth/themes/spinner/watermark.png
