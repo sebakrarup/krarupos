@@ -112,6 +112,10 @@ kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key XftAntialias true
 kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key XftHintStyle hintslight
 kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key XftSubPixel none
 
+# Vistas previas también en carpetas remotas (Samba, etc.), sin límite de tamaño.
+kwriteconfig6 --file /etc/xdg/kdeglobals --group PreviewSettings --key EnableRemoteFolderThumbnail true
+kwriteconfig6 --file /etc/xdg/kdeglobals --group PreviewSettings --key MaximumRemoteSize 10485758951424
+
 ### Apps predeterminadas
 
 # Bazzite abre los videos con Haruna, que no viene instalado: en krarupOS
