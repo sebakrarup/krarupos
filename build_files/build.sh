@@ -47,6 +47,13 @@ cat >/usr/share/icons/default/index.theme <<'EOF'
 Inherits=Bibata-Modern-Ice
 EOF
 
+# Estilo de aplicaciones Darkly, del COPR de su autor. El COPR se apaga
+# después para que no quede activado en los equipos.
+dnf5 -y copr enable deltacopy/darkly
+dnf5 install -y darkly
+dnf5 -y copr disable deltacopy/darkly
+test -n "$(find /usr/lib64/qt6/plugins/styles -iname '*darkly*')"
+
 # Aspecto global "krarupOS": Breeze oscuro con los íconos, el cursor y el
 # wallpaper (Vía Láctea) de krarupOS. Los usuarios lo pueden cambiar.
 lnf=/usr/share/plasma/look-and-feel/com.krarupos.desktop
@@ -59,7 +66,7 @@ d = json.load(open(p))
 k = d["KPlugin"]
 k["Id"] = "com.krarupos.desktop"
 k["Name"] = "krarupOS"
-k["Description"] = "Breeze oscuro con los colores, los íconos, el cursor, la pantalla de inicio y el wallpaper de krarupOS"
+k["Description"] = "Breeze oscuro con el estilo Darkly, los colores, los íconos, el cursor, la pantalla de inicio y el wallpaper de krarupOS"
 for key in [x for x in k if x.startswith(("Name[", "Description["))]:
     del k[key]
 json.dump(d, open(p, "w"), ensure_ascii=False, indent=4)
@@ -69,11 +76,13 @@ sed -i \
     -e 's/^Image=Next$/Image=MilkyWay/' \
     -e 's/^cursorTheme=breeze_cursors$/cursorTheme=Bibata-Modern-Ice\ncursorSize=28/' \
     -e 's/^ColorScheme=BreezeDark$/ColorScheme=BreezeDarkSeba/' \
+    -e '/^\[kdeglobals\]\[KDE\]/,/^\[/ s/^widgetStyle=Breeze$/widgetStyle=Darkly/' \
     "$lnf/contents/defaults"
 grep -q '^Theme=Tela-circle-dracula-dark$' "$lnf/contents/defaults"
 grep -q '^Image=MilkyWay$' "$lnf/contents/defaults"
 grep -q '^cursorTheme=Bibata-Modern-Ice$' "$lnf/contents/defaults"
 grep -q '^ColorScheme=BreezeDarkSeba$' "$lnf/contents/defaults"
+grep -q '^widgetStyle=Darkly$' "$lnf/contents/defaults"
 # Pantalla de inicio Vapor (la de Steam Deck). Va en el aspecto global porque
 # Plasma copia sus valores a ~/.config/kdedefaults, que manda sobre /etc/xdg.
 sed -i '/^\[ksplashrc\]\[KSplash\]/,/^\[/ s/^Theme=.*/Theme=com.valve.vapor.desktop/' "$lnf/contents/defaults"
@@ -86,6 +95,7 @@ kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key LookAndFeelPackage co
 kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key ColorScheme BreezeDarkSeba
 kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key contrast 4
 kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key frameContrast 0
+kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key widgetStyle Darkly
 kwriteconfig6 --file /etc/xdg/kdeglobals --group Icons --key Theme Tela-circle-dracula-dark
 kwriteconfig6 --file /etc/xdg/kcminputrc --group Mouse --key cursorTheme Bibata-Modern-Ice
 kwriteconfig6 --file /etc/xdg/kcminputrc --group Mouse --key cursorSize 28
