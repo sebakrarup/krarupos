@@ -130,15 +130,14 @@ kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key BrowserApplicatio
 
 ### Favoritos
 
-# Menú de inicio: los de Bazzite y después las apps de krarupOS.
+# Menú de inicio, en el orden del usuario.
 # /etc/xdg manda sobre /usr/share/kde-settings, donde Bazzite pone los suyos.
 favoritos=(
-    preferred://browser steam net.lutris.Lutris systemsettings io.github.kolunmi.Bazaar
-    io.github.ublue_os.yafti_gtk org.kde.konsole org.kde.dolphin org.telegram.desktop
-    com.vysp3r.ProtonPlus io.missioncenter.MissionCenter com.dec05eba.gpu_screen_recorder
-    org.jellyfin.JellyfinDesktop tv.kodi.Kodi com.moonlight_stream.Moonlight
-    org.vinegarhq.Sober io.github.ryubing.Ryujinx rocks.shy.VacuumTube com.ktechpit.whatsie
-    com.google.Chrome dev.lizardbyte.app.Sunshine
+    preferred://browser io.github.kolunmi.Bazaar org.jellyfin.JellyfinDesktop org.telegram.desktop
+    com.moonlight_stream.Moonlight com.google.Chrome steam net.lutris.Lutris systemsettings
+    io.github.ublue_os.yafti_gtk org.kde.konsole org.kde.dolphin com.vysp3r.ProtonPlus
+    io.missioncenter.MissionCenter com.dec05eba.gpu_screen_recorder tv.kodi.Kodi org.vinegarhq.Sober
+    io.github.ryubing.Ryujinx rocks.shy.VacuumTube com.ktechpit.whatsie dev.lizardbyte.app.Sunshine
 )
 prepend=""
 for app in "${favoritos[@]}"; do
