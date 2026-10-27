@@ -9,12 +9,14 @@ on:
         required: false
         default: false
         type: boolean
-      platform:
+      variante:
+        description: "Variante de krarupOS"
         required: true
+        default: krarupos
         type: choice
         options:
-          - amd64
-          - arm64
+          - krarupos
+          - krarupos-deck
   pull_request:
     branches:
       - main
@@ -24,7 +26,7 @@ on:
       - './.github/workflows/build-disk.yml'
 
 env:
-  IMAGE_NAME: ${{ github.event.repository.name }} # output of build.yml, keep in sync
+  IMAGE_NAME: ${{ inputs.variante || 'krarupos' }} # output of build.yml, keep in sync
   IMAGE_REGISTRY: "ghcr.io/${{ github.repository_owner }}"  # do not edit
   DEFAULT_TAG: "latest"
   BIB_IMAGE: "quay.io/centos-bootc/bootc-image-builder:latest"
@@ -36,11 +38,11 @@ concurrency:
 jobs:
   build:
     name: Build disk images
-    runs-on: ${{ inputs.platform == 'amd64' && 'ubuntu-26.04' || 'ubuntu-26.04-arm' }}
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
-        disk-type: ["qcow2", "anaconda-iso"]
+        disk-type: ["anaconda-iso"]
     permissions:
       contents: read
       packages: read
@@ -60,22 +62,18 @@ jobs:
           echo "USER_UID=${USER_UID}" >> ${GITHUB_ENV}
           echo "USER_GID=${USER_GID}" >> ${GITHUB_ENV}
 
-      - name: Install dependencies
-        if: inputs.platform == 'arm64'
-        run: |
-          set -x
-          sudo apt update -y
-          sudo apt install -y \
-            podman
-
       - name: Maximize build space
-        if: inputs.platform != 'arm64'
         uses: ublue-os/remove-unwanted-software@695eb75bc387dbcd9685a8e72d23439d8686cba6
         with:
           remove-codeql: true
 
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Prepare ISO config
+        run: |
+          sed -i "s|ghcr.io/sebakrarup/krarupos:latest|${IMAGE_REGISTRY}/${IMAGE_NAME}:${DEFAULT_TAG}|" disk_config/iso.toml
+          grep -F "${IMAGE_REGISTRY}/${IMAGE_NAME}:${DEFAULT_TAG}" disk_config/iso.toml
 
       - name: Build disk images
         id: build
@@ -92,6 +90,7 @@ jobs:
         if: inputs.upload-to-s3 != true && github.event_name != 'pull_request'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
+          name: ${{ env.IMAGE_NAME }}-iso
           path: ${{ steps.build.outputs.output-directory }}
           if-no-files-found: error
           retention-days: 0
