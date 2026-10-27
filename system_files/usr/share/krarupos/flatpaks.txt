@@ -4,13 +4,10 @@
 
 # Navegadores y comunicación
 org.mozilla.firefox
-com.opera.Opera
-io.github.ungoogled_software.ungoogled_chromium
 com.google.Chrome
 org.telegram.desktop
 com.discordapp.Discord
 com.ktechpit.whatsie
-us.zoom.Zoom
 
 # Multimedia
 com.spotify.Client
@@ -20,8 +17,6 @@ org.jellyfin.JellyfinDesktop
 rocks.shy.VacuumTube
 org.kde.elisa
 org.kde.gwenview
-com.obsproject.Studio
-fr.handbrake.ghb
 com.dec05eba.gpu_screen_recorder
 org.darktable.Darktable
 
@@ -39,13 +34,10 @@ org.onlyoffice.desktopeditors
 org.kde.okular
 org.kde.kcalc
 org.kde.kolourpaint
-org.kde.qrca
 org.kde.krdc
 org.jdownloader.JDownloader
-org.gnome.Maps
 org.fedoraproject.MediaWriter
 
 # Sistema
 io.github.ilya_zlobintsev.LACT
 io.missioncenter.MissionCenter
-net.nokyan.Resources

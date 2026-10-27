@@ -126,9 +126,9 @@ favoritos=(
     preferred://browser steam net.lutris.Lutris systemsettings io.github.kolunmi.Bazaar
     io.github.ublue_os.yafti_gtk org.kde.konsole org.kde.dolphin org.telegram.desktop
     com.vysp3r.ProtonPlus io.missioncenter.MissionCenter com.dec05eba.gpu_screen_recorder
-    fr.handbrake.ghb org.jellyfin.JellyfinDesktop tv.kodi.Kodi com.moonlight_stream.Moonlight
+    org.jellyfin.JellyfinDesktop tv.kodi.Kodi com.moonlight_stream.Moonlight
     org.vinegarhq.Sober io.github.ryubing.Ryujinx rocks.shy.VacuumTube com.ktechpit.whatsie
-    us.zoom.Zoom com.google.Chrome dev.lizardbyte.app.Sunshine
+    com.google.Chrome dev.lizardbyte.app.Sunshine
 )
 prepend=""
 for app in "${favoritos[@]}"; do
