@@ -39,7 +39,6 @@ org.onlyoffice.desktopeditors
 org.kde.okular
 org.kde.kcalc
 org.kde.kolourpaint
-org.kde.skanpage
 org.kde.qrca
 org.kde.krdc
 org.jdownloader.JDownloader
