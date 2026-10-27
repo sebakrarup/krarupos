@@ -69,6 +69,17 @@ kwriteconfig6 --file /etc/xdg/kdeglobals --group Icons --key Theme Tela-circle-d
 kwriteconfig6 --file /etc/xdg/kcminputrc --group Mouse --key cursorTheme Bibata-Modern-Ice
 kwriteconfig6 --file /etc/xdg/kcminputrc --group Mouse --key cursorSize 28
 
+### Apps predeterminadas
+
+# Bazzite abre los videos con Haruna, que no viene instalado: en krarupOS
+# se abren con mpv. /etc/xdg manda sobre /usr/share/applications.
+{
+    echo '[Default Applications]'
+    grep -E '^video/[^=]+=org\.kde\.haruna\.desktop' /usr/share/applications/kde-mimeapps.list |
+        sed 's/=org\.kde\.haruna\.desktop.*/=io.mpv.Mpv.desktop;/'
+} >/etc/xdg/kde-mimeapps.list
+grep -q '^video/mp4=io.mpv.Mpv.desktop;$' /etc/xdg/kde-mimeapps.list
+
 ### Firma
 
 # Para poder usar "ostree-image-signed": las imágenes de ghcr.io/sebakrarup
