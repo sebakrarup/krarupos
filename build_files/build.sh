@@ -59,7 +59,7 @@ d = json.load(open(p))
 k = d["KPlugin"]
 k["Id"] = "com.krarupos.desktop"
 k["Name"] = "krarupOS"
-k["Description"] = "Breeze oscuro con los íconos, el cursor y el wallpaper de krarupOS"
+k["Description"] = "Breeze oscuro con los colores, los íconos, el cursor, la pantalla de inicio y el wallpaper de krarupOS"
 for key in [x for x in k if x.startswith(("Name[", "Description["))]:
     del k[key]
 json.dump(d, open(p, "w"), ensure_ascii=False, indent=4)
@@ -68,10 +68,12 @@ sed -i \
     -e 's/^Theme=breeze-dark$/Theme=Tela-circle-dracula-dark/' \
     -e 's/^Image=Next$/Image=MilkyWay/' \
     -e 's/^cursorTheme=breeze_cursors$/cursorTheme=Bibata-Modern-Ice\ncursorSize=28/' \
+    -e 's/^ColorScheme=BreezeDark$/ColorScheme=BreezeDarkSeba/' \
     "$lnf/contents/defaults"
 grep -q '^Theme=Tela-circle-dracula-dark$' "$lnf/contents/defaults"
 grep -q '^Image=MilkyWay$' "$lnf/contents/defaults"
 grep -q '^cursorTheme=Bibata-Modern-Ice$' "$lnf/contents/defaults"
+grep -q '^ColorScheme=BreezeDarkSeba$' "$lnf/contents/defaults"
 # Pantalla de inicio Vapor (la de Steam Deck). Va en el aspecto global porque
 # Plasma copia sus valores a ~/.config/kdedefaults, que manda sobre /etc/xdg.
 sed -i '/^\[ksplashrc\]\[KSplash\]/,/^\[/ s/^Theme=.*/Theme=com.valve.vapor.desktop/' "$lnf/contents/defaults"
@@ -80,7 +82,10 @@ test -d /usr/share/plasma/look-and-feel/com.valve.vapor.desktop
 
 # Predeterminados del sistema (cuentan para cualquier usuario nuevo).
 kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key LookAndFeelPackage com.krarupos.desktop
-kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key ColorScheme BreezeDark
+# Breeze oscuro con los bordes sin contraste (BreezeDarkSeba.colors).
+kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key ColorScheme BreezeDarkSeba
+kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key contrast 4
+kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key frameContrast 0
 kwriteconfig6 --file /etc/xdg/kdeglobals --group Icons --key Theme Tela-circle-dracula-dark
 kwriteconfig6 --file /etc/xdg/kcminputrc --group Mouse --key cursorTheme Bibata-Modern-Ice
 kwriteconfig6 --file /etc/xdg/kcminputrc --group Mouse --key cursorSize 28
@@ -123,7 +128,7 @@ favoritos=(
     com.vysp3r.ProtonPlus io.missioncenter.MissionCenter com.dec05eba.gpu_screen_recorder
     fr.handbrake.ghb org.jellyfin.JellyfinDesktop tv.kodi.Kodi com.moonlight_stream.Moonlight
     org.vinegarhq.Sober io.github.ryubing.Ryujinx rocks.shy.VacuumTube com.ktechpit.whatsie
-    us.zoom.Zoom
+    us.zoom.Zoom com.google.Chrome dev.lizardbyte.app.Sunshine
 )
 prepend=""
 for app in "${favoritos[@]}"; do
