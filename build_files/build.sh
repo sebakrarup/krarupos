@@ -77,8 +77,13 @@ kwriteconfig6 --file /etc/xdg/kcminputrc --group Mouse --key cursorSize 28
     echo '[Default Applications]'
     grep -E '^video/[^=]+=org\.kde\.haruna\.desktop' /usr/share/applications/kde-mimeapps.list |
         sed 's/=org\.kde\.haruna\.desktop.*/=io.mpv.Mpv.desktop;/'
+    # Bazzite pone Falkon, que tampoco viene instalado.
+    for tipo in x-scheme-handler/http x-scheme-handler/https text/html application/xhtml+xml; do
+        echo "$tipo=org.mozilla.firefox.desktop;"
+    done
 } >/etc/xdg/kde-mimeapps.list
 grep -q '^video/mp4=io.mpv.Mpv.desktop;$' /etc/xdg/kde-mimeapps.list
+kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key BrowserApplication org.mozilla.firefox.desktop
 
 ### Firma
 
