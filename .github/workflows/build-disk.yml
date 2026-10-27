@@ -38,7 +38,8 @@ concurrency:
 jobs:
   build:
     name: Build disk images
-    runs-on: ubuntu-26.04
+    # En 26.04 osbuild no puede montar /dev (ublue-os/image-template#269).
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
