@@ -17,6 +17,8 @@ Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
 - **Tema**: Breeze oscuro, íconos Tela-circle-dracula-dark, cursor Bibata-Modern-Ice
   y el wallpaper Vía Láctea. Aparece como el aspecto global "krarupOS".
 - **input-remapper** activado, con los presets de un Logitech G502 X LS.
+- **Dolphin** con íconos y vistas previas grandes, ruta completa y barra de herramientas propia.
+- **Apps predeterminadas**: videos con mpv y Firefox como navegador.
 
 ## Cambiarse a krarupOS desde Bazzite
 

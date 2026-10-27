@@ -1,0 +1,51 @@
+[CompactMode]
+IconSize=128
+PreviewSize=128
+
+[DetailsMode]
+IconSize=128
+PreviewSize=128
+ViewFont=Noto Sans,14,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0
+
+[General]
+ConfirmClosingMultipleTabs=false
+EditableUrl=true
+GlobalViewProps=false
+RememberOpenedTabs=false
+ShowFullPath=true
+ShowFullPathInTitlebar=true
+ShowStatusBar=FullWidth
+ShowZoomSlider=true
+UseTabForSwitchingSplitView=true
+Version=202
+
+[IconsMode]
+IconSize=256
+MaximumTextLines=4
+PreviewSize=448
+ViewFont=Noto Sans,14,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0
+
+[InformationPanel]
+previewsAutoPlay=true
+
+[KFileDialog Settings]
+Places Icons Auto-resize=false
+Places Icons Static Size=48
+
+[MainWindow]
+ToolBarsMovable=Enabled
+
+[MainWindow][Toolbar mainToolBar]
+IconSize=32
+ToolButtonStyle=IconOnly
+
+[PlacesPanel]
+IconSize=48
+
+[PreviewSettings]
+MaximumThumbnailSize=1024
+Plugins=ffmpegthumbnailer,directorythumbnail,imagethumbnail,glycin-image-rs,jpegthumbnail,glycin-jxl,rawthumbnail,glycin-svg,svgthumbnail,ffmpegthumbs
+
+[Toolbar mainToolBar]
+IconSize=32
+ToolButtonStyle=IconOnly

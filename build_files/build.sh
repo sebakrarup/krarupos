@@ -6,6 +6,17 @@ set -ouex pipefail
 cp -avf "/ctx/system_files"/. /
 chmod +x /usr/libexec/krarupos-flatpaks
 
+### Nombre
+
+# Se muestra "krarupOS" (menú de arranque, Acerca de, fastfetch). El ID
+# se deja igual porque lo usan ujust y las actualizaciones de Bazzite.
+sed -i \
+    -e 's/^NAME=.*/NAME="krarupOS"/' \
+    -e '/^PRETTY_NAME=/s/Bazzite/krarupOS/' \
+    /usr/lib/os-release
+grep -q '^PRETTY_NAME=.*krarupOS' /usr/lib/os-release ||
+    sed -i 's/^PRETTY_NAME=.*/PRETTY_NAME="krarupOS"/' /usr/lib/os-release
+
 ### Programas del sistema
 
 # rocm-smi: btop lo necesita para mostrar las GPUs AMD.
