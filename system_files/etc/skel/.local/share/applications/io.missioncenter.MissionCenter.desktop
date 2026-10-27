@@ -1,0 +1,17 @@
+[Desktop Entry]
+Categories=GTK;System;Monitor;
+Comment=
+Exec=/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=missioncenter io.missioncenter.MissionCenter
+Icon=system-monitor
+Keywords=Task manager;Resource monitor;System monitor;Processor;Processes;Performance monitor;CPU;GPU;Disc;Disk;Memory;Network;Utilisation;Utilization;Service;Services;Service Manager;Service List;System Services;User Services;systemd;systemctl
+Name=Mission Center
+NoDisplay=false
+Path=
+PrefersNonDefaultGPU=false
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-Flatpak=io.missioncenter.MissionCenter
+X-KDE-SubstituteUID=false
+X-KDE-Username=
