@@ -202,6 +202,10 @@ EOF
 
 ### Servicios
 
+# Que el Portal de Bazzite no se abra solo al entrar por primera vez.
+# Sigue disponible en el menú.
+rm /etc/skel/.config/autostart/bazzite-portal.desktop
+
 # input-remapper: los presets del G502 X LS vienen en /etc/skel.
 systemctl enable input-remapper.service
 systemctl enable krarupos-flatpaks.service
