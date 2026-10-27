@@ -157,8 +157,10 @@ pins = [
 lista = ",\n".join(f'{" " * 20}"{x}"' for x in pins)
 s, n = re.subn(r'(writeConfig\("launchers", \[)\s*.*?(\s*\]\);)', lambda m: m[1] + "\n" + lista + m[2], s, flags=re.S)
 assert n == 1, n
-# Ícono del menú de inicio: el logo de Plasma.
+# Ícono del menú de inicio (el logo de Plasma) y panel de 54 px de alto.
 if "layout-templates" in p:
+    s, n = re.subn(r'^panel\.height = .*$', 'panel.height = 54', s, flags=re.M)
+    assert n == 1, n
     viejo = 'panel.addWidget("org.kde.plasma.kickoff")\n'
     assert s.count(viejo) == 1
     s = s.replace(viejo, 'var kickoff = panel.addWidget("org.kde.plasma.kickoff")\n'
