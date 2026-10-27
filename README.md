@@ -19,6 +19,7 @@ Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
 - **input-remapper** activado, con los presets de un Logitech G502 X LS.
 - **Dolphin** con íconos y vistas previas grandes, ruta completa y barra de herramientas propia.
 - **Apps predeterminadas**: videos con mpv y Firefox como navegador.
+- **Favoritos** en el menú de inicio y Mission Center en el panel.
 
 ## Cambiarse a krarupOS desde Bazzite
 

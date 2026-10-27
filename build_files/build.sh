@@ -96,6 +96,36 @@ kwriteconfig6 --file /etc/xdg/kcminputrc --group Mouse --key cursorSize 28
 grep -q '^video/mp4=io.mpv.Mpv.desktop;$' /etc/xdg/kde-mimeapps.list
 kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key BrowserApplication org.mozilla.firefox.desktop
 
+### Favoritos
+
+# Menú de inicio: los de Bazzite y después las apps de krarupOS.
+# /etc/xdg manda sobre /usr/share/kde-settings, donde Bazzite pone los suyos.
+favoritos=(
+    preferred://browser steam net.lutris.Lutris systemsettings io.github.kolunmi.Bazaar
+    io.github.ublue_os.yafti_gtk org.kde.konsole org.kde.dolphin org.telegram.desktop
+    com.vysp3r.ProtonPlus io.missioncenter.MissionCenter com.dec05eba.gpu_screen_recorder
+    fr.handbrake.ghb org.jellyfin.JellyfinDesktop tv.kodi.Kodi com.moonlight_stream.Moonlight
+    org.vinegarhq.Sober io.github.ryubing.Ryujinx rocks.shy.VacuumTube com.ktechpit.whatsie
+    us.zoom.Zoom
+)
+prepend=""
+for app in "${favoritos[@]}"; do
+    [[ $app == preferred://* ]] && prepend+="$app;" || prepend+="$app.desktop;"
+done
+cat >/etc/xdg/kicker-extra-favoritesrc <<EOF
+[General]
+Prepend=$prepend
+IgnoreDefaults=true
+EOF
+
+# Panel: los de Bazzite más Mission Center al final.
+for f in /usr/share/plasma/layout-templates/org.kde.plasma.desktop.defaultPanel/contents/layout.js \
+    /usr/share/plasma/shells/org.kde.plasma.desktop/contents/updates/bazzite-pins.js; do
+    [[ -f $f ]] || continue
+    sed -i 's|^\( *\)"preferred://filemanager"$|\1"preferred://filemanager",\n\1"applications:io.missioncenter.MissionCenter.desktop"|' "$f"
+    grep -q '"applications:io.missioncenter.MissionCenter.desktop"' "$f"
+done
+
 ### Firma
 
 # Para poder usar "ostree-image-signed": las imágenes de ghcr.io/sebakrarup
