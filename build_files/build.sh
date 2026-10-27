@@ -72,6 +72,11 @@ sed -i \
 grep -q '^Theme=Tela-circle-dracula-dark$' "$lnf/contents/defaults"
 grep -q '^Image=MilkyWay$' "$lnf/contents/defaults"
 grep -q '^cursorTheme=Bibata-Modern-Ice$' "$lnf/contents/defaults"
+# Pantalla de inicio Vapor (la de Steam Deck). Va en el aspecto global porque
+# Plasma copia sus valores a ~/.config/kdedefaults, que manda sobre /etc/xdg.
+sed -i '/^\[ksplashrc\]\[KSplash\]/,/^\[/ s/^Theme=.*/Theme=com.valve.vapor.desktop/' "$lnf/contents/defaults"
+grep -A1 '^\[ksplashrc\]\[KSplash\]' "$lnf/contents/defaults" | grep -q '^Theme=com.valve.vapor.desktop$'
+test -d /usr/share/plasma/look-and-feel/com.valve.vapor.desktop
 
 # Predeterminados del sistema (cuentan para cualquier usuario nuevo).
 kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key LookAndFeelPackage com.krarupos.desktop
@@ -79,6 +84,18 @@ kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key ColorScheme Breez
 kwriteconfig6 --file /etc/xdg/kdeglobals --group Icons --key Theme Tela-circle-dracula-dark
 kwriteconfig6 --file /etc/xdg/kcminputrc --group Mouse --key cursorTheme Bibata-Modern-Ice
 kwriteconfig6 --file /etc/xdg/kcminputrc --group Mouse --key cursorSize 28
+kwriteconfig6 --file /etc/xdg/ksplashrc --group KSplash --key Theme com.valve.vapor.desktop
+
+# Letra más grande (15 en vez de 10) y suavizado sin subpíxeles.
+for clave in font menuFont toolBarFont; do
+    kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key $clave "Noto Sans,15,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0"
+done
+kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key fixed "Fira Code,15,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0"
+kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key smallestReadableFont "Noto Sans,13,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0"
+kwriteconfig6 --file /etc/xdg/kdeglobals --group WM --key activeFont "Noto Sans,15,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0"
+kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key XftAntialias true
+kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key XftHintStyle hintslight
+kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key XftSubPixel none
 
 ### Apps predeterminadas
 
@@ -118,12 +135,26 @@ Prepend=$prepend
 IgnoreDefaults=true
 EOF
 
-# Panel: los de Bazzite más Mission Center al final.
+# Panel: navegador, Konsole, Bazaar, Dolphin y Mission Center.
 for f in /usr/share/plasma/layout-templates/org.kde.plasma.desktop.defaultPanel/contents/layout.js \
     /usr/share/plasma/shells/org.kde.plasma.desktop/contents/updates/bazzite-pins.js; do
     [[ -f $f ]] || continue
-    sed -i 's|^\( *\)"preferred://filemanager"$|\1"preferred://filemanager",\n\1"applications:io.missioncenter.MissionCenter.desktop"|' "$f"
-    grep -q '"applications:io.missioncenter.MissionCenter.desktop"' "$f"
+    python3 - "$f" <<'EOF'
+import re, sys
+p = sys.argv[1]
+s = open(p).read()
+pins = [
+    "preferred://browser",
+    "applications:org.kde.konsole.desktop",
+    "applications:io.github.kolunmi.Bazaar.desktop",
+    "preferred://filemanager",
+    "applications:io.missioncenter.MissionCenter.desktop",
+]
+lista = ",\n".join(f'{" " * 20}"{x}"' for x in pins)
+s, n = re.subn(r'(writeConfig\("launchers", \[)\s*.*?(\s*\]\);)', lambda m: m[1] + "\n" + lista + m[2], s, flags=re.S)
+assert n == 1, n
+open(p, "w").write(s)
+EOF
 done
 
 ### Firma

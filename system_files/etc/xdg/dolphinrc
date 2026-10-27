@@ -5,7 +5,7 @@ PreviewSize=128
 [DetailsMode]
 IconSize=128
 PreviewSize=128
-ViewFont=Noto Sans,14,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0
+ViewFont=Noto Sans,15,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0
 
 [General]
 ConfirmClosingMultipleTabs=false
@@ -22,8 +22,8 @@ Version=202
 [IconsMode]
 IconSize=256
 MaximumTextLines=4
-PreviewSize=448
-ViewFont=Noto Sans,14,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0
+PreviewSize=256
+ViewFont=Noto Sans,15,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0
 
 [InformationPanel]
 previewsAutoPlay=true
@@ -44,7 +44,7 @@ IconSize=48
 
 [PreviewSettings]
 MaximumThumbnailSize=1024
-Plugins=ffmpegthumbnailer,directorythumbnail,imagethumbnail,glycin-image-rs,jpegthumbnail,glycin-jxl,rawthumbnail,glycin-svg,svgthumbnail,ffmpegthumbs
+Plugins=directorythumbnail,imagethumbnail,jpegthumbnail,rawthumbnail,svgthumbnail,ffmpegthumbs
 
 [Toolbar mainToolBar]
 IconSize=32

@@ -6,7 +6,9 @@
 org.mozilla.firefox
 com.opera.Opera
 io.github.ungoogled_software.ungoogled_chromium
+com.google.Chrome
 org.telegram.desktop
+com.discordapp.Discord
 com.ktechpit.whatsie
 us.zoom.Zoom
 
@@ -21,9 +23,11 @@ org.kde.gwenview
 com.obsproject.Studio
 fr.handbrake.ghb
 com.dec05eba.gpu_screen_recorder
+org.darktable.Darktable
 
 # Juegos
 com.moonlight_stream.Moonlight
+dev.lizardbyte.app.Sunshine
 com.vysp3r.ProtonPlus
 io.github.ryubing.Ryujinx
 org.vinegarhq.Sober
@@ -39,6 +43,8 @@ org.kde.skanpage
 org.kde.qrca
 org.kde.krdc
 org.jdownloader.JDownloader
+org.gnome.Maps
+org.fedoraproject.MediaWriter
 
 # Sistema
 io.github.ilya_zlobintsev.LACT
