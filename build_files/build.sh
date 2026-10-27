@@ -157,6 +157,13 @@ pins = [
 lista = ",\n".join(f'{" " * 20}"{x}"' for x in pins)
 s, n = re.subn(r'(writeConfig\("launchers", \[)\s*.*?(\s*\]\);)', lambda m: m[1] + "\n" + lista + m[2], s, flags=re.S)
 assert n == 1, n
+# Ícono del menú de inicio: el logo de Plasma.
+if "layout-templates" in p:
+    viejo = 'panel.addWidget("org.kde.plasma.kickoff")\n'
+    assert s.count(viejo) == 1
+    s = s.replace(viejo, 'var kickoff = panel.addWidget("org.kde.plasma.kickoff")\n'
+                         'kickoff.currentConfigGroup = ["General"]\n'
+                         'kickoff.writeConfig("icon", "plasma-symbolic")\n')
 open(p, "w").write(s)
 EOF
 done
