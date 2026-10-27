@@ -1,0 +1,44 @@
+#!/usr/bin/bash
+# Instala las apps de /usr/share/krarupos/flatpaks.txt que falten.
+# Solo actúa cuando la lista cambió desde la última vez, para no
+# reinstalar apps que el usuario desinstaló a propósito.
+set -euo pipefail
+
+lista=/usr/share/krarupos/flatpaks.txt
+estado=/var/lib/krarupos/flatpaks.sha256
+
+suma=$(sha256sum "$lista" | cut -d' ' -f1)
+if [[ -f "$estado" && "$(cat "$estado")" == "$suma" ]]; then
+    echo "La lista de apps no cambió; nada que hacer."
+    exit 0
+fi
+
+flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+instaladas=$(flatpak list --system --app --columns=application)
+faltan=()
+while read -r app; do
+    app=${app%%#*}
+    app=${app//[[:space:]]/}
+    [[ -z "$app" ]] && continue
+    grep -qxF "$app" <<<"$instaladas" || faltan+=("$app")
+done <"$lista"
+
+if ((${#faltan[@]})); then
+    echo "Instalando: ${faltan[*]}"
+    # Una por una, para que una app que ya no exista en Flathub no
+    # impida instalar las demás.
+    fallaron=0
+    for app in "${faltan[@]}"; do
+        flatpak install --system --noninteractive --or-update flathub "$app" || {
+            echo "No se pudo instalar $app" >&2
+            fallaron=1
+        }
+    done
+    # Si algo falló (por ejemplo, sin internet), no se guarda el estado
+    # y se reintenta en el próximo arranque.
+    ((fallaron)) && exit 1
+fi
+
+mkdir -p "$(dirname "$estado")"
+echo "$suma" >"$estado"

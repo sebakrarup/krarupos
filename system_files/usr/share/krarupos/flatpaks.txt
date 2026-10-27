@@ -1,0 +1,46 @@
+# Apps de Flathub que krarupOS instala solas.
+# Una por línea. Si agregas una, se instala en la siguiente actualización.
+# Si alguien desinstala una, no se vuelve a instalar hasta que cambie esta lista.
+
+# Navegadores y comunicación
+org.mozilla.firefox
+com.opera.Opera
+io.github.ungoogled_software.ungoogled_chromium
+org.telegram.desktop
+com.ktechpit.whatsie
+us.zoom.Zoom
+
+# Multimedia
+com.spotify.Client
+io.mpv.Mpv
+tv.kodi.Kodi
+org.jellyfin.JellyfinDesktop
+rocks.shy.VacuumTube
+org.kde.elisa
+org.kde.gwenview
+com.obsproject.Studio
+fr.handbrake.ghb
+com.dec05eba.gpu_screen_recorder
+
+# Juegos
+com.moonlight_stream.Moonlight
+com.vysp3r.ProtonPlus
+io.github.ryubing.Ryujinx
+org.vinegarhq.Sober
+org.kde.kmahjongg
+org.kde.kmines
+
+# Oficina y utilidades
+org.onlyoffice.desktopeditors
+org.kde.okular
+org.kde.kcalc
+org.kde.kolourpaint
+org.kde.skanpage
+org.kde.qrca
+org.kde.krdc
+org.jdownloader.JDownloader
+
+# Sistema
+io.github.ilya_zlobintsev.LACT
+io.missioncenter.MissionCenter
+net.nokyan.Resources

@@ -4,24 +4,89 @@ set -ouex pipefail
 
 # Copy the contents of system_files/ of the git repo to /
 cp -avf "/ctx/system_files"/. /
+chmod +x /usr/libexec/krarupos-flatpaks
 
-### Install packages
+### Programas del sistema
 
-# Packages can be installed from any enabled yum repo on the image.
-# RPMfusion repos are available by default in ublue main images
-# List of rpmfusion packages can be found here:
-# https://mirrors.rpmfusion.org/mirrorlist?path=free/fedora/updates/43/x86_64/repoview/index.html&protocol=https&redirect=1
+# rocm-smi: btop lo necesita para mostrar las GPUs AMD.
+dnf5 install -y nmap htop rocm-smi
 
-# this installs a package from fedora repos
-dnf5 install -y tmux
+# amdgpu_top no está en los repos de Fedora: se instala el .rpm oficial
+# de la última versión publicada por su autor.
+amdgpu_top_rpm=$(curl -fsSL --retry 3 https://api.github.com/repos/Umio-Yasuno/amdgpu_top/releases/latest |
+    grep -oE '"browser_download_url": *"[^"]*\.x86_64\.rpm"' | cut -d'"' -f4 | head -1)
+dnf5 install -y "$amdgpu_top_rpm"
 
-# Use a COPR Example:
-#
-# dnf5 -y copr enable ublue-os/staging
-# dnf5 -y install package
-# Disable COPRs so they don't end up enabled on the final image:
-# dnf5 -y copr disable ublue-os/staging
+### Tema
 
-#### Example for enabling a System Unit File
+# Íconos Tela-circle-dracula (claro, normal y oscuro), última versión.
+tela_tag=$(curl -fsSL --retry 3 https://api.github.com/repos/vinceliuice/Tela-circle-icon-theme/tags |
+    grep -oE '"name": *"[^"]*"' | head -1 | cut -d'"' -f4)
+git clone --depth 1 --branch "$tela_tag" https://github.com/vinceliuice/Tela-circle-icon-theme.git /tmp/tela
+(cd /tmp/tela && ./install.sh -d /usr/share/icons dracula)
 
-systemctl enable podman.socket
+# Cursor Bibata-Modern-Ice, última versión.
+bibata_url=$(curl -fsSL --retry 3 https://api.github.com/repos/ful1e5/Bibata_Cursor/releases/latest |
+    grep -oE '"browser_download_url": *"[^"]*/Bibata-Modern-Ice\.tar\.xz"' | cut -d'"' -f4)
+curl -fsSL --retry 3 "$bibata_url" | tar -xJ -C /usr/share/icons
+
+# Cursor por defecto también fuera de KDE (gamescope, apps X11).
+cat >/usr/share/icons/default/index.theme <<'EOF'
+[Icon Theme]
+Inherits=Bibata-Modern-Ice
+EOF
+
+# Aspecto global "krarupOS": Breeze oscuro con los íconos, el cursor y el
+# wallpaper (Vía Láctea) de krarupOS. Los usuarios lo pueden cambiar.
+lnf=/usr/share/plasma/look-and-feel/com.krarupos.desktop
+cp -a /usr/share/plasma/look-and-feel/org.kde.breezedark.desktop "$lnf"
+# Se quitan los nombres traducidos para que se vea "krarupOS" en todos los idiomas.
+python3 - "$lnf/metadata.json" <<'EOF'
+import json, sys
+p = sys.argv[1]
+d = json.load(open(p))
+k = d["KPlugin"]
+k["Id"] = "com.krarupos.desktop"
+k["Name"] = "krarupOS"
+k["Description"] = "Breeze oscuro con los íconos, el cursor y el wallpaper de krarupOS"
+for key in [x for x in k if x.startswith(("Name[", "Description["))]:
+    del k[key]
+json.dump(d, open(p, "w"), ensure_ascii=False, indent=4)
+EOF
+sed -i \
+    -e 's/^Theme=breeze-dark$/Theme=Tela-circle-dracula-dark/' \
+    -e 's/^Image=Next$/Image=MilkyWay/' \
+    -e 's/^cursorTheme=breeze_cursors$/cursorTheme=Bibata-Modern-Ice\ncursorSize=28/' \
+    "$lnf/contents/defaults"
+grep -q '^Theme=Tela-circle-dracula-dark$' "$lnf/contents/defaults"
+grep -q '^Image=MilkyWay$' "$lnf/contents/defaults"
+grep -q '^cursorTheme=Bibata-Modern-Ice$' "$lnf/contents/defaults"
+
+# Predeterminados del sistema (cuentan para cualquier usuario nuevo).
+kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key LookAndFeelPackage com.krarupos.desktop
+kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key ColorScheme BreezeDark
+kwriteconfig6 --file /etc/xdg/kdeglobals --group Icons --key Theme Tela-circle-dracula-dark
+kwriteconfig6 --file /etc/xdg/kcminputrc --group Mouse --key cursorTheme Bibata-Modern-Ice
+kwriteconfig6 --file /etc/xdg/kcminputrc --group Mouse --key cursorSize 28
+
+### Firma
+
+# Para poder usar "ostree-image-signed": las imágenes de ghcr.io/sebakrarup
+# se verifican con la llave pública de krarupOS (/etc/pki/containers/krarupos.pub).
+python3 - <<'EOF'
+import json
+p = "/etc/containers/policy.json"
+d = json.load(open(p))
+d["transports"]["docker"]["ghcr.io/sebakrarup"] = [{
+    "type": "sigstoreSigned",
+    "keyPaths": ["/etc/pki/containers/krarupos.pub"],
+    "signedIdentity": {"type": "matchRepository"},
+}]
+json.dump(d, open(p, "w"), indent=4)
+EOF
+
+### Servicios
+
+# input-remapper: los presets del G502 X LS vienen en /etc/skel.
+systemctl enable input-remapper.service
+systemctl enable krarupos-flatpaks.service

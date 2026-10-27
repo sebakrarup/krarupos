@@ -22,8 +22,18 @@ concurrency:
 
 jobs:
   build_push:
-    name: Build and push image
+    name: Build and push image (${{ matrix.image_name }})
     runs-on: ubuntu-26.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image_name: krarupos
+            base_image: ghcr.io/ublue-os/bazzite:stable
+          - image_name: krarupos-deck
+            base_image: ghcr.io/ublue-os/bazzite-deck:stable
+    env:
+      BASE_IMAGE: ${{ matrix.base_image }}
 
     permissions:
       contents: read
@@ -49,7 +59,7 @@ jobs:
       - name: Image Name
         id: image-name
         run: |
-          IMAGE_NAME=$(just image_name)
+          IMAGE_NAME=${{ matrix.image_name }}
 
           echo "IMAGE_NAME=${IMAGE_NAME}" >> $GITHUB_ENV
 

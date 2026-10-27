@@ -1,0 +1,15 @@
+[Unit]
+Description=Instalar las apps Flatpak de krarupOS
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/krarupos-flatpaks
+# La primera vez son varios GB de descarga.
+TimeoutStartSec=2h
+Restart=on-failure
+RestartSec=5min
+
+[Install]
+WantedBy=multi-user.target
