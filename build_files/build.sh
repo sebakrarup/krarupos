@@ -135,7 +135,7 @@ Prepend=$prepend
 IgnoreDefaults=true
 EOF
 
-# Panel: navegador, Konsole, Bazaar, Dolphin y Mission Center.
+# Panel: navegador, Konsole, Dolphin y Mission Center.
 for f in /usr/share/plasma/layout-templates/org.kde.plasma.desktop.defaultPanel/contents/layout.js \
     /usr/share/plasma/shells/org.kde.plasma.desktop/contents/updates/bazzite-pins.js; do
     [[ -f $f ]] || continue
@@ -146,7 +146,6 @@ s = open(p).read()
 pins = [
     "preferred://browser",
     "applications:org.kde.konsole.desktop",
-    "applications:io.github.kolunmi.Bazaar.desktop",
     "preferred://filemanager",
     "applications:io.missioncenter.MissionCenter.desktop",
 ]
