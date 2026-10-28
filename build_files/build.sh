@@ -16,6 +16,14 @@ sed -i \
     /usr/lib/os-release
 grep -q '^PRETTY_NAME=.*krarupOS' /usr/lib/os-release ||
     sed -i 's/^PRETTY_NAME=.*/PRETTY_NAME="krarupOS"/' /usr/lib/os-release
+# Nombre del PC en la red (Moonlight, Samba, Avahi) cuando no se eligió otro al
+# instalar; Bazzite trae "bazzite".
+if grep -q '^DEFAULT_HOSTNAME=' /usr/lib/os-release; then
+    sed -i 's/^DEFAULT_HOSTNAME=.*/DEFAULT_HOSTNAME="krarupOS"/' /usr/lib/os-release
+else
+    echo 'DEFAULT_HOSTNAME="krarupOS"' >>/usr/lib/os-release
+fi
+grep -qx 'DEFAULT_HOSTNAME="krarupOS"' /usr/lib/os-release
 
 ### Programas del sistema
 
