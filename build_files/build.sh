@@ -153,6 +153,11 @@ kwriteconfig6 --file /etc/xdg/kdeglobals --group PreviewSettings --key MaximumRe
     for tipo in x-scheme-handler/http x-scheme-handler/https text/html application/xhtml+xml; do
         echo "$tipo=org.mozilla.firefox.desktop;"
     done
+    # Torrents y magnet links con Transmission Remote (Firefox los manda acá
+    # gracias a /usr/share/krarupos/firefox-policies.json).
+    for tipo in x-scheme-handler/magnet application/x-bittorrent; do
+        echo "$tipo=io.github.TransmissionRemoteGtk.desktop;"
+    done
 } >/etc/xdg/kde-mimeapps.list
 grep -q '^video/mp4=io.mpv.Mpv.desktop;$' /etc/xdg/kde-mimeapps.list
 kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key BrowserApplication org.mozilla.firefox.desktop

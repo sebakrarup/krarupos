@@ -7,6 +7,12 @@ set -euo pipefail
 lista=/usr/share/krarupos/flatpaks.txt
 estado=/var/lib/krarupos/flatpaks.sha256
 
+# Políticas de Firefox (Flatpak): se leen desde esta extensión en /var, así
+# que se copian en cada arranque, igual que Bazzite hace con sus preferencias.
+politicas=/var/lib/flatpak/extension/org.mozilla.firefox.systemconfig/x86_64/stable/policies
+mkdir -p "$politicas"
+cp -f /usr/share/krarupos/firefox-policies.json "$politicas/policies.json"
+
 suma=$(sha256sum "$lista" | cut -d' ' -f1)
 if [[ -f "$estado" && "$(cat "$estado")" == "$suma" ]]; then
     echo "La lista de apps no cambió; nada que hacer."
