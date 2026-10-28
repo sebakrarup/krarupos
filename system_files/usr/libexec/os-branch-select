@@ -1,0 +1,17 @@
+#!/usr/bin/bash
+# Reemplaza el de Bazzite deck (steamos-select-branch lo llama desde Steam).
+# El de Bazzite busca "bazzite" en la imagen instalada; con krarupOS no lo
+# encuentra, Steam pide la rama estable y se cambiaba a ghcr.io/ublue-os/bazzite-deck
+# (2026-10-28). krarupOS tiene un solo canal y se actualiza solo con bootc.
+
+case "$1" in
+    -c | -l)
+        echo rel
+        ;;
+    rel | latest | stable)
+        ;;
+    *)
+        echo "krarupOS tiene un solo canal de actualizaciones." >&2
+        ;;
+esac
+exit 0

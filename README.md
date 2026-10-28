@@ -19,6 +19,7 @@ Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
 - **Logo krarupOS** (letra MuseoModerno, la del logo de Bazzite) en la pantalla de arranque y en la de inicio de KDE.
 - **Sunshine** con los permisos de teclado, mouse y controles virtuales ya puestos (sin `additional-install.sh`).
 - **YouTube en Steam**: VacuumTube se agrega solo a la biblioteca de Steam como "YouTube" (una vez por usuario; si se borra, no vuelve).
+- **Deck sin cambiarse a Bazzite**: Steam ya no puede mover el sistema a la imagen oficial de Bazzite al elegir canal de actualizaciones.
 - **SSH** activo desde el primer arranque, solo con llave (la de mi PC va en cada usuario nuevo).
 - **Watts de la CPU** visibles en MangoHud y el overlay de Steam (lectura de RAPL sin root).
 - **input-remapper** activado, con los presets de un Logitech G502 X LS.
