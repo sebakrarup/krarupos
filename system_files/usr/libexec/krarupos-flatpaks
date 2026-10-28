@@ -28,13 +28,14 @@ instalar() {
     timeout 10m flatpak install --system --noninteractive --or-update flathub "$1"
 }
 
-instaladas=$(flatpak list --system --app --columns=application)
+# Incluye runtimes, porque la lista también trae temas (org.gtk.Gtk3theme.Breeze//3.22).
+instaladas=$(flatpak list --system --columns=application)
 faltan=()
 while read -r app; do
     app=${app%%#*}
     app=${app//[[:space:]]/}
     [[ -z "$app" ]] && continue
-    grep -qxF "$app" <<<"$instaladas" || faltan+=("$app")
+    grep -qxF "${app%%//*}" <<<"$instaladas" || faltan+=("$app")
 done <"$lista"
 
 if ((${#faltan[@]})); then

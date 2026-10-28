@@ -125,6 +125,18 @@ kwriteconfig6 --file /etc/xdg/kcminputrc --group Mouse --key cursorSize 28
 kwriteconfig6 --file /etc/xdg/ksplashrc --group KSplash --key Theme com.krarupos.desktop
 # Konsole: perfil krarupOS (colores Vapor sin transparencia, Fira Code 16).
 kwriteconfig6 --file /etc/xdg/konsolerc --group "Desktop Entry" --key DefaultProfile krarupOS.profile
+# Apps GTK con el tema Breeze (toma los colores de KDE) en vez de Vapor/Adwaita.
+# settings.ini lo leen las apps del sistema; el gschema lo pasa el portal a
+# las Flatpak, que además necesitan org.gtk.Gtk3theme.Breeze (flatpaks.txt).
+for v in 3.0 4.0; do
+    mkdir -p /etc/xdg/gtk-$v
+    kwriteconfig6 --file /etc/xdg/gtk-$v/settings.ini --group Settings --key gtk-theme-name Breeze
+done
+cat >/usr/share/glib-2.0/schemas/zz9-krarupos.gschema.override <<'EOF2'
+[org.gnome.desktop.interface]
+gtk-theme='Breeze'
+EOF2
+glib-compile-schemas /usr/share/glib-2.0/schemas
 
 # Letra más grande (15 en vez de 10) y suavizado sin subpíxeles.
 for clave in font menuFont toolBarFont; do

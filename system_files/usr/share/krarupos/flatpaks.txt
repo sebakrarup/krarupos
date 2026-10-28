@@ -42,3 +42,7 @@ org.fedoraproject.MediaWriter
 # Sistema
 io.github.ilya_zlobintsev.LACT
 io.missioncenter.MissionCenter
+
+# Tema Breeze para las apps GTK (como Transmission Remote); toma los colores de
+# KDE (BreezeDarkSeba), así que se ven oscuras igual que el resto.
+org.gtk.Gtk3theme.Breeze//3.22

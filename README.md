@@ -21,6 +21,7 @@ Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
 - **SSH** activo desde el primer arranque, solo con llave (la de mi PC va en cada usuario nuevo).
 - **Watts de la CPU** visibles en MangoHud y el overlay de Steam (lectura de RAPL sin root).
 - **input-remapper** activado, con los presets de un Logitech G502 X LS.
+- **Apps GTK** (como Transmission Remote) con el tema Breeze y los colores de KDE, también las Flatpak.
 - **Konsole** con el perfil krarupOS (colores Vapor sin transparencia, Fira Code 16).
 - **Dolphin** con íconos y vistas previas grandes, ruta completa y barra de herramientas propia.
 - **Apps predeterminadas**: videos con mpv, Firefox como navegador y magnet links/torrents con Transmission Remote (sin que Firefox pregunte).
