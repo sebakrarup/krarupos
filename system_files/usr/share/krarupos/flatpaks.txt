@@ -36,6 +36,7 @@ org.kde.kcalc
 org.kde.kolourpaint
 org.kde.krdc
 org.jdownloader.JDownloader
+io.github.TransmissionRemoteGtk
 org.fedoraproject.MediaWriter
 
 # Sistema
