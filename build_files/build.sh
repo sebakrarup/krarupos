@@ -228,6 +228,9 @@ rm -f /etc/xdg/autostart/bazzite-announcement.desktop
 # input-remapper: los presets del G502 X LS vienen en /etc/skel.
 systemctl enable input-remapper.service
 systemctl enable krarupos-flatpaks.service
+# SSH desde el primer arranque, solo con llave (etc/ssh/sshd_config.d/40-krarupos.conf).
+# La llave de CachyOS va en /etc/skel/.ssh/authorized_keys para cada usuario nuevo.
+systemctl enable sshd.service
 
 ### Pantalla de arranque
 

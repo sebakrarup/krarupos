@@ -18,6 +18,7 @@ Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
   y el wallpaper Vía Láctea. Aparece como el aspecto global "krarupOS".
 - **Logo krarupOS** (letra MuseoModerno, la del logo de Bazzite) en la pantalla de arranque y en la de inicio de KDE.
 - **Sunshine** con los permisos de teclado, mouse y controles virtuales ya puestos (sin `additional-install.sh`).
+- **SSH** activo desde el primer arranque, solo con llave (la de mi PC va en cada usuario nuevo).
 - **input-remapper** activado, con los presets de un Logitech G502 X LS.
 - **Konsole** con el perfil krarupOS (colores Vapor sin transparencia, Fira Code 16).
 - **Dolphin** con íconos y vistas previas grandes, ruta completa y barra de herramientas propia.
