@@ -4,10 +4,12 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-Type=oneshot
+# simple y no oneshot: un oneshot no cuenta como iniciado hasta terminar, y
+# eso dejaba el arranque a medias (multi-user.target sin llegar) mientras se
+# bajaban las apps; lactd y todo lo que va After=multi-user.target esperaba
+# (2026-10-27, LACT sin funcionar con la instalación pegada en Kodi).
+Type=simple
 ExecStart=/usr/libexec/krarupos-flatpaks
-# La primera vez son varios GB de descarga (y cada app tiene un tope de 20 min).
-TimeoutStartSec=4h
 Restart=on-failure
 RestartSec=5min
 

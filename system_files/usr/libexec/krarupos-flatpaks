@@ -19,7 +19,7 @@ flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/
 # WhatSie detenida sin bajar nada y todas las demás esperando). Con un tope por
 # app se sigue con la siguiente y la que faltó se reintenta más tarde.
 instalar() {
-    timeout 20m flatpak install --system --noninteractive --or-update flathub "$1"
+    timeout 10m flatpak install --system --noninteractive --or-update flathub "$1"
 }
 
 instaladas=$(flatpak list --system --app --columns=application)
