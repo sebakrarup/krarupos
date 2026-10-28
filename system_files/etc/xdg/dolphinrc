@@ -20,9 +20,9 @@ UseTabForSwitchingSplitView=true
 Version=202
 
 [IconsMode]
-IconSize=256
+IconSize=192
 MaximumTextLines=4
-PreviewSize=256
+PreviewSize=192
 ViewFont=Noto Sans,15,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0
 
 [InformationPanel]
