@@ -4,6 +4,14 @@
 [customizations.installer.kickstart]
 contents = """
 %post
+# El instalador deja el reloj de la placa en hora local, pero en un PC solo con
+# Linux guarda UTC. En América el primer arranque quedaba horas adelantado y los
+# archivos de SDDM con fecha futura, así que "Ir a escritorio" volvía a modo juego.
+cat >/etc/adjtime <<'EOF'
+0.0 0 0.0
+0
+UTC
+EOF
 bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry ghcr.io/sebakrarup/krarupos:latest
 %end
 """
