@@ -1,0 +1,4 @@
+# Lo lee bazzite-autologin (solo en la imagen deck) en el primer arranque:
+# si este archivo existe, se entra al escritorio en vez de modo juego.
+# Modo juego sigue a un clic ("Volver a modo juego") y el Portal de Bazzite
+# permite cambiar el inicio por defecto ("Set Default Deck Login Mode").
