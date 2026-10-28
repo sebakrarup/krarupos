@@ -1,0 +1,48 @@
+#!/usr/bin/bash
+# Agrega VacuumTube a Steam como "YouTube", una sola vez por usuario.
+# Si alguien lo borra de Steam, no se vuelve a agregar.
+# Usa steamos-add-to-steam, igual que el menú de apps de streaming de Bazzite
+# (88-bazzite-webapps.just), que necesita Steam abierto y con sesión iniciada.
+set -euo pipefail
+
+marca=${XDG_STATE_HOME:-$HOME/.local/state}/krarupos/steam-youtube
+[[ -f "$marca" ]] && exit 0
+
+# Steam nombra el acceso como el archivo, por eso se llama YouTube.
+lanzador=$HOME/.local/share/krarupos/YouTube
+steam_dir=$HOME/.local/share/Steam
+
+listo() {
+    flatpak info rocks.shy.VacuumTube &>/dev/null &&
+        pgrep -x steam >/dev/null &&
+        compgen -G "$steam_dir/userdata/[1-9]*/config/localconfig.vdf" >/dev/null
+}
+
+# VacuumTube lo instala krarupos-flatpaks y Steam puede tardar en abrir
+# (o en bajar el cliente la primera vez), así que se espera sin apuro.
+until listo; do
+    sleep 30
+done
+sleep 30
+
+mkdir -p "$(dirname "$lanzador")"
+cat >"$lanzador" <<'EOF'
+#!/usr/bin/bash
+exec flatpak run rocks.shy.VacuumTube "$@"
+EOF
+chmod +x "$lanzador"
+
+steamos-add-to-steam "$lanzador"
+
+# Solo se marca como hecho cuando Steam guardó el acceso; si no, se reintenta
+# en el próximo inicio de sesión.
+for _ in {1..30}; do
+    if grep -qaF "$lanzador" "$steam_dir"/userdata/*/config/shortcuts.vdf 2>/dev/null; then
+        mkdir -p "$(dirname "$marca")"
+        touch "$marca"
+        exit 0
+    fi
+    sleep 10
+done
+echo "Steam no guardó el acceso a YouTube; se reintenta en el próximo inicio." >&2
+exit 1

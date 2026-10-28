@@ -256,6 +256,8 @@ systemctl enable krarupos-flatpaks.service
 # SSH desde el primer arranque, solo con llave (etc/ssh/sshd_config.d/40-krarupos.conf).
 # La llave de CachyOS va en /etc/skel/.ssh/authorized_keys para cada usuario nuevo.
 systemctl enable sshd.service
+# YouTube (VacuumTube) en Steam, para cada usuario.
+systemctl --global enable krarupos-steam-youtube.service
 
 ### Pantalla de arranque
 

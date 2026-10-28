@@ -1,0 +1,10 @@
+[Unit]
+Description=Agregar YouTube (VacuumTube) a Steam
+
+[Service]
+# Espera a que Steam esté abierto, así que no debe bloquear el inicio de sesión.
+Type=simple
+ExecStart=/usr/libexec/krarupos-steam-youtube
+
+[Install]
+WantedBy=default.target
