@@ -1,0 +1,4 @@
+# Deja leer el consumo de la CPU (RAPL, también en AMD) sin ser root, para que
+# MangoHud y el overlay de rendimiento de Steam muestren los watts. El kernel lo
+# deja solo para root desde la vulnerabilidad PLATYPUS. Igual que en CachyOS.
+SUBSYSTEM=="powercap", KERNEL=="intel-rapl*", RUN+="/usr/bin/chmod a+r /sys/%p/energy_uj"
