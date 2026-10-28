@@ -252,7 +252,14 @@ rm -f /etc/xdg/autostart/bazzite-announcement.desktop
 
 # input-remapper: los presets del G502 X LS vienen en /etc/skel.
 systemctl enable input-remapper.service
+# Bazzite deck esconde la app y apaga la carga de presets al entrar a KDE.
+sed -i '/^Hidden=true$/d' /etc/xdg/autostart/input-remapper-autoload.desktop
+sed -i '/^NoDisplay=true$/d' /usr/share/applications/input-remapper-gtk.desktop
+if grep -qx 'Hidden=true' /etc/xdg/autostart/input-remapper-autoload.desktop; then exit 1; fi
 systemctl enable krarupos-flatpaks.service
+# Bazzite deck apaga las actualizaciones automáticas porque las hace Steam en
+# modo juego; krarupOS deck parte en el escritorio, así que se dejan como en desktop.
+systemctl enable uupd.timer
 # SSH desde el primer arranque, solo con llave (etc/ssh/sshd_config.d/40-krarupos.conf).
 # La llave de CachyOS va en /etc/skel/.ssh/authorized_keys para cada usuario nuevo.
 systemctl enable sshd.service
