@@ -1,0 +1,4 @@
+# Marca de Bazzite deck (/usr/libexec/ogc/os-update): si falta, la primera vez
+# que Steam busca actualizaciones reinicia graphical.target. Pensado para el
+# primer arranque en modo juego; como krarupOS deck parte en el escritorio,
+# cortaba KDE y dejaba la pantalla negra (2026-10-28).
