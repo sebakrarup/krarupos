@@ -15,6 +15,13 @@ fi
 
 flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
+# A veces una descarga de Flathub se queda colgada para siempre (2026-10-27:
+# WhatSie detenida sin bajar nada y todas las demás esperando). Con un tope por
+# app se sigue con la siguiente y la que faltó se reintenta más tarde.
+instalar() {
+    timeout 20m flatpak install --system --noninteractive --or-update flathub "$1"
+}
+
 instaladas=$(flatpak list --system --app --columns=application)
 faltan=()
 while read -r app; do
@@ -31,14 +38,14 @@ if ((${#faltan[@]})); then
     fallaron=0
     reparado=0
     for app in "${faltan[@]}"; do
-        flatpak install --system --noninteractive --or-update flathub "$app" && continue
+        instalar "$app" && continue
         # Si se apagó el PC a mitad de una descarga, queda un runtime a medias
         # ("No such metadata object") y todo lo que lo usa falla. Se repara
         # una vez y se reintenta.
         if ((!reparado)); then
             reparado=1
             flatpak repair --system
-            flatpak install --system --noninteractive --or-update flathub "$app" && continue
+            instalar "$app" && continue
         fi
         echo "No se pudo instalar $app" >&2
         fallaron=1
