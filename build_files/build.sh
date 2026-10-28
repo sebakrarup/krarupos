@@ -115,6 +115,8 @@ kwriteconfig6 --file /etc/xdg/kdeglobals --group Icons --key Theme Tela-circle-d
 kwriteconfig6 --file /etc/xdg/kcminputrc --group Mouse --key cursorTheme Bibata-Modern-Ice
 kwriteconfig6 --file /etc/xdg/kcminputrc --group Mouse --key cursorSize 28
 kwriteconfig6 --file /etc/xdg/ksplashrc --group KSplash --key Theme com.krarupos.desktop
+# Konsole: perfil krarupOS (colores Vapor sin transparencia, Fira Code 16).
+kwriteconfig6 --file /etc/xdg/konsolerc --group "Desktop Entry" --key DefaultProfile krarupOS.profile
 
 # Letra más grande (15 en vez de 10) y suavizado sin subpíxeles.
 for clave in font menuFont toolBarFont; do
