@@ -17,6 +17,7 @@ Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
 - **Tema**: estilo Darkly, colores Breeze oscuro (bordes sin contraste), pantalla de inicio Vapor con el logo de krarupOS, letra 15, íconos Tela-circle-dracula-dark, cursor Bibata-Modern-Ice
   y el wallpaper Vía Láctea. Aparece como el aspecto global "krarupOS".
 - **Logo krarupOS** (letra MuseoModerno, la del logo de Bazzite) en la pantalla de arranque y en la de inicio de KDE.
+- **Sunshine** con los permisos de teclado, mouse y controles virtuales ya puestos (sin `additional-install.sh`).
 - **input-remapper** activado, con los presets de un Logitech G502 X LS.
 - **Konsole** con el perfil krarupOS (colores Vapor sin transparencia, Fira Code 16).
 - **Dolphin** con íconos y vistas previas grandes, ruta completa y barra de herramientas propia.
