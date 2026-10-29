@@ -1,7 +1,8 @@
 #!/usr/bin/bash
 # Instala Decky Loader una sola vez, igual que "ujust setup-decky" de Bazzite
-# (91-bazzite-decky.just) pero sin preguntar. Si alguien lo desinstala después,
-# no se vuelve a instalar.
+# (91-bazzite-decky.just) pero sin preguntar, y después los plugins de
+# krarupos-decky-plugins.py. Si alguien desinstala Decky o un plugin, no se
+# vuelve a instalar.
 set -euo pipefail
 
 marca=/var/lib/krarupos/decky-instalado
@@ -22,15 +23,21 @@ if [[ ! -e /home/deck && "$casa" != /home/deck ]]; then
     ln -sf "$casa" /home/deck
 fi
 
-instalador=$(mktemp)
-trap 'rm -f "$instalador"' EXIT
-curl -fsSL https://github.com/SteamDeckHomebrew/decky-installer/releases/latest/download/install_release.sh -o "$instalador"
-SUDO_USER=$usuario bash "$instalador"
+# Si falló solo la parte de los plugins, Decky ya quedó y no se reinstala.
+if [[ ! -x "$casa/homebrew/services/PluginLoader" ]]; then
+    instalador=$(mktemp)
+    trap 'rm -f "$instalador"' EXIT
+    curl -fsSL https://github.com/SteamDeckHomebrew/decky-installer/releases/latest/download/install_release.sh -o "$instalador"
+    SUDO_USER=$usuario bash "$instalador"
 
-# El instalador no falla aunque no haya podido bajar Decky; se revisa el resultado.
-[[ -x "$casa/homebrew/services/PluginLoader" ]]
-systemctl is-enabled -q plugin_loader.service
-chcon -R -t bin_t "$casa/homebrew/services/PluginLoader"
+    # El instalador no falla aunque no haya podido bajar Decky; se revisa el resultado.
+    [[ -x "$casa/homebrew/services/PluginLoader" ]]
+    systemctl is-enabled -q plugin_loader.service
+    chcon -R -t bin_t "$casa/homebrew/services/PluginLoader"
+fi
+
+/usr/libexec/krarupos-decky-plugins.py "$casa/homebrew/plugins" "$usuario"
+systemctl restart plugin_loader.service
 
 mkdir -p "$(dirname "$marca")"
 touch "$marca"
