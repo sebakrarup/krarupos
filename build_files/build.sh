@@ -28,7 +28,9 @@ grep -qx 'DEFAULT_HOSTNAME="krarupOS"' /usr/lib/os-release
 ### Programas del sistema
 
 # rocm-smi: btop lo necesita para mostrar las GPUs AMD.
-dnf5 install -y nmap htop rocm-smi
+# liquidctl: refrigeración líquida y fuentes (H150i, RM850i); permisos sin root en
+# usr/lib/udev/rules.d/71-liquidctl.rules (Fedora no trae las reglas).
+dnf5 install -y nmap htop rocm-smi liquidctl
 
 # amdgpu_top no está en los repos de Fedora: se instala el .rpm oficial
 # de la última versión publicada por su autor.
