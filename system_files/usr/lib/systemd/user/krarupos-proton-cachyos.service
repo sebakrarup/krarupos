@@ -1,0 +1,13 @@
+[Unit]
+Description=Instalar Proton-CachyOS con ProtonPlus
+
+[Service]
+# Espera a ProtonPlus y a que Steam abra, así que no debe bloquear el inicio de sesión.
+Type=simple
+ExecStart=/usr/libexec/krarupos-proton-cachyos
+# Sin internet o con GitHub caído se reintenta.
+Restart=on-failure
+RestartSec=5min
+
+[Install]
+WantedBy=default.target

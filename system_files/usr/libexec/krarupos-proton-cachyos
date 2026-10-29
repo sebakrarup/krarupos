@@ -1,0 +1,45 @@
+#!/usr/bin/bash
+# Instala Proton-CachyOS "Latest" con ProtonPlus, una sola vez por usuario,
+# igual que elegirlo en ProtonPlus: después ProtonPlus lo actualiza.
+# Si alguien lo desinstala, no se vuelve a instalar.
+set -euo pipefail
+
+marca=${XDG_STATE_HOME:-$HOME/.local/state}/krarupos/proton-cachyos
+[[ -f "$marca" ]] && exit 0
+
+destino="$HOME/.local/share/Steam/compatibilitytools.d/Proton-CachyOS Latest"
+
+# ProtonPlus lo instala krarupos-flatpaks y la carpeta de Steam aparece
+# cuando Steam abre por primera vez.
+until flatpak info com.vysp3r.ProtonPlus &>/dev/null && [[ -d $HOME/.local/share/Steam ]]; do
+    sleep 30
+done
+
+if [[ ! -f $destino/.protonplus ]]; then
+    flatpak run com.vysp3r.ProtonPlus install steam-system proton-cachyos latest
+fi
+
+# Por comando, ProtonPlus instala siempre la variante x86-64. Si la CPU es
+# x86-64-v3 (AVX2, la mayoría desde 2015), se cambia por la v3 del mismo
+# release y se anota en .protonplus para que ProtonPlus la siga actualizando.
+if /usr/lib64/ld-linux-x86-64.so.2 --help | grep -q 'x86-64-v3 (supported' &&
+    grep -q '"variant_id":"x86-64"' "$destino/.protonplus"; then
+    tag=$(python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["tag"])' "$destino/.protonplus")
+    nombre="proton-${tag}-x86_64_v3"
+    url="https://github.com/CachyOS/proton-cachyos/releases/download/$tag/$nombre"
+    tmp=$(mktemp -d)
+    trap 'rm -rf "$tmp"' EXIT
+    curl -fsSL "$url.tar.xz" -o "$tmp/$nombre.tar.xz"
+    curl -fsSL "$url.sha512sum" -o "$tmp/$nombre.sha512sum"
+    (cd "$tmp" && sha512sum -c --quiet "$nombre.sha512sum")
+    tar -xJf "$tmp/$nombre.tar.xz" -C "$tmp"
+    # Se quedan los archivos de ProtonPlus (el nombre "Latest" en Steam y su ficha).
+    mv "$destino/.protonplus" "$destino/compatibilitytool.vdf" "$tmp/"
+    rm -rf "$destino"
+    mv "$tmp/$nombre" "$destino"
+    mv -f "$tmp/.protonplus" "$tmp/compatibilitytool.vdf" "$destino/"
+    sed -i 's/"variant_id":"x86-64"/"variant_id":"x86-64-v3"/' "$destino/.protonplus"
+fi
+
+mkdir -p "$(dirname "$marca")"
+touch "$marca"

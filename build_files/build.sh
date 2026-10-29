@@ -291,6 +291,8 @@ systemctl enable uupd.timer
 systemctl enable sshd.service
 # YouTube (VacuumTube) en Steam, para cada usuario.
 systemctl --global enable krarupos-steam-youtube.service
+# Proton-CachyOS "Latest" con ProtonPlus (v3 si la CPU lo soporta), para cada usuario.
+systemctl --global enable krarupos-proton-cachyos.service
 
 ### Pantalla de arranque
 
