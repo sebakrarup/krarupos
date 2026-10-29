@@ -1,0 +1,16 @@
+[Unit]
+Description=Instalar Decky Loader (una vez)
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=!/var/lib/krarupos/decky-instalado
+
+[Service]
+# Espera a que Steam abra por primera vez, así que no debe frenar el arranque.
+Type=simple
+ExecStart=/usr/libexec/krarupos-decky
+# Sin internet o con GitHub caído se reintenta.
+Restart=on-failure
+RestartSec=5min
+
+[Install]
+WantedBy=multi-user.target

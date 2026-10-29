@@ -1,0 +1,36 @@
+#!/usr/bin/bash
+# Instala Decky Loader una sola vez, igual que "ujust setup-decky" de Bazzite
+# (91-bazzite-decky.just) pero sin preguntar. Si alguien lo desinstala después,
+# no se vuelve a instalar.
+set -euo pipefail
+
+marca=/var/lib/krarupos/decky-instalado
+[[ -f "$marca" ]] && exit 0
+
+usuario=$(getent passwd 1000 | cut -d: -f1)
+casa=$(getent passwd 1000 | cut -d: -f6)
+[[ -n "$usuario" ]]
+
+# Decky necesita ~/.steam/steam/.cef-enable-remote-debugging para entrar en
+# Steam, y esa carpeta la crea Steam la primera vez que abre.
+until [[ -d "$casa/.steam/steam" ]]; do
+    sleep 30
+done
+
+# Algunos plugins buscan /home/deck en vez de usar $HOME (igual que Bazzite).
+if [[ ! -e /home/deck && "$casa" != /home/deck ]]; then
+    ln -sf "$casa" /home/deck
+fi
+
+instalador=$(mktemp)
+trap 'rm -f "$instalador"' EXIT
+curl -fsSL https://github.com/SteamDeckHomebrew/decky-installer/releases/latest/download/install_release.sh -o "$instalador"
+SUDO_USER=$usuario bash "$instalador"
+
+# El instalador no falla aunque no haya podido bajar Decky; se revisa el resultado.
+[[ -x "$casa/homebrew/services/PluginLoader" ]]
+systemctl is-enabled -q plugin_loader.service
+chcon -R -t bin_t "$casa/homebrew/services/PluginLoader"
+
+mkdir -p "$(dirname "$marca")"
+touch "$marca"
