@@ -24,6 +24,7 @@ org.kde.okular
 org.kde.kcalc
 io.github.TransmissionRemoteGtk
 org.fedoraproject.MediaWriter
+org.onlyoffice.desktopeditors
 
 # Sistema
 io.github.ilya_zlobintsev.LACT
