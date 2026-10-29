@@ -187,6 +187,26 @@ favoritos=(
     io.missioncenter.MissionCenter com.dec05eba.gpu_screen_recorder tv.kodi.Kodi org.vinegarhq.Sober
     io.github.ryubing.Ryujinx rocks.shy.VacuumTube com.ktechpit.whatsie dev.lizardbyte.app.Sunshine
 )
+# Deck: "Gaming Mode" en el menú y en favoritos (después de Steam) en vez del
+# "Return to Gaming Mode" que Bazzite deja en el escritorio de cada usuario nuevo.
+if [[ -x /usr/bin/return-to-gamemode ]]; then
+    cat >/usr/share/applications/krarupos-gaming-mode.desktop <<'EOF2'
+[Desktop Entry]
+Name=Gaming Mode
+Comment=Volver al modo juego de Steam
+Exec=/usr/bin/return-to-gamemode
+Icon=steamdeck-gaming-return
+Terminal=false
+Type=Application
+StartupNotify=false
+Categories=Game;
+EOF2
+    for i in "${!favoritos[@]}"; do
+        [[ ${favoritos[i]} == steam ]] && favoritos=("${favoritos[@]:0:i+1}" krarupos-gaming-mode "${favoritos[@]:i+1}") && break
+    done
+    printf '%s\n' "${favoritos[@]}" | grep -qx krarupos-gaming-mode
+    rm -f /etc/skel/Desktop/Return.desktop
+fi
 prepend=""
 for app in "${favoritos[@]}"; do
     [[ $app == preferred://* ]] && prepend+="$app;" || prepend+="$app.desktop;"
