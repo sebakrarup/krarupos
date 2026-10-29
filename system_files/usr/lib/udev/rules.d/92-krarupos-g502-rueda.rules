@@ -1,0 +1,3 @@
+# G502 X LIGHTSPEED (el mouse de Seba): rueda en resolución normal (punto muerto)
+# al conectar. En PCs sin este mouse no hace nada. Ver /usr/libexec/krarupos-g502-rueda-auto
+SUBSYSTEM=="power_supply", KERNEL=="hidpp_battery_*", ATTR{model_name}=="G502 X LIGHTSPEED", ACTION=="add|change", RUN+="/usr/bin/systemd-run --no-block --quiet --collect --setenv=ACTION=$env{ACTION} /usr/libexec/krarupos-g502-rueda-auto"

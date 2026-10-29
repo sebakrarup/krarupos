@@ -1,0 +1,13 @@
+#!/usr/bin/sh
+# Lanzado por 92-krarupos-g502-rueda.rules cuando aparece el G502 X o cambia su
+# batería: deja la rueda en resolución normal, porque el kernel
+# (hid-logitech-hidpp) pone alta resolución en cada conexión. Igual que en CachyOS.
+sleep 2
+for i in 1 2 3 4 5; do
+    if msg=$(/usr/libexec/krarupos-g502-rueda off 2>&1); then
+        logger -t g502-rueda "$ACTION: $msg"
+        exit 0
+    fi
+    sleep 2
+done
+logger -t g502-rueda "$ACTION: falló: $msg"

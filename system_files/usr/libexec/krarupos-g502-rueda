@@ -1,0 +1,55 @@
+#!/usr/bin/python3 -I
+# Cambia la resolución de la rueda del G502 X (HID++ 2.0, función HIRES WHEEL 0x2121).
+# Uso: krarupos-g502-rueda on|off|estado   (on = alta resolución, off = resolución normal / punto muerto)
+# Habla directo con el receptor Lightspeed por hidraw. No usa solaar: al enumerar, solaar hace que
+# el receptor vuelva a anunciar el mouse y el kernel (hid-logitech-hidpp) reactiva la alta resolución.
+import glob, os, select, sys, time
+
+RECEPTOR = "0003:046D:C547"
+SWID = 0x0A
+
+def buscar_hidraw():
+    for h in sorted(glob.glob("/sys/class/hidraw/hidraw*")):
+        disp = os.path.realpath(h + "/device")
+        # la interfaz HID++ del receptor (no la del mouse hijo)
+        if os.path.basename(disp).startswith(RECEPTOR) and disp.split("/")[-2].endswith(":1.2"):
+            return "/dev/" + os.path.basename(h)
+    sys.exit("no se encontró el receptor del G502")
+
+def pedir(fd, idx, feat, fn, params=b""):
+    msg = bytes([0x11, idx, feat, (fn << 4) | SWID]) + params
+    os.write(fd, msg.ljust(20, b"\0"))
+    fin = time.monotonic() + 1.0
+    while (resto := fin - time.monotonic()) > 0:
+        if not select.select([fd], [], [], resto)[0]:
+            break
+        r = os.read(fd, 64)
+        if len(r) >= 4 and r[0] in (0x10, 0x11) and r[1] == idx:
+            if r[2] == 0xFF and r[3] == feat:  # error HID++ 2.0
+                raise OSError("error HID++ %d" % r[5])
+            if r[2] == 0x8F:  # error HID++ 1.0 (dispositivo apagado o dormido)
+                raise OSError("dispositivo no responde")
+            if r[2] == feat and r[3] == (fn << 4) | SWID:
+                return r[4:]
+    raise OSError("sin respuesta")
+
+if len(sys.argv) != 2 or sys.argv[1] not in ("on", "off", "estado"):
+    sys.exit("uso: krarupos-g502-rueda on|off|estado")
+
+fd = os.open(buscar_hidraw(), os.O_RDWR)
+for idx in range(1, 7):
+    try:
+        # IRoot (0x00), getFeature(0x2121) -> índice de la función en este dispositivo
+        feat = pedir(fd, idx, 0x00, 0, b"\x21\x21")[0]
+    except OSError:
+        continue
+    if not feat:
+        continue
+    modo = pedir(fd, idx, feat, 1)[0]  # getWheelMode
+    if sys.argv[1] != "estado":
+        nuevo = (modo | 0x02) if sys.argv[1] == "on" else (modo & ~0x02)
+        pedir(fd, idx, feat, 2, bytes([nuevo]))  # setWheelMode
+        modo = pedir(fd, idx, feat, 1)[0]
+    print("Rueda en", "alta resolución" if modo & 0x02 else "resolución normal")
+    sys.exit(0)
+sys.exit("el G502 no está conectado (¿dormido? muévelo y repite)")
