@@ -129,6 +129,13 @@ kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key widgetStyle Darkly
 kwriteconfig6 --file /etc/xdg/kdeglobals --group Icons --key Theme Tela-circle-dracula-dark
 kwriteconfig6 --file /etc/xdg/kcminputrc --group Mouse --key cursorTheme Bibata-Modern-Ice
 kwriteconfig6 --file /etc/xdg/kcminputrc --group Mouse --key cursorSize 28
+# Scroll natural solo en el G502 X de Seba (046d:409f = 1133:16543), igual que en
+# CachyOS. KWin lo guarda por mouse, así que otros mouses quedan normales. Con
+# input-remapper activo, KDE ve el mouse "forwarded", por eso van los dos.
+for g502 in "Logitech G502 X LS" "input-remapper Logitech G502 X LS forwarded"; do
+    kwriteconfig6 --file /etc/xdg/kcminputrc --group Libinput --group 1133 --group 16543 \
+        --group "$g502" --key NaturalScroll --type bool true
+done
 kwriteconfig6 --file /etc/xdg/ksplashrc --group KSplash --key Theme com.krarupos.desktop
 # Konsole: perfil krarupOS (colores Vapor sin transparencia, Fira Code 16).
 kwriteconfig6 --file /etc/xdg/konsolerc --group "Desktop Entry" --key DefaultProfile krarupOS.profile
