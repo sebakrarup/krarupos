@@ -1,0 +1,14 @@
+#!/usr/bin/bash
+# Curva de ventiladores del PC de Seba, igual que fannormal.sh en CachyOS.
+# Lo lanza 90-krarupos-corsair.rules solo cuando aparece un H150i Platinum, así
+# que en otros PCs nunca corre. Para apagarlo: sudo systemctl mask krarupos-corsair
+set -euo pipefail
+
+liquidctl --match 'H150i' set fan speed 30 30 32 40 34 55 36 75 38 100
+liquidctl --match 'H150i' initialize --pump-mode balanced
+
+# La fuente es opcional: si no está, se deja tranquila. "list" sale con 0 aunque
+# no encuentre nada, por eso se mira si imprimió algo.
+if liquidctl --match 'RM850i' list 2>/dev/null | grep -q .; then
+    liquidctl --match 'RM850i' set fan speed 50
+fi

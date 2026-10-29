@@ -1,0 +1,8 @@
+[Unit]
+Description=Curva de ventiladores Corsair H150i Platinum (y RM850i si está)
+# Sin [Install]: lo arranca 90-krarupos-corsair.rules al aparecer el H150i y
+# krarupos-corsair-sleep al despertar. Aplica la curva y termina.
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/krarupos-corsair

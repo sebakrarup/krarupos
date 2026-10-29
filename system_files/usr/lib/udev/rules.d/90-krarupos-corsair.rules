@@ -1,0 +1,3 @@
+# Corsair H150i Platinum (el PC de Seba): aplica la curva de ventiladores al
+# aparecer. En PCs sin este cooler no hace nada.
+ACTION=="add", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="1b1c", ATTR{idProduct}=="0c12", TAG+="systemd", ENV{SYSTEMD_WANTS}+="krarupos-corsair.service"

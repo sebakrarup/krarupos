@@ -1,0 +1,10 @@
+#!/usr/bin/bash
+# Al despertar el H150i puede perder la curva (como fan-resume.sh en CachyOS).
+# Solo si el cooler está conectado.
+[[ "$1" == post ]] || exit 0
+for d in /sys/bus/usb/devices/*; do
+    if [[ "$(cat "$d/idVendor" 2>/dev/null)" == 1b1c && "$(cat "$d/idProduct" 2>/dev/null)" == 0c12 ]]; then
+        systemctl --no-block restart krarupos-corsair.service
+        exit 0
+    fi
+done
