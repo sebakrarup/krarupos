@@ -19,7 +19,7 @@ Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
 - **Logo krarupOS** (letra MuseoModerno, la del logo de Bazzite) en la pantalla de arranque y en la de inicio de KDE.
 - **Sunshine** con los permisos de teclado, mouse y controles virtuales ya puestos (sin `additional-install.sh`).
 - **YouTube en Steam**: VacuumTube se agrega solo a la biblioteca de Steam como "YouTube" (una vez por usuario; si se borra, no vuelve).
-- **Proton-CachyOS** se instala solo con ProtonPlus ("Latest", así ProtonPlus lo actualiza), en versión x86-64-v3 si la CPU la soporta, y queda como Proton predeterminado de Steam (una vez; se puede cambiar).
+- **Proton-CachyOS** se instala solo con ProtonPlus ("Latest", así ProtonPlus lo actualiza), en versión x86-64-v3 (CPUs desde ~2015), y queda como Proton predeterminado de Steam (una vez; se puede cambiar).
 - **Decky Loader** se instala solo una vez (con el instalador oficial, como `ujust setup-decky`) cuando Steam ya abrió, con los plugins CSS Loader, TabMaster, Animation Changer y SteamGridDB; si se desinstala, no vuelve.
 - **Deck sin cambiarse a Bazzite**: Steam ya no puede mover el sistema a la imagen oficial de Bazzite al elegir canal de actualizaciones.
 - **Deck parte en escritorio**: el primer arranque entra a KDE (sin pantalla negra mientras Steam se actualiza); "Gaming Mode" queda en los favoritos del menú (no en el escritorio).

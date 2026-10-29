@@ -16,14 +16,16 @@ until flatpak info com.vysp3r.ProtonPlus &>/dev/null && [[ -d $HOME/.local/share
 done
 
 if [[ ! -f $destino/.protonplus ]]; then
+    echo "Instalando Proton-CachyOS Latest con ProtonPlus"
     flatpak run com.vysp3r.ProtonPlus install steam-system proton-cachyos latest
 fi
 
-# Por comando, ProtonPlus instala siempre la variante x86-64. Si la CPU es
-# x86-64-v3 (AVX2, la mayoría desde 2015), se cambia por la v3 del mismo
-# release y se anota en .protonplus para que ProtonPlus la siga actualizando.
-if /usr/lib64/ld-linux-x86-64.so.2 --help | grep -q 'x86-64-v3 (supported' &&
-    grep -q '"variant_id":"x86-64"' "$destino/.protonplus"; then
+# Por comando, ProtonPlus instala siempre la variante x86-64. Se cambia por la
+# v3 del mismo release (AVX2: casi todas las CPUs desde 2015; en un PC más viejo
+# se usa otro Proton) y se anota en .protonplus para que ProtonPlus la siga
+# actualizando.
+if grep -q '"variant_id":"x86-64"' "$destino/.protonplus"; then
+    echo "Cambiando a la variante x86-64-v3"
     tag=$(python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["tag"])' "$destino/.protonplus")
     nombre="proton-${tag}-x86_64_v3"
     url="https://github.com/CachyOS/proton-cachyos/releases/download/$tag/$nombre"
@@ -39,6 +41,7 @@ if /usr/lib64/ld-linux-x86-64.so.2 --help | grep -q 'x86-64-v3 (supported' &&
     mv "$tmp/$nombre" "$destino"
     mv -f "$tmp/.protonplus" "$tmp/compatibilitytool.vdf" "$destino/"
     sed -i 's/"variant_id":"x86-64"/"variant_id":"x86-64-v3"/' "$destino/.protonplus"
+    echo "Listo: $nombre"
 fi
 
 # Si Steam está cerrado ahora, queda de predeterminado al tiro; si no, antes
