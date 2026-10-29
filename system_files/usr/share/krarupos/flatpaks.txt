@@ -4,38 +4,24 @@
 
 # Navegadores y comunicación
 org.mozilla.firefox
-com.google.Chrome
 org.telegram.desktop
-com.discordapp.Discord
-com.ktechpit.whatsie
 
 # Multimedia
-com.spotify.Client
 io.mpv.Mpv
 tv.kodi.Kodi
 org.jellyfin.JellyfinDesktop
 rocks.shy.VacuumTube
-org.kde.elisa
 org.kde.gwenview
 com.dec05eba.gpu_screen_recorder
-org.darktable.Darktable
 
 # Juegos
 com.moonlight_stream.Moonlight
 dev.lizardbyte.app.Sunshine
 com.vysp3r.ProtonPlus
-io.github.ryubing.Ryujinx
-org.vinegarhq.Sober
-org.kde.kmahjongg
-org.kde.kmines
 
 # Oficina y utilidades
-org.onlyoffice.desktopeditors
 org.kde.okular
 org.kde.kcalc
-org.kde.kolourpaint
-org.kde.krdc
-org.jdownloader.JDownloader
 io.github.TransmissionRemoteGtk
 org.fedoraproject.MediaWriter
 

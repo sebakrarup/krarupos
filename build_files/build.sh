@@ -182,10 +182,10 @@ kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key BrowserApplicatio
 # /etc/xdg manda sobre /usr/share/kde-settings, donde Bazzite pone los suyos.
 favoritos=(
     preferred://browser io.github.kolunmi.Bazaar org.jellyfin.JellyfinDesktop org.telegram.desktop
-    com.moonlight_stream.Moonlight com.google.Chrome steam net.lutris.Lutris systemsettings
+    com.moonlight_stream.Moonlight steam net.lutris.Lutris systemsettings
     io.github.ublue_os.yafti_gtk org.kde.konsole org.kde.dolphin com.vysp3r.ProtonPlus
-    io.missioncenter.MissionCenter com.dec05eba.gpu_screen_recorder tv.kodi.Kodi org.vinegarhq.Sober
-    io.github.ryubing.Ryujinx rocks.shy.VacuumTube com.ktechpit.whatsie dev.lizardbyte.app.Sunshine
+    io.missioncenter.MissionCenter com.dec05eba.gpu_screen_recorder tv.kodi.Kodi
+    rocks.shy.VacuumTube dev.lizardbyte.app.Sunshine
 )
 # Deck: "Gaming Mode" en el menú y en favoritos (después de Steam) en vez del
 # "Return to Gaming Mode" que Bazzite deja en el escritorio de cada usuario nuevo.
