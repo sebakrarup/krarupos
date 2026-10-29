@@ -1,0 +1,5 @@
+# amdgpu: el default del kernel (0xfff7bfff) más el bit de OverDrive (0x4000).
+# Sin él no existe gpu_od/fan_ctrl y LACT no puede apagar Zero RPM (2026-10-29).
+# bootc lo agrega al instalar y en la actualización que lo trae.
+kargs = ["amdgpu.ppfeaturemask=0xfff7ffff"]
+match-architectures = ["x86_64"]
