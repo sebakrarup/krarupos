@@ -279,6 +279,8 @@ sed -i '/^Hidden=true$/d' /etc/xdg/autostart/input-remapper-autoload.desktop
 sed -i '/^NoDisplay=true$/d' /usr/share/applications/input-remapper-gtk.desktop
 if grep -qx 'Hidden=true' /etc/xdg/autostart/input-remapper-autoload.desktop; then exit 1; fi
 systemctl enable krarupos-flatpaks.service
+# LACT sin la ventana de instalar su servicio; arranca cuando LACT ya está instalada.
+systemctl enable lactd.service
 # Decky Loader: se instala solo una vez, cuando Steam ya abrió (usr/libexec/krarupos-decky).
 systemctl enable krarupos-decky.service
 # Bazzite deck apaga las actualizaciones automáticas porque las hace Steam en

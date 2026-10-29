@@ -25,7 +25,11 @@ flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/
 # WhatSie detenida sin bajar nada y todas las demás esperando). Con un tope por
 # app se sigue con la siguiente y la que faltó se reintenta más tarde.
 instalar() {
-    timeout 10m flatpak install --system --noninteractive --or-update flathub "$1"
+    timeout 10m flatpak install --system --noninteractive --or-update flathub "$1" || return 1
+    # lactd no arranca mientras LACT no esté instalada (ConditionPathExists).
+    if [[ $1 == io.github.ilya_zlobintsev.LACT ]]; then
+        systemctl start --no-block lactd.service || true
+    fi
 }
 
 # Incluye runtimes, porque la lista también trae temas (org.gtk.Gtk3theme.Breeze//3.22).

@@ -28,6 +28,7 @@ Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
 - **liquidctl** para refrigeración líquida y fuentes Corsair/NZXT/etc., sin `sudo`.
 - **Curva de ventiladores del H150i Platinum** automática solo si está ese cooler (y la RM850i si está): se aplica al arrancar y al despertar, y termina. Apagar: `sudo systemctl mask krarupos-corsair`.
 - **Rueda del G502 X en resolución normal** al conectar (el kernel pone alta resolución y hace scroll con solo rozarla); solo si está ese mouse.
+- **LACT listo sin configurar**: es la primera app que se instala y su servicio viene incluido; con la RX 9070 XT de Seba pone 250 W y Zero RPM apagado (una vez, como en CachyOS).
 - **input-remapper** activado, con los presets de un Logitech G502 X LS.
 - **Apps GTK** (como Transmission Remote) con el tema Breeze y los colores de KDE, también las Flatpak.
 - **Konsole** con el perfil krarupOS (colores Vapor sin transparencia, Fira Code 16).

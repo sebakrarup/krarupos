@@ -2,6 +2,9 @@
 # Una por línea. Si agregas una, se instala en la siguiente actualización.
 # Si alguien desinstala una, no se vuelve a instalar hasta que cambie esta lista.
 
+# Primero LACT: maneja la GPU (krarupos-lact) y conviene tenerla pronto.
+io.github.ilya_zlobintsev.LACT
+
 # Navegadores y comunicación
 org.mozilla.firefox
 org.telegram.desktop
@@ -27,7 +30,6 @@ org.fedoraproject.MediaWriter
 org.onlyoffice.desktopeditors
 
 # Sistema
-io.github.ilya_zlobintsev.LACT
 io.missioncenter.MissionCenter
 
 # Tema Breeze para las apps GTK (como Transmission Remote); toma los colores de

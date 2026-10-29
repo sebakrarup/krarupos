@@ -1,0 +1,17 @@
+# El mismo servicio que LACT (Flatpak) instala en /etc la primera vez que se
+# abre (bin/startup.sh), para que funcione sin esa ventana ni contraseña.
+# Si ya existe /etc/systemd/system/lactd.service, ese manda.
+[Unit]
+Description=GPU Control Daemon (via Flatpak)
+After=multi-user.target
+ConditionPathExists=/var/lib/flatpak/app/io.github.ilya_zlobintsev.LACT/x86_64/stable/active/files/bin/daemon.sh
+
+[Service]
+# Solo se usa para Flatpaks de usuario; LACT de krarupOS es de sistema.
+Environment=FLATPAK_INSTALL_USER=root
+ExecStart=bash /var/lib/flatpak/app/io.github.ilya_zlobintsev.LACT/x86_64/stable/active/files/bin/daemon.sh
+Nice=-10
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

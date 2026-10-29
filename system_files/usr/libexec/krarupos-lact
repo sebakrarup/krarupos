@@ -1,0 +1,56 @@
+#!/usr/bin/bash
+# Antes de lactd: si está la RX 9070 XT de Seba (1002:7550, placa 1849:5401),
+# le pone la configuración de CachyOS: límite de 250 W y Zero RPM apagado.
+# Solo una vez, para no pisar lo que se cambie después en LACT. En PCs con
+# otra GPU no hace nada.
+set -euo pipefail
+
+marca=/var/lib/krarupos/lact-configurado
+config=/etc/lact/config.yaml
+
+# LACT lo hace al instalar su servicio (startup.sh); en cada actualización
+# de LACT cambia la carpeta, así que se repite en cada arranque.
+chcon -t bin_t /var/lib/flatpak/app/io.github.ilya_zlobintsev.LACT/x86_64/stable/active/files/bin/daemon.sh 2>/dev/null || true
+
+[[ -f "$marca" ]] && exit 0
+
+for disp in /sys/bus/pci/devices/*; do
+    [[ $(<"$disp/vendor") == 0x1002 && $(<"$disp/device") == 0x7550 &&
+        $(<"$disp/subsystem_vendor") == 0x1849 && $(<"$disp/subsystem_device") == 0x5401 ]] || continue
+    # Mismo formato de LACT: vendor:device-subvendor:subdevice-ranura.
+    id="1002:7550-1849:5401-$(basename "$disp")"
+
+    # Si LACT ya tiene esta GPU configurada, se respeta.
+    if [[ -f "$config" ]] && grep -qF "$id:" "$config"; then
+        break
+    fi
+    mkdir -p "$(dirname "$config")"
+    [[ -f "$config" ]] && cp -f "$config" "$config.antes-krarupos"
+    python3 -I - "$config" "$id" <<'EOF'
+import os, sys, yaml
+
+ruta, id = sys.argv[1], sys.argv[2]
+config = {}
+if os.path.exists(ruta):
+    with open(ruta) as f:
+        config = yaml.safe_load(f) or {}
+config.setdefault("version", 7)
+config.setdefault("daemon", {"log_level": "info", "admin_group": "wheel", "disable_clocks_cleanup": False})
+config.setdefault("apply_settings_timer", 5)
+gpus = config.get("gpus") or {}
+gpus[id] = {
+    "fan_control_enabled": False,
+    "pmfw_options": {"zero_rpm": False},
+    "power_cap": 250.0,
+    "performance_level": "auto",
+}
+config["gpus"] = gpus
+with open(ruta, "w") as f:
+    yaml.safe_dump(config, f, sort_keys=False)
+EOF
+    logger -t krarupos-lact "RX 9070 XT $id: 250 W y Zero RPM apagado"
+    break
+done
+
+mkdir -p "$(dirname "$marca")"
+touch "$marca"
