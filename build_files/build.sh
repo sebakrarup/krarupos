@@ -30,7 +30,8 @@ grep -qx 'DEFAULT_HOSTNAME="krarupOS"' /usr/lib/os-release
 # rocm-smi: btop lo necesita para mostrar las GPUs AMD.
 # liquidctl: refrigeración líquida y fuentes (H150i, RM850i); permisos sin root en
 # usr/lib/udev/rules.d/71-liquidctl.rules (Fedora no trae las reglas).
-dnf5 install -y nmap htop rocm-smi liquidctl
+# terminus-fonts-console: letra grande en las TTY (ter-v32b, kargs.d/10-krarupos-consola.toml).
+dnf5 install -y nmap htop rocm-smi liquidctl terminus-fonts-console
 
 # TDP Control (bandeja de KDE): límite de TDP vía steamos-manager, pensado para
 # handhelds; en un PC de escritorio no sirve. Nada depende de él.

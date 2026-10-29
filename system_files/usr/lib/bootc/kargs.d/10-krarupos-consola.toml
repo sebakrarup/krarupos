@@ -1,0 +1,5 @@
+# Letra de las TTY (Ctrl+Alt+F2…): Terminus 16x32, el mismo tamaño que pone el
+# kernel de CachyOS. La de Fedora (8x16) queda diminuta en 4K. vconsole.font
+# manda sobre /etc/vconsole.conf, que escribe el instalador.
+kargs = ["vconsole.font=ter-v32b"]
+match-architectures = ["x86_64"]
