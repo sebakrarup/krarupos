@@ -32,6 +32,10 @@ grep -qx 'DEFAULT_HOSTNAME="krarupOS"' /usr/lib/os-release
 # usr/lib/udev/rules.d/71-liquidctl.rules (Fedora no trae las reglas).
 dnf5 install -y nmap htop rocm-smi liquidctl
 
+# TDP Control (bandeja de KDE): límite de TDP vía steamos-manager, pensado para
+# handhelds; en un PC de escritorio no sirve. Nada depende de él.
+dnf5 remove -y plasma-applet-tdp-control
+
 # amdgpu_top no está en los repos de Fedora: se instala el .rpm oficial
 # de la última versión publicada por su autor.
 amdgpu_top_rpm=$(curl -fsSL --retry 3 https://api.github.com/repos/Umio-Yasuno/amdgpu_top/releases/latest |
