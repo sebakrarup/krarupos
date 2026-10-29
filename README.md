@@ -23,6 +23,7 @@ Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
 - **Deck parte en escritorio**: el primer arranque entra a KDE (sin pantalla negra mientras Steam se actualiza); modo juego queda a un clic.
 - **SSH** activo desde el primer arranque, solo con llave (la de mi PC va en cada usuario nuevo).
 - **Watts de la CPU** visibles en MangoHud y el overlay de Steam (lectura de RAPL sin root).
+- **Caché de shaders de 10 GB** (Fedora usa 1 GB), para que los juegos grandes no vuelvan a compilar shaders.
 - **input-remapper** activado, con los presets de un Logitech G502 X LS.
 - **Apps GTK** (como Transmission Remote) con el tema Breeze y los colores de KDE, también las Flatpak.
 - **Konsole** con el perfil krarupOS (colores Vapor sin transparencia, Fira Code 16).
