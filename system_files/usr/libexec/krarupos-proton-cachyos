@@ -41,5 +41,9 @@ if /usr/lib64/ld-linux-x86-64.so.2 --help | grep -q 'x86-64-v3 (supported' &&
     sed -i 's/"variant_id":"x86-64"/"variant_id":"x86-64-v3"/' "$destino/.protonplus"
 fi
 
+# Si Steam está cerrado ahora, queda de predeterminado al tiro; si no, antes
+# de la próxima sesión (krarupos-proton-default.service).
+/usr/libexec/krarupos-proton-default
+
 mkdir -p "$(dirname "$marca")"
 touch "$marca"

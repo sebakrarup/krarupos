@@ -293,6 +293,7 @@ systemctl enable sshd.service
 systemctl --global enable krarupos-steam-youtube.service
 # Proton-CachyOS "Latest" con ProtonPlus (v3 si la CPU lo soporta), para cada usuario.
 systemctl --global enable krarupos-proton-cachyos.service
+systemctl --global enable krarupos-proton-default.service
 
 ### Pantalla de arranque
 

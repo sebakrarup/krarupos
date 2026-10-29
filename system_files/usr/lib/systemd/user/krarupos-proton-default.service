@@ -1,0 +1,11 @@
+[Unit]
+Description=Proton-CachyOS como Proton predeterminado de Steam
+# Antes de KDE y de gamescope-session, que abren Steam después.
+Before=graphical-session-pre.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/krarupos-proton-default
+
+[Install]
+WantedBy=graphical-session-pre.target

@@ -1,0 +1,22 @@
+#!/usr/bin/bash
+# Deja Proton-CachyOS Latest como Proton predeterminado de Steam, una sola vez
+# por usuario (si después se cambia en Steam, se respeta). Corre antes de cada
+# sesión (KDE o modo juego) porque Steam tiene que estar cerrado, y también al
+# final de krarupos-proton-cachyos.
+set -euo pipefail
+
+marca=${XDG_STATE_HOME:-$HOME/.local/state}/krarupos/proton-default
+[[ -f "$marca" ]] && exit 0
+
+config=$HOME/.local/share/Steam/config/config.vdf
+# Todavía no está instalado, o Steam nunca abrió: se reintenta en otra sesión.
+[[ -f "$HOME/.local/share/Steam/compatibilitytools.d/Proton-CachyOS Latest/compatibilitytool.vdf" ]] || exit 0
+[[ -f "$config" ]] || exit 0
+# Con Steam abierto, Steam pisaría el cambio al cerrar.
+pgrep -x steam >/dev/null && exit 0
+
+cp -f "$config" "$config.antes-krarupos"
+/usr/libexec/krarupos-proton-default.py "$config" "Proton-CachyOS Latest"
+
+mkdir -p "$(dirname "$marca")"
+touch "$marca"
