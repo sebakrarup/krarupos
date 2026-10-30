@@ -44,6 +44,26 @@ amdgpu_top_rpm=$(curl -fsSL --retry 3 https://api.github.com/repos/Umio-Yasuno/a
     grep -oE '"browser_download_url": *"[^"]*\.x86_64\.rpm"' | cut -d'"' -f4 | head -1)
 dnf5 install -y "$amdgpu_top_rpm"
 
+### Modo juego
+
+# Scroll natural (invertido) en gamescope, como en KDE con el G502: gamescope no
+# aplica NaturalScroll. La librería se agrega como dependencia de /usr/bin/gamescope;
+# patchelf reescribe el archivo y le borra cap_sys_nice, así que se le vuelve a poner.
+if [[ -x /usr/bin/gamescope ]]; then
+    # gcc ya viene en la imagen; patchelf solo hace falta aquí.
+    dnf5 install -y patchelf
+    gcc -O2 -shared -fPIC -Wall -Wl,--version-script=/ctx/gamescope-scroll-invertido.map \
+        -o /usr/lib64/gamescope-scroll-invertido.so /ctx/gamescope-scroll-invertido.c
+    caps=$(getcap /usr/bin/gamescope | awk '{print $2}')
+    patchelf --add-needed /usr/lib64/gamescope-scroll-invertido.so /usr/bin/gamescope
+    [[ -n $caps ]] && setcap "$caps" /usr/bin/gamescope
+    dnf5 remove -y patchelf
+    # Que gamescope tome de verdad las funciones de la librería.
+    test "$(LD_DEBUG=bindings /usr/bin/gamescope --help 2>&1 |
+        grep -c 'gamescope-scroll-invertido.so \[0\]: normal symbol `libinput_event_pointer_get_scroll_value')" -ge 1
+    getcap /usr/bin/gamescope | grep -q cap_sys_nice
+fi
+
 ### Tema
 
 # Íconos Tela-circle-dracula (claro, normal y oscuro), última versión.

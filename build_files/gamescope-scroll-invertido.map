@@ -1,0 +1,2 @@
+LIBINPUT_0.12.0 { global: libinput_event_pointer_get_axis_value; libinput_event_pointer_get_axis_value_discrete; local: *; };
+LIBINPUT_1.19 { global: libinput_event_pointer_get_scroll_value; libinput_event_pointer_get_scroll_value_v120; } LIBINPUT_0.12.0;
