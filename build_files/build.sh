@@ -306,6 +306,8 @@ systemctl --global enable krarupos-steam-youtube.service
 # Proton-CachyOS "Latest" (v3) con ProtonPlus, para cada usuario.
 systemctl --global enable krarupos-proton-cachyos.service
 systemctl --global enable krarupos-proton-default.service
+# Claude Code (instalador oficial, en ~/.local/bin), para cada usuario.
+systemctl --global enable krarupos-claude.service
 
 ### Pantalla de arranque
 

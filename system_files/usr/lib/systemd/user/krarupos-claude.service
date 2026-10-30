@@ -1,0 +1,13 @@
+[Unit]
+Description=Instalar Claude Code
+
+[Service]
+# Baja ~200 MB, así que no debe bloquear el inicio de sesión.
+Type=simple
+ExecStart=/usr/libexec/krarupos-claude
+# Sin internet se reintenta.
+Restart=on-failure
+RestartSec=5min
+
+[Install]
+WantedBy=default.target

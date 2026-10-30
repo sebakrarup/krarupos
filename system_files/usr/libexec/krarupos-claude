@@ -1,0 +1,19 @@
+#!/usr/bin/bash
+# Instala Claude Code una sola vez por usuario, con el instalador oficial
+# (queda en ~/.local/bin/claude y se actualiza solo).
+# Si alguien lo desinstala, no se vuelve a instalar.
+set -euo pipefail
+
+marca=${XDG_STATE_HOME:-$HOME/.local/state}/krarupos/claude
+[[ -f "$marca" ]] && exit 0
+
+if [[ ! -x $HOME/.local/bin/claude ]]; then
+    echo "Instalando Claude Code"
+    tmp=$(mktemp -d)
+    trap 'rm -rf "$tmp"' EXIT
+    curl -fsSL https://claude.ai/install.sh -o "$tmp/install.sh"
+    bash "$tmp/install.sh"
+fi
+
+mkdir -p "$(dirname "$marca")"
+touch "$marca"
