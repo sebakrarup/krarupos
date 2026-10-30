@@ -30,6 +30,7 @@ Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
 - **Curva de ventiladores del H150i Platinum** automática solo si está ese cooler (y la RM850i si está): se aplica al arrancar y al despertar, y termina. Apagar: `sudo systemctl mask krarupos-corsair`.
 - **Sin TDP Control** en la bandeja de KDE (es para handhelds).
 - **Letra grande en las TTY** (Terminus 16x32, como en CachyOS); la de Fedora queda diminuta en 4K.
+- **TTY hasta Ctrl+Alt+F12** (por defecto solo hasta F6).
 - **btop con la temperatura de la CPU** junto al promedio (sensor Tctl en Ryzen).
 - **Rueda del G502 X en resolución normal** al conectar (el kernel pone alta resolución y hace scroll con solo rozarla); solo si está ese mouse.
 - **Scroll natural en el G502 X** en KDE (solo ese mouse, también con input-remapper).
