@@ -24,6 +24,7 @@ Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
 - **Deck sin cambiarse a Bazzite**: Steam ya no puede mover el sistema a la imagen oficial de Bazzite al elegir canal de actualizaciones.
 - **Deck parte en escritorio**: el primer arranque entra a KDE (sin pantalla negra mientras Steam se actualiza); "Gaming Mode" queda en los favoritos del menú (no en el escritorio).
 - **SSH** activo desde el primer arranque, solo con llave (la de mi PC va en cada usuario nuevo).
+- **Wake-on-LAN** activo en el cable de red (paquete mágico), para prender el PC desde otro equipo. En la BIOS también tiene que estar permitido (en MSI: "Resume By PCI-E Device").
 - **Watts de la CPU** visibles en MangoHud y el overlay de Steam (lectura de RAPL sin root).
 - **Caché de shaders de 10 GB** (Fedora usa 1 GB), para que los juegos grandes no vuelvan a compilar shaders.
 - **liquidctl** para refrigeración líquida y fuentes Corsair/NZXT/etc., sin `sudo`.
