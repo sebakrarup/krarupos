@@ -10,7 +10,7 @@ marca=${XDG_STATE_HOME:-$HOME/.local/state}/krarupos/proton-default
 
 config=$HOME/.local/share/Steam/config/config.vdf
 # Todavía no está instalado, o Steam nunca abrió: se reintenta en otra sesión.
-[[ -f "$HOME/.local/share/Steam/compatibilitytools.d/Proton-CachyOS Latest/compatibilitytool.vdf" ]] || exit 0
+[[ -f "$HOME/.local/share/Steam/compatibilitytools.d/Proton-CachyOS Latest-x86_64_v3/compatibilitytool.vdf" ]] || exit 0
 [[ -f "$config" ]] || exit 0
 # Con Steam abierto, Steam pisaría el cambio al cerrar.
 pgrep -x steam >/dev/null && exit 0

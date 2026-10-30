@@ -7,7 +7,12 @@ set -euo pipefail
 marca=${XDG_STATE_HOME:-$HOME/.local/state}/krarupos/proton-cachyos
 [[ -f "$marca" ]] && exit 0
 
-destino="$HOME/.local/share/Steam/compatibilitytools.d/Proton-CachyOS Latest"
+herramientas=$HOME/.local/share/Steam/compatibilitytools.d
+# ProtonPlus distingue la variante solo por el nombre de la carpeta: la v3
+# elegida en su ventana queda en "...Latest-x86_64_v3" (en Steam se ve igual,
+# "Proton-CachyOS Latest").
+normal="$herramientas/Proton-CachyOS Latest"
+v3="$herramientas/Proton-CachyOS Latest-x86_64_v3"
 
 # ProtonPlus lo instala krarupos-flatpaks y la carpeta de Steam aparece
 # cuando Steam abre por primera vez.
@@ -15,7 +20,7 @@ until flatpak info com.vysp3r.ProtonPlus &>/dev/null && [[ -d $HOME/.local/share
     sleep 30
 done
 
-if [[ ! -f $destino/.protonplus ]]; then
+if [[ ! -f $v3/.protonplus && ! -f $normal/.protonplus ]]; then
     echo "Instalando Proton-CachyOS Latest con ProtonPlus"
     flatpak run com.vysp3r.ProtonPlus install steam-system proton-cachyos latest
 fi
@@ -24,9 +29,9 @@ fi
 # v3 del mismo release (AVX2: casi todas las CPUs desde 2015; en un PC más viejo
 # se usa otro Proton) y se anota en .protonplus para que ProtonPlus la siga
 # actualizando.
-if grep -q '"variant_id":"x86-64"' "$destino/.protonplus"; then
+if [[ -f $normal/.protonplus ]] && grep -q '"variant_id":"x86-64"' "$normal/.protonplus"; then
     echo "Cambiando a la variante x86-64-v3"
-    tag=$(python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["tag"])' "$destino/.protonplus")
+    tag=$(python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["tag"])' "$normal/.protonplus")
     nombre="proton-${tag}-x86_64_v3"
     url="https://github.com/CachyOS/proton-cachyos/releases/download/$tag/$nombre"
     tmp=$(mktemp -d)
@@ -36,12 +41,17 @@ if grep -q '"variant_id":"x86-64"' "$destino/.protonplus"; then
     (cd "$tmp" && sha512sum -c --quiet "$nombre.sha512sum")
     tar -xJf "$tmp/$nombre.tar.xz" -C "$tmp"
     # Se quedan los archivos de ProtonPlus (el nombre "Latest" en Steam y su ficha).
-    mv "$destino/.protonplus" "$destino/compatibilitytool.vdf" "$tmp/"
-    rm -rf "$destino"
-    mv "$tmp/$nombre" "$destino"
-    mv -f "$tmp/.protonplus" "$tmp/compatibilitytool.vdf" "$destino/"
-    sed -i 's/"variant_id":"x86-64"/"variant_id":"x86-64-v3"/' "$destino/.protonplus"
+    mv "$normal/.protonplus" "$normal/compatibilitytool.vdf" "$tmp/$nombre/"
+    sed -i 's/"variant_id":"x86-64"/"variant_id":"x86-64-v3"/' "$tmp/$nombre/.protonplus"
+    rm -rf "$normal"
+    mv "$tmp/$nombre" "$normal"
     echo "Listo: $nombre"
+fi
+
+# La v3 va en la carpeta que usa ProtonPlus para esa variante (también arregla
+# las instalaciones anteriores, que la dejaban en "Proton-CachyOS Latest").
+if [[ -f $normal/.protonplus ]] && grep -q '"variant_id":"x86-64-v3"' "$normal/.protonplus" && [[ ! -e $v3 ]]; then
+    mv "$normal" "$v3"
 fi
 
 # Si Steam está cerrado ahora, queda de predeterminado al tiro; si no, antes
