@@ -332,6 +332,8 @@ systemctl --global enable krarupos-proton-cachyos.service
 systemctl --global enable krarupos-proton-default.service
 # Claude Code (instalador oficial, en ~/.local/bin), para cada usuario.
 systemctl --global enable krarupos-claude.service
+# Sunshine preautorizado en el portal de KDE (sin diálogo de permiso), para cada usuario.
+systemctl --global enable krarupos-sunshine-portal.service
 
 ### Pantalla de arranque
 

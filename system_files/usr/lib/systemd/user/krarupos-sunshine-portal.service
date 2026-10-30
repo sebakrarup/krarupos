@@ -1,0 +1,9 @@
+[Unit]
+Description=Permitir que Sunshine capture la pantalla sin preguntar
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/krarupos-sunshine-portal
+
+[Install]
+WantedBy=default.target

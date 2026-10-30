@@ -17,7 +17,7 @@ Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
 - **Tema**: estilo Darkly, colores Breeze oscuro (bordes sin contraste), pantalla de inicio Vapor con el logo de krarupOS, letra 15, íconos Tela-circle-dracula-dark, cursor Bibata-Modern-Ice
   y el wallpaper Vía Láctea. Aparece como el aspecto global "krarupOS".
 - **Logo krarupOS** (letra MuseoModerno, la del logo de Bazzite) en la pantalla de arranque y en la de inicio de KDE.
-- **Sunshine** con los permisos de teclado, mouse y controles virtuales ya puestos (sin `additional-install.sh`).
+- **Sunshine** con los permisos de teclado, mouse y controles virtuales ya puestos (sin `additional-install.sh`), y preautorizado en el portal de KDE: captura la pantalla sin diálogo de permiso, así no queda bloqueado al entrar a distancia (una vez por usuario; si se quita, no vuelve).
 - **YouTube en Steam**: VacuumTube se agrega solo a la biblioteca de Steam como "YouTube" (una vez por usuario; si se borra, no vuelve).
 - **Proton-CachyOS** se instala solo con ProtonPlus ("Latest", así ProtonPlus lo actualiza), en versión x86-64-v3 (CPUs desde ~2015), y queda como Proton predeterminado de Steam (una vez; se puede cambiar).
 - **Claude Code** se instala solo en cada usuario al primer inicio de sesión (instalador oficial, queda en `~/.local/bin/claude` y se actualiza solo); si se desinstala, no vuelve.

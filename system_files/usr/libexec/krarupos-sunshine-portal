@@ -1,0 +1,14 @@
+#!/usr/bin/bash
+# Preautoriza Sunshine en el portal de KDE (escritorio remoto), una sola vez
+# por usuario: sin esto, si el token del portal se pierde, KDE muestra un
+# diálogo de permiso y no se puede entrar a distancia.
+# Si alguien quita el permiso, no se vuelve a poner.
+set -euo pipefail
+
+marca=${XDG_STATE_HOME:-$HOME/.local/state}/krarupos/sunshine-portal
+[[ -f "$marca" ]] && exit 0
+
+flatpak permission-set kde-authorized remote-desktop dev.lizardbyte.app.Sunshine yes
+
+mkdir -p "$(dirname "$marca")"
+touch "$marca"
