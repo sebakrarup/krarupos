@@ -56,11 +56,12 @@ if [[ -x /usr/bin/gamescope ]]; then
         -o /usr/lib64/gamescope-scroll-invertido.so /ctx/gamescope-scroll-invertido.c
     caps=$(getcap /usr/bin/gamescope | awk '{print $2}')
     patchelf --add-needed /usr/lib64/gamescope-scroll-invertido.so /usr/bin/gamescope
-    [[ -n $caps ]] && setcap "$caps" /usr/bin/gamescope
     dnf5 remove -y patchelf
-    # Que gamescope tome de verdad las funciones de la librería.
+    # Que gamescope tome de verdad las funciones de la librería. Antes del setcap:
+    # el contenedor del build no tiene cap_sys_nice y no dejaría ejecutarlo.
     test "$(LD_DEBUG=bindings /usr/bin/gamescope --help 2>&1 |
         grep -c 'gamescope-scroll-invertido.so \[0\]: normal symbol `libinput_event_pointer_get_scroll_value')" -ge 1
+    [[ -n $caps ]] && setcap "$caps" /usr/bin/gamescope
     getcap /usr/bin/gamescope | grep -q cap_sys_nice
 fi
 
