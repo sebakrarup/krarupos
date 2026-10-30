@@ -33,6 +33,7 @@ Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
 - **Sin TDP Control** en la bandeja de KDE (es para handhelds).
 - **Letra grande en las TTY** (Terminus 16x32, como en CachyOS); la de Fedora queda diminuta en 4K.
 - **TTY hasta Ctrl+Alt+F12** (por defecto solo hasta F6).
+- **Mouse en las TTY** (gpm): seleccionar con el botón izquierdo y pegar con el del medio.
 - **btop con la temperatura de la CPU** junto al promedio (sensor Tctl en Ryzen).
 - **Alias `krarup`**: muestra `fastfetch` (para todos los usuarios).
 - **Rueda del G502 X en resolución normal** al conectar (el kernel pone alta resolución y hace scroll con solo rozarla); solo si está ese mouse.

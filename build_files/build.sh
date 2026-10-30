@@ -31,7 +31,8 @@ grep -qx 'DEFAULT_HOSTNAME="krarupOS"' /usr/lib/os-release
 # liquidctl: refrigeración líquida y fuentes (H150i, RM850i); permisos sin root en
 # usr/lib/udev/rules.d/71-liquidctl.rules (Fedora no trae las reglas).
 # terminus-fonts-console: letra grande en las TTY (ter-v32b, kargs.d/10-krarupos-consola.toml).
-dnf5 install -y nmap htop rocm-smi liquidctl terminus-fonts-console
+# gpm: mouse en las TTY (seleccionar y pegar).
+dnf5 install -y nmap htop rocm-smi liquidctl terminus-fonts-console gpm
 
 # TDP Control (bandeja de KDE): límite de TDP vía steamos-manager, pensado para
 # handhelds; en un PC de escritorio no sirve. Nada depende de él.
@@ -301,6 +302,8 @@ systemctl enable uupd.timer
 # SSH desde el primer arranque, solo con llave (etc/ssh/sshd_config.d/40-krarupos.conf).
 # La llave de CachyOS va en /etc/skel/.ssh/authorized_keys para cada usuario nuevo.
 systemctl enable sshd.service
+# Mouse en las TTY.
+systemctl enable gpm.service
 # YouTube (VacuumTube) en Steam, para cada usuario.
 systemctl --global enable krarupos-steam-youtube.service
 # Proton-CachyOS "Latest" (v3) con ProtonPlus, para cada usuario.
