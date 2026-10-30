@@ -26,6 +26,7 @@ Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
 - **Deck parte en escritorio**: el primer arranque entra a KDE (sin pantalla negra mientras Steam se actualiza); "Gaming Mode" queda en los favoritos del menú (no en el escritorio).
 - **SSH** activo desde el primer arranque, solo con llave (la de mi PC va en cada usuario nuevo).
 - **Wake-on-LAN** activo en el cable de red (paquete mágico), para prender el PC desde otro equipo. En la BIOS también tiene que estar permitido (en MSI: "Resume By PCI-E Device").
+- **Perfil de energía en performance** desde el primer arranque (en PCs sin batería; portátiles y Deck se quedan en balanced). Solo una vez: si se cambia en KDE, se respeta.
 - **Watts de la CPU** visibles en MangoHud y el overlay de Steam (lectura de RAPL sin root).
 - **Caché de shaders de 10 GB** (Fedora usa 1 GB), para que los juegos grandes no vuelvan a compilar shaders.
 - **liquidctl** para refrigeración líquida y fuentes Corsair/NZXT/etc., sin `sudo`.

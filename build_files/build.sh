@@ -317,6 +317,8 @@ systemctl enable krarupos-flatpaks.service
 systemctl enable lactd.service
 # Decky Loader: se instala solo una vez, cuando Steam ya abrió (usr/libexec/krarupos-decky).
 systemctl enable krarupos-decky.service
+# Perfil de energía en performance al primer arranque (no en equipos con batería).
+systemctl enable krarupos-performance.service
 # Bazzite deck apaga las actualizaciones automáticas porque las hace Steam en
 # modo juego; krarupOS deck parte en el escritorio, así que se dejan como en desktop.
 systemctl enable uupd.timer

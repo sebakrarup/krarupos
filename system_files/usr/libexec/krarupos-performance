@@ -1,0 +1,24 @@
+#!/usr/bin/bash
+# Deja el perfil de energía en performance la primera vez que arranca, por
+# tuned-ppd (queda guardado como si se eligiera en KDE). Solo una vez, para no
+# pisar lo que se cambie después. En equipos con batería propia (portátil,
+# Deck) no hace nada; las baterías de mouse o controles tienen scope=Device.
+set -euo pipefail
+
+marca=/var/lib/krarupos/performance-puesto
+
+for ps in /sys/class/power_supply/*; do
+    [[ -e $ps ]] || continue
+    if [[ $(<"$ps/type") == Battery && $(cat "$ps/scope" 2>/dev/null) != Device ]]; then
+        echo "Tiene batería ($ps): se queda en balanced"
+        mkdir -p "$(dirname "$marca")"
+        touch "$marca"
+        exit 0
+    fi
+done
+
+busctl set-property org.freedesktop.UPower.PowerProfiles /org/freedesktop/UPower/PowerProfiles \
+    org.freedesktop.UPower.PowerProfiles ActiveProfile s performance
+
+mkdir -p "$(dirname "$marca")"
+touch "$marca"

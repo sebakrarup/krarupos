@@ -1,0 +1,12 @@
+[Unit]
+Description=Perfil de energía en performance (una vez, solo PCs sin batería)
+After=tuned-ppd.service
+Requires=tuned-ppd.service
+ConditionPathExists=!/var/lib/krarupos/performance-puesto
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/krarupos-performance
+
+[Install]
+WantedBy=multi-user.target
