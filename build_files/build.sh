@@ -52,6 +52,12 @@ grep -q "ghcr.io/sebakrarup/$imagen:latest" "$motd"
 dnf5 install -y nmap htop rocm-smi liquidctl terminus-fonts-console gpm \
     mediainfo mkvtoolnix yt-dlp iperf3 wol nethogs ncdu perl-Image-ExifTool
 
+# liquidctl muestra SyntaxWarning de docopt en cada uso: la imagen deja la fecha
+# de los archivos en 0, el .pyc no coincide y Python recompila docopt cada vez
+# (sin poder guardarlo en /usr). Con unchecked-hash el .pyc no depende de la fecha.
+docopt_py=$(python3 -c 'import docopt; print(docopt.__file__)')
+python3 -m compileall -q -f -o 0 -o 1 --invalidation-mode unchecked-hash "$docopt_py"
+
 # TDP Control (bandeja de KDE): límite de TDP vía steamos-manager, pensado para
 # handhelds; en un PC de escritorio no sirve. Nada depende de él.
 dnf5 remove -y plasma-applet-tdp-control
