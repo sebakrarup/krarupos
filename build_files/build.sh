@@ -53,10 +53,16 @@ dnf5 install -y nmap htop rocm-smi liquidctl terminus-fonts-console gpm \
     mediainfo mkvtoolnix yt-dlp iperf3 wol nethogs ncdu perl-Image-ExifTool
 
 # liquidctl muestra SyntaxWarning de docopt en cada uso: la imagen deja la fecha
-# de los archivos en 0, el .pyc no coincide y Python recompila docopt cada vez
-# (sin poder guardarlo en /usr). Con unchecked-hash el .pyc no depende de la fecha.
+# de los archivos en 0, el .pyc no coincide y Python recompila docopt (y liquidctl)
+# cada vez, sin poder guardarlo en /usr. Con unchecked-hash el .pyc no depende de la fecha.
+# "some attributes cannot be read from corsair-psu kernel driver" (RM850i) pasa a
+# info (solo con --verbose): lo que falta son uptime y modos de ventilador/OCP.
+liquidctl_dir=$(python3 -c 'import liquidctl, os; print(os.path.dirname(liquidctl.__file__))')
+sed -i "s/_LOGGER.warning('some attributes cannot be read from/_LOGGER.info('some attributes cannot be read from/" \
+    "$liquidctl_dir/driver/corsair_hid_psu.py"
+grep -q "_LOGGER.info('some attributes cannot be read from" "$liquidctl_dir/driver/corsair_hid_psu.py"
 docopt_py=$(python3 -c 'import docopt; print(docopt.__file__)')
-python3 -m compileall -q -f -o 0 -o 1 --invalidation-mode unchecked-hash "$docopt_py"
+python3 -m compileall -q -f -o 0 -o 1 --invalidation-mode unchecked-hash "$docopt_py" "$liquidctl_dir"
 
 # TDP Control (bandeja de KDE): límite de TDP vía steamos-manager, pensado para
 # handhelds; en un PC de escritorio no sirve. Nada depende de él.
