@@ -57,7 +57,8 @@ dnf5 install -y nmap htop rocm-smi liquidctl terminus-fonts-console gpm \
 # cada vez, sin poder guardarlo en /usr. Con unchecked-hash el .pyc no depende de la fecha.
 # "some attributes cannot be read from corsair-psu kernel driver" (RM850i) pasa a
 # info (solo con --verbose): lo que falta son uptime y modos de ventilador/OCP.
-liquidctl_dir=$(python3 -c 'import liquidctl, os; print(os.path.dirname(liquidctl.__file__))')
+# find_spec da la ruta sin importar liquidctl (al importarlo pide XDG_RUNTIME_DIR).
+liquidctl_dir=$(python3 -c 'import importlib.util, os; print(os.path.dirname(importlib.util.find_spec("liquidctl").origin))')
 sed -i "s/_LOGGER.warning('some attributes cannot be read from/_LOGGER.info('some attributes cannot be read from/" \
     "$liquidctl_dir/driver/corsair_hid_psu.py"
 grep -q "_LOGGER.info('some attributes cannot be read from" "$liquidctl_dir/driver/corsair_hid_psu.py"
