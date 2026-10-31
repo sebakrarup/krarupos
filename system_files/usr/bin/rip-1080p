@@ -1,0 +1,189 @@
+#!/usr/bin/env bash
+# Convierte videos a HEVC 10 bits por VAAPI (RX 9070) para Jellyfin.
+#   Video:  máx. 1080p, HEVC Main10 nivel 4.1, 4 Mbit/s VBR; HDR/DV -> SDR
+#   Audio:  pista original + inglés + español -> AAC estéreo 192 kbps
+#   Subs:   inglés + español (copiados)
+#   Salida: MKV; los originales no se tocan
+#
+# Uso: rip-1080p [-o carpeta_salida] archivo_o_carpeta...
+#   Sin -o, deja los archivos en ./hevc-1080p
+#   Las carpetas se recorren completas y se mantiene la estructura.
+
+set -uo pipefail
+
+DEV=/dev/dri/renderD128
+BITRATE=4M
+MAXRATE=6M
+BUFSIZE=12M
+SALIDA=./hevc-1080p
+EXTS='mkv|mp4|m4v|avi|mov|ts|m2ts|wmv|webm|mpg|mpeg'
+
+while getopts "o:h" opt; do
+    case $opt in
+        o) SALIDA=$OPTARG ;;
+        *) sed -n '2,11p' "$0"; exit 1 ;;
+    esac
+done
+shift $((OPTIND - 1))
+[ $# -eq 0 ] && { sed -n '2,11p' "$0"; exit 1; }
+
+mkdir -p "$SALIDA"
+LOG="$SALIDA/hevc-1080p.log"
+
+es_ingles='^(eng|en)$'
+es_espanol='^(spa|es|esp)$'
+
+convertir() {
+    local entrada=$1 destino=$2
+    local info
+    info=$(ffprobe -v error -show_streams -show_format -of json "$entrada") || {
+        echo "ERROR ffprobe: $entrada" | tee -a "$LOG"; return 1; }
+
+    # Video: primer stream que no sea carátula
+    local v
+    v=$(jq -c '[.streams[] | select(.codec_type=="video" and (.disposition.attached_pic // 0)==0)][0]' <<<"$info")
+    [ "$v" = null ] && { echo "SIN VIDEO: $entrada" | tee -a "$LOG"; return 1; }
+    local vidx w h codec pixfmt
+    vidx=$(jq -r .index <<<"$v"); w=$(jq -r .width <<<"$v"); h=$(jq -r .height <<<"$v")
+    codec=$(jq -r .codec_name <<<"$v"); pixfmt=$(jq -r .pix_fmt <<<"$v")
+
+    # Escalar solo si pasa de 1920x1080, manteniendo proporción y medidas pares
+    local nw=$w nh=$h
+    if [ "$w" -gt 1920 ] || [ "$h" -gt 1080 ]; then
+        read -r nw nh < <(awk -v w="$w" -v h="$h" 'BEGIN{
+            f = (1920/w < 1080/h) ? 1920/w : 1080/h
+            nw = int(w*f/2+0.5)*2; nh = int(h*f/2+0.5)*2
+            print nw, nh }')
+    fi
+
+    # HDR10, HLG o Dolby Vision -> se pasa a SDR
+    local trc hdr=0
+    trc=$(jq -r '.color_transfer // ""' <<<"$v")
+    if [[ $trc =~ ^(smpte2084|arib-std-b67)$ ]] ||
+       jq -e '[.side_data_list[]?.side_data_type] | any(test("DOVI"))' <<<"$v" >/dev/null; then
+        hdr=1
+    fi
+
+    local hw_in=() vf
+    if [ "$hdr" -eq 1 ]; then
+        # Tonemapping con libplacebo (Vulkan) y de vuelta a VAAPI para codificar
+        local tm="libplacebo=w=$nw:h=$nh:colorspace=bt709:color_primaries=bt709:color_trc=bt709:range=tv:format=p010le:tonemapping=bt.2390"
+        hw_in=(-init_hw_device "vaapi=va:$DEV" -init_hw_device vulkan=vk@va -filter_hw_device vk)
+        if [[ $codec =~ ^(h264|hevc|av1)$ ]]; then
+            hw_in+=(-hwaccel vulkan -hwaccel_device vk -hwaccel_output_format vulkan)
+        fi
+        # Ya es SDR: quitar los metadatos HDR10/DV para que no se marque como HDR
+        local sd="sidedata=mode=delete:type=MASTERING_DISPLAY_METADATA,sidedata=mode=delete:type=CONTENT_LIGHT_LEVEL"
+        sd+=",sidedata=mode=delete:type=DOVI_METADATA,sidedata=mode=delete:type=DOVI_RPU_BUFFER"
+        vf="$tm,$sd,hwupload=derive_device=vaapi"
+    # Decodificación por GPU si el formato lo permite; si no, por CPU y se sube a la GPU
+    elif [[ $codec =~ ^(h264|hevc|av1|vp9|vp8|mpeg2video|vc1)$ ]] &&
+       [[ $pixfmt =~ ^(yuv420p|yuvj420p|yuv420p10le)$ ]] &&
+       ! { [ "$codec" = h264 ] && [ "$pixfmt" = yuv420p10le ]; }; then
+        hw_in=(-hwaccel vaapi -hwaccel_device "$DEV" -hwaccel_output_format vaapi)
+        vf="scale_vaapi=w=$nw:h=$nh:format=p010"
+    else
+        hw_in=(-init_hw_device "vaapi=va:$DEV" -filter_hw_device va)
+        vf="format=p010,hwupload,scale_vaapi=w=$nw:h=$nh:format=p010"
+    fi
+
+    # Audio: una pista por idioma: original (la marcada por defecto, o la primera)
+    # + inglés + español (latino si hay), sin comentarios
+    local audios
+    audios=$(jq -r --arg en "$es_ingles" --arg es "$es_espanol" '
+        def idioma: (.tags.language // "" | ascii_downcase) as $l
+            | if ($l | test($en)) then "en" elif ($l | test($es)) then "es" else "otro:" + $l end;
+        [.streams[] | select(.codec_type=="audio")] as $a
+        | ([$a[] | select(.disposition.default==1)][0] // $a[0]) as $orig
+        | [$a[] | select(((.tags.title // "") | test("comment|director"; "i")) | not)] as $ok
+        # Español: latino antes que castellano (según el título de la pista)
+        | def latino: (.tags.title // "") as $t
+            | if ($t | test("latin|lat\\b|latam|419|m[eé]xic"; "i")) then 0
+              elif ($t | test("castellano|castilian|espa[ñn]a|spain|europe|es-es"; "i")) then 2
+              else 1 end;
+        ([$orig] + [$ok[] | select(idioma=="en")][0:1]
+                 + ([$ok[] | select(idioma=="es")] | sort_by(latino))[0:1])
+        | map(select(. != null))
+        | reduce .[] as $p ([]; if any(.[]; idioma == ($p | idioma)) then . else . + [$p] end)
+        | .[] | "\(.index) \(.channels // 2)"' <<<"$info")
+
+    # Subtítulos en inglés y español
+    local subs
+    subs=$(jq -r --arg en "$es_ingles" --arg es "$es_espanol" '
+        .streams[] | select(.codec_type=="subtitle")
+        | select((.tags.language // "" | ascii_downcase) | test($en + "|" + $es))
+        | "\(.index) \(.codec_name)"' <<<"$info")
+
+    local args=(-map "0:$vidx" -disposition:v:0 default)
+    local n=0 idx ch
+    while read -r idx ch; do
+        [ -z "$idx" ] && continue
+        # Todo a estéreo: 5.1/7.1 se mezclan (AAC multicanal falla en varios reproductores)
+        args+=(-map "0:$idx" "-c:a:$n" aac "-b:a:$n" 192k "-filter:a:$n" "aformat=channel_layouts=stereo")
+        [ "$n" -eq 0 ] && args+=("-disposition:a:$n" default) || args+=("-disposition:a:$n" 0)
+        n=$((n + 1))
+    done <<<"$audios"
+
+    n=0
+    local sc
+    while read -r idx sc; do
+        [ -z "$idx" ] && continue
+        args+=(-map "0:$idx")
+        # mov_text (de MP4) no entra en MKV: se pasa a SRT
+        [ "$sc" = mov_text ] && args+=("-c:s:$n" srt) || args+=("-c:s:$n" copy)
+        n=$((n + 1))
+    done <<<"$subs"
+
+    # Estadísticas del original (BPS, tamaño, etc.) que ya no corresponden
+    local limpiar=() t
+    for t in BPS BPS-eng DURATION-eng NUMBER_OF_BYTES NUMBER_OF_BYTES-eng NUMBER_OF_FRAMES \
+             NUMBER_OF_FRAMES-eng SOURCE_ID _STATISTICS_TAGS _STATISTICS_WRITING_APP \
+             _STATISTICS_WRITING_DATE_UTC ENCODER; do
+        limpiar+=(-metadata:s "$t=")
+    done
+
+    mkdir -p "$(dirname "$destino")"
+    local tmp="${destino%.mkv}.part.mkv"
+
+    echo "==> $entrada (${w}x${h} $codec$([ "$hdr" -eq 1 ] && echo " HDR") -> ${nw}x${nh}$([ "$hdr" -eq 1 ] && echo " SDR"))"
+    if ffmpeg -hide_banner -loglevel error -stats -nostdin -y \
+        "${hw_in[@]}" -i "$entrada" \
+        -vf "$vf" \
+        -c:v hevc_vaapi -profile:v main10 -level 4.1 \
+        -rc_mode VBR -b:v $BITRATE -maxrate $MAXRATE -bufsize $BUFSIZE \
+        "${args[@]}" \
+        -map_metadata 0 -map_chapters 0 \
+        "${limpiar[@]}" \
+        -max_muxing_queue_size 4096 \
+        "$tmp"; then
+        mv -f "$tmp" "$destino"
+        echo "OK: $destino" >>"$LOG"
+    else
+        rm -f "$tmp"
+        echo "ERROR: $entrada" | tee -a "$LOG"
+        return 1
+    fi
+}
+
+errores=0
+for item in "$@"; do
+    if [ -d "$item" ]; then
+        base=$(realpath "$item")
+        while IFS= read -r -d '' f; do
+            rel=${f#"$base"/}
+            destino="$SALIDA/$(basename "$base")/${rel%.*}.mkv"
+            if [ -e "$destino" ]; then echo "YA EXISTE, salto: $destino"; continue; fi
+            convertir "$f" "$destino" || errores=$((errores + 1))
+        done < <(find "$base" -type f -regextype posix-extended -iregex ".*\.($EXTS)$" \
+                     ! -name '*.part.mkv' -print0 | sort -z)
+    elif [ -f "$item" ]; then
+        destino="$SALIDA/$(basename "${item%.*}").mkv"
+        if [ -e "$destino" ]; then echo "YA EXISTE, salto: $destino"; continue; fi
+        convertir "$item" "$destino" || errores=$((errores + 1))
+    else
+        echo "No existe: $item"
+    fi
+done
+
+echo "Listo. Errores: $errores (detalle en $LOG)"
+[ "$errores" -eq 0 ]
