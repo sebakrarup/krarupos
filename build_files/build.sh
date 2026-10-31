@@ -32,7 +32,11 @@ grep -qx 'DEFAULT_HOSTNAME="krarupOS"' /usr/lib/os-release
 # usr/lib/udev/rules.d/71-liquidctl.rules (Fedora no trae las reglas).
 # terminus-fonts-console: letra grande en las TTY (ter-v32b, kargs.d/10-krarupos-consola.toml).
 # gpm: mouse en las TTY (seleccionar y pegar).
-dnf5 install -y nmap htop rocm-smi liquidctl terminus-fonts-console gpm mediainfo
+# Videos (Jellyfin): mediainfo, mkvtoolnix (pistas de MKV sin recodificar), yt-dlp.
+# Red: iperf3 (velocidad entre equipos), wol (Wake-on-LAN), nethogs (red por programa).
+# ncdu: espacio por carpeta. perl-Image-ExifTool: exiftool para datos de fotos.
+dnf5 install -y nmap htop rocm-smi liquidctl terminus-fonts-console gpm \
+    mediainfo mkvtoolnix yt-dlp iperf3 wol nethogs ncdu perl-Image-ExifTool
 
 # TDP Control (bandeja de KDE): límite de TDP vía steamos-manager, pensado para
 # handhelds; en un PC de escritorio no sirve. Nada depende de él.
