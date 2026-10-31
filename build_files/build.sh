@@ -24,6 +24,20 @@ else
     echo 'DEFAULT_HOSTNAME="krarupOS"' >>/usr/lib/os-release
 fi
 grep -qx 'DEFAULT_HOSTNAME="krarupOS"' /usr/lib/os-release
+# Bienvenida de la terminal: "Welcome to krarupOS" y la imagen de krarupOS en vez
+# de la de Bazzite. image-info.json se deja igual porque lo leen muchos scripts
+# de Bazzite (rollback, modo juego, ujust).
+case $(jq -r '."image-name"' /usr/share/ublue-os/image-info.json) in
+    *deck*) imagen=krarupos-deck ;;
+    *) imagen=krarupos ;;
+esac
+motd=/usr/share/ublue-os/motd/template.md
+sed -i \
+    -e 's/^# Welcome to Bazzite/# Welcome to krarupOS/' \
+    -e "s|\`\${MOTD_IMAGE_NAME}:\${MOTD_IMAGE_BRANCH}\`|\`ghcr.io/sebakrarup/$imagen:latest\`|" \
+    "$motd"
+grep -q '^# Welcome to krarupOS' "$motd"
+grep -q "ghcr.io/sebakrarup/$imagen:latest" "$motd"
 
 ### Programas del sistema
 

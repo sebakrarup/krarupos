@@ -38,6 +38,7 @@ Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
 - **TTY hasta Ctrl+Alt+F12** (por defecto solo hasta F6).
 - **Mouse en las TTY** (gpm): seleccionar con el botón izquierdo y pegar con el del medio.
 - **btop con la temperatura de la CPU** junto al promedio (sensor Tctl en Ryzen).
+- **Bienvenida de la terminal** con "Welcome to krarupOS" y la imagen de krarupOS.
 - **Alias `krarup`**: muestra `fastfetch` (para todos los usuarios).
 - **Rueda del G502 X en resolución normal** al conectar (el kernel pone alta resolución y hace scroll con solo rozarla); solo si está ese mouse.
 - **Scroll natural en el G502 X** en KDE (solo ese mouse, también con input-remapper).
