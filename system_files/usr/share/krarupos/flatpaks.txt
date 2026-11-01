@@ -13,6 +13,7 @@ org.telegram.desktop
 io.mpv.Mpv
 tv.kodi.Kodi
 org.jellyfin.JellyfinDesktop
+com.jeffser.Popcorn
 rocks.shy.VacuumTube
 org.kde.gwenview
 com.dec05eba.gpu_screen_recorder
