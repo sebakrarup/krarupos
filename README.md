@@ -68,6 +68,8 @@ rpm-ostree rebase ostree-image-signed:docker://ghcr.io/sebakrarup/krarupos-deck:
 ## Agregar o quitar apps
 
 Editar [`flatpaks.txt`](system_files/usr/share/krarupos/flatpaks.txt). Los computadores
-con krarupOS instalan las apps nuevas en su siguiente actualización.
+con krarupOS instalan las apps nuevas en su siguiente actualización. Cada app se instala
+una sola vez: si alguien la desinstala, no vuelve aunque cambie la lista. Quitar una app
+de la lista no la desinstala de los computadores que ya la tienen.
 
 Basado en [ublue-os/image-template](https://github.com/ublue-os/image-template).

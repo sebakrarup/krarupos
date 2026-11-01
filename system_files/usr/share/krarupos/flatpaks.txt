@@ -1,6 +1,6 @@
 # Apps de Flathub que krarupOS instala solas.
 # Una por línea. Si agregas una, se instala en la siguiente actualización.
-# Si alguien desinstala una, no se vuelve a instalar hasta que cambie esta lista.
+# Cada app se instala una sola vez por computador: si alguien la desinstala, no vuelve.
 
 # Primero LACT: maneja la GPU (krarupos-lact) y conviene tenerla pronto.
 io.github.ilya_zlobintsev.LACT

@@ -1,11 +1,10 @@
 #!/usr/bin/bash
-# Instala las apps de /usr/share/krarupos/flatpaks.txt que falten.
-# Solo actúa cuando la lista cambió desde la última vez, para no
-# reinstalar apps que el usuario desinstaló a propósito.
+# Instala las apps de /usr/share/krarupos/flatpaks.txt, cada una una sola vez
+# por computador: las que ya se instalaron quedan anotadas y, si alguien las
+# desinstala, no vuelven (ni al actualizar ni al cambiar la lista).
 set -euo pipefail
 
 lista=/usr/share/krarupos/flatpaks.txt
-estado=/var/lib/krarupos/flatpaks.sha256
 
 # Políticas de Firefox (Flatpak): se leen desde esta extensión en /var, así
 # que se copian en cada arranque, igual que Bazzite hace con sus preferencias.
@@ -13,9 +12,32 @@ politicas=/var/lib/flatpak/extension/org.mozilla.firefox.systemconfig/x86_64/sta
 mkdir -p "$politicas"
 cp -f /usr/share/krarupos/firefox-policies.json "$politicas/policies.json"
 
-suma=$(sha256sum "$lista" | cut -d' ' -f1)
-if [[ -f "$estado" && "$(cat "$estado")" == "$suma" ]]; then
-    echo "La lista de apps no cambió; nada que hacer."
+# Apps que ya pasaron por aquí (instaladas por este servicio o que ya estaban).
+anotadas=/var/lib/krarupos/flatpaks-instaladas
+mkdir -p "$(dirname "$anotadas")"
+touch "$anotadas"
+instaladas=$(flatpak list --system --columns=application)
+
+# La versión anterior guardaba solo la suma de la lista.
+rm -f /var/lib/krarupos/flatpaks.sha256
+
+faltan=()
+while read -r app; do
+    app=${app%%#*}
+    app=${app//[[:space:]]/}
+    [[ -z "$app" ]] && continue
+    id=${app%%//*}
+    grep -qxF "$id" "$anotadas" && continue
+    # Ya instalada (por ejemplo, a mano antes de agregarla a la lista).
+    if grep -qxF "$id" <<<"$instaladas"; then
+        echo "$id" >>"$anotadas"
+    else
+        faltan+=("$app")
+    fi
+done <"$lista"
+
+if ((!${#faltan[@]})); then
+    echo "No hay apps nuevas en la lista; nada que hacer."
     exit 0
 fi
 
@@ -32,39 +54,24 @@ instalar() {
     fi
 }
 
-# Incluye runtimes, porque la lista también trae temas (org.gtk.Gtk3theme.Breeze//3.22).
-instaladas=$(flatpak list --system --columns=application)
-faltan=()
-while read -r app; do
-    app=${app%%#*}
-    app=${app//[[:space:]]/}
-    [[ -z "$app" ]] && continue
-    grep -qxF "${app%%//*}" <<<"$instaladas" || faltan+=("$app")
-done <"$lista"
-
-if ((${#faltan[@]})); then
-    echo "Instalando: ${faltan[*]}"
-    # Una por una, para que una app que ya no exista en Flathub no
-    # impida instalar las demás.
-    fallaron=0
-    reparado=0
-    for app in "${faltan[@]}"; do
-        instalar "$app" && continue
-        # Si se apagó el PC a mitad de una descarga, queda un runtime a medias
-        # ("No such metadata object") y todo lo que lo usa falla. Se repara
-        # una vez y se reintenta.
-        if ((!reparado)); then
-            reparado=1
-            flatpak repair --system
-            instalar "$app" && continue
-        fi
-        echo "No se pudo instalar $app" >&2
-        fallaron=1
-    done
-    # Si algo falló (por ejemplo, sin internet), no se guarda el estado
-    # y se reintenta en el próximo arranque.
-    ((fallaron)) && exit 1
-fi
-
-mkdir -p "$(dirname "$estado")"
-echo "$suma" >"$estado"
+echo "Instalando: ${faltan[*]}"
+# Una por una, para que una app que ya no exista en Flathub no
+# impida instalar las demás.
+fallaron=0
+reparado=0
+for app in "${faltan[@]}"; do
+    instalar "$app" && echo "${app%%//*}" >>"$anotadas" && continue
+    # Si se apagó el PC a mitad de una descarga, queda un runtime a medias
+    # ("No such metadata object") y todo lo que lo usa falla. Se repara
+    # una vez y se reintenta.
+    if ((!reparado)); then
+        reparado=1
+        flatpak repair --system
+        instalar "$app" && echo "${app%%//*}" >>"$anotadas" && continue
+    fi
+    echo "No se pudo instalar $app" >&2
+    fallaron=1
+done
+# Si algo falló (por ejemplo, sin internet), esa app no queda anotada
+# y se reintenta en el próximo arranque.
+exit "$fallaron"
