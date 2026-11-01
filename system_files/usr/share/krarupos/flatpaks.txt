@@ -21,6 +21,8 @@ com.dec05eba.gpu_screen_recorder
 com.moonlight_stream.Moonlight
 dev.lizardbyte.app.Sunshine
 com.vysp3r.ProtonPlus
+# Temas para Steam (estilo Adwaita y otros)
+io.github.Foldex.AdwSteamGtk
 
 # Oficina y utilidades
 org.kde.okular
