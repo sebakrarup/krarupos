@@ -1,0 +1,6 @@
+[io/github/Foldex/AdwSteamGtk]
+color-theme-options='Dracula'
+accent-color='Theme'
+window-controls-options='Breeze'
+window-controls-layout-options='KDE'
+hide-whats-new-switch=true

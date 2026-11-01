@@ -1,0 +1,38 @@
+#!/usr/bin/bash
+# Tema Dracula para Steam con AdwSteamGtk (Adwaita for Steam), una vez por
+# usuario, con las mismas opciones que se eligen en su ventana.
+# Las actualizaciones de Steam reemplazan sus archivos css y el tema se pierde:
+# en cada inicio de sesión se vuelve a aplicar si sigue instalado (carpeta
+# steamui/adwaita) pero Steam ya no lo carga. Si alguien lo desinstala desde
+# AdwSteamGtk, no vuelve.
+set -euo pipefail
+
+marca=${XDG_STATE_HOME:-$HOME/.local/state}/krarupos/steam-tema
+steamui=$HOME/.steam/steam/steamui
+# Los botones de ventana en orden KDE van en el keyfile de /etc/skel: por aquí
+# AdwSteamGtk convierte "kde" en "Kde" y lo rechaza.
+opciones="color_theme:dracula;accent_color:theme;win_controls:breeze;library_whats_new:false"
+
+aplicado() {
+    grep -q 'adwaita/' "$steamui/css/library.css" 2>/dev/null
+}
+
+if [[ -f $marca ]]; then
+    [[ -d $steamui/adwaita ]] || exit 0
+    aplicado && exit 0
+    echo "Steam se actualizó y borró el tema: se vuelve a aplicar"
+else
+    # AdwSteamGtk lo instala krarupos-flatpaks y steamui aparece cuando Steam
+    # termina de bajar el cliente la primera vez.
+    until flatpak info io.github.Foldex.AdwSteamGtk &>/dev/null && [[ -f $steamui/css/library.css ]]; do
+        sleep 30
+    done
+    echo "Instalando el tema Dracula para Steam"
+fi
+
+flatpak run --command=adwaita-steam-gtk io.github.Foldex.AdwSteamGtk -i -o "$opciones"
+# AdwSteamGtk sale con 0 aunque falle (sin internet, GitHub caído).
+aplicado
+
+mkdir -p "$(dirname "$marca")"
+touch "$marca"
