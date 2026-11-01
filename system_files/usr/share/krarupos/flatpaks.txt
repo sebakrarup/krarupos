@@ -8,17 +8,22 @@ io.github.ilya_zlobintsev.LACT
 # Navegadores y comunicación
 org.mozilla.firefox
 org.telegram.desktop
+com.google.Chrome
 
 # Multimedia
 io.mpv.Mpv
 tv.kodi.Kodi
 org.jellyfin.JellyfinDesktop
 com.jeffser.Popcorn
+com.github.taiko2k.tauonmb
+page.codeberg.impromptux.ytdl-gui
 rocks.shy.VacuumTube
 org.kde.gwenview
 com.dec05eba.gpu_screen_recorder
+org.kde.optiimage
 
 # Juegos
+io.github.ryubing.Ryujinx
 com.moonlight_stream.Moonlight
 dev.lizardbyte.app.Sunshine
 com.vysp3r.ProtonPlus
