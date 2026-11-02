@@ -205,6 +205,9 @@ test -f /usr/share/plasma/plasmoids/luisbocanegra.panel.colorizer/contents/ui/ma
 # abajo, las abiertas uno gris (más tenue si están minimizadas) y las que piden
 # atención uno naranja. Reemplaza el tasks.svgz de Breeze.
 cp /usr/share/krarupos/tasks.svgz /usr/share/plasma/desktoptheme/default/widgets/tasks.svgz
+# La línea de los íconos abiertos de la bandeja (volumen, bluetooth...) va pegada
+# al borde de la pantalla, como los puntos, y no del lado de adentro.
+cp /usr/share/krarupos/tabbar.svgz /usr/share/plasma/desktoptheme/default/widgets/tabbar.svgz
 
 # Predeterminados del sistema (cuentan para cualquier usuario nuevo).
 kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key LookAndFeelPackage com.krarupos.desktop
