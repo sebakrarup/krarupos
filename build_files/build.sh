@@ -186,6 +186,26 @@ cp /usr/share/krarupos/splash-preview.png "$lnf/contents/previews/splash.png"
 sed -i '/^\[ksplashrc\]\[KSplash\]/,/^\[/ s/^Theme=.*/Theme=com.krarupos.desktop/' "$lnf/contents/defaults"
 grep -A1 '^\[ksplashrc\]\[KSplash\]' "$lnf/contents/defaults" | grep -q '^Theme=com.krarupos.desktop$'
 
+# Panel de krarupOS: abajo, centrado, flotante, ajustado al contenido, 56 px,
+# ícono archlinux en el menú, sin paginador ni "mostrar escritorio", y
+# transparente con Panel Colorizer (layout en /usr/share/krarupos/panel-layout.js).
+cp /usr/share/krarupos/panel-layout.js "$lnf/contents/layouts/org.kde.plasma.desktop-layout.js"
+colorizer_url=$(curl -fsSL --retry 3 https://api.github.com/repos/luisbocanegra/plasma-panel-colorizer/releases/latest |
+    jq -r '.assets[] | select(.name | endswith(".plasmoid")) | .browser_download_url' | head -1)
+curl -fsSL --retry 3 -o /tmp/panel-colorizer.plasmoid "$colorizer_url"
+python3 - <<'EOF'
+import json, zipfile
+z = zipfile.ZipFile("/tmp/panel-colorizer.plasmoid")
+plugin_id = json.loads(z.read("metadata.json"))["KPlugin"]["Id"]
+assert plugin_id == "luisbocanegra.panel.colorizer", plugin_id
+z.extractall("/usr/share/plasma/plasmoids/" + plugin_id)
+EOF
+test -f /usr/share/plasma/plasmoids/luisbocanegra.panel.colorizer/contents/ui/main.qml
+# Apps del panel: sin cuadros azules de fondo; la activa lleva un punto azul
+# abajo, las abiertas uno gris (más tenue si están minimizadas) y las que piden
+# atención uno naranja. Reemplaza el tasks.svgz de Breeze.
+cp /usr/share/krarupos/tasks.svgz /usr/share/plasma/desktoptheme/default/widgets/tasks.svgz
+
 # Predeterminados del sistema (cuentan para cualquier usuario nuevo).
 kwriteconfig6 --file /etc/xdg/kdeglobals --group KDE --key LookAndFeelPackage com.krarupos.desktop
 # Breeze oscuro con los bordes sin contraste (BreezeDarkSeba.colors).

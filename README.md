@@ -19,6 +19,8 @@ Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
 - **Máquinas virtuales**: virt-manager con KVM/QEMU y libvirt (red NAT lista, TPM para Windows 11); los administradores lo usan sin contraseña.
 - **Tema**: estilo Darkly, colores Breeze oscuro (bordes sin contraste), pantalla de inicio Vapor con el logo de krarupOS, letra 15, íconos Tela-circle-dracula-dark, cursor Bibata-Modern-Ice
   y el wallpaper Vía Láctea. Aparece como el aspecto global "krarupOS".
+- **Panel**: abajo, centrado, flotante y transparente (Panel Colorizer), con el ícono de Arch en el menú y
+  un punto bajo las apps abiertas (azul la activa, gris las demás, naranja si piden atención) en vez de cuadros.
 - **Logo krarupOS** (letra MuseoModerno, la del logo de Bazzite) en la pantalla de arranque y en la de inicio de KDE.
 - **Sunshine** con los permisos de teclado, mouse y controles virtuales ya puestos (sin `additional-install.sh`), y preautorizado en el portal de KDE: captura la pantalla sin diálogo de permiso, así no queda bloqueado al entrar a distancia (una vez por usuario; si se quita, no vuelve).
 - **Steam con el tema Dracula** (AdwSteamGtk): se pone solo y vuelve si una actualización de Steam lo borra; si se desinstala desde AdwSteamGtk, no vuelve.
