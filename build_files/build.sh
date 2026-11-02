@@ -48,9 +48,10 @@ grep -q "ghcr.io/sebakrarup/$imagen:latest" "$motd"
 # gpm: mouse en las TTY (seleccionar y pegar).
 # Videos (Jellyfin): mediainfo, mkvtoolnix (pistas de MKV sin recodificar), yt-dlp.
 # Red: iperf3 (velocidad entre equipos), wol (Wake-on-LAN), nethogs (red por programa).
+# headsetcontrol: luces/batería/sidetone del G733 (trae regla udev uaccess, sin sudo).
 # ncdu: espacio por carpeta. perl-Image-ExifTool: exiftool para datos de fotos.
 dnf5 install -y nmap htop rocm-smi liquidctl terminus-fonts-console gpm \
-    mediainfo mkvtoolnix yt-dlp iperf3 wol nethogs ncdu perl-Image-ExifTool
+    mediainfo mkvtoolnix yt-dlp iperf3 wol nethogs ncdu perl-Image-ExifTool headsetcontrol
 
 # liquidctl muestra SyntaxWarning de docopt en cada uso: la imagen deja la fecha
 # de los archivos en 0, el .pyc no coincide y Python recompila docopt (y liquidctl)
