@@ -1,0 +1,8 @@
+// virt-manager sin pedir contraseña a los administradores (grupo wheel), sin
+// tener que agregarlos al grupo libvirt. Solo sentado frente al PC (no por SSH).
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.libvirt.unix.manage" &&
+        subject.isInGroup("wheel") && subject.local && subject.active) {
+        return polkit.Result.YES;
+    }
+});

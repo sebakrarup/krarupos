@@ -65,6 +65,20 @@ grep -q "_LOGGER.info('some attributes cannot be read from" "$liquidctl_dir/driv
 docopt_py=$(python3 -c 'import docopt; print(docopt.__file__)')
 python3 -m compileall -q -f -o 0 -o 1 --invalidation-mode unchecked-hash "$docopt_py" "$liquidctl_dir"
 
+# Máquinas virtuales con virt-manager (KVM/QEMU de verdad, no el Flatpak, que corre
+# como usuario). libvirt usa los servicios por separado de Fedora (virtqemud,
+# virtnetworkd...), que arrancan solos por socket. swtpm: TPM para Windows 11.
+# Sin contraseña para los administradores: usr/share/polkit-1/rules.d/50-krarupos-libvirt.rules.
+dnf5 install -y qemu-kvm libvirt-daemon-kvm libvirt-daemon-config-network \
+    virt-manager virt-install swtpm-tools
+for s in virtqemud virtnetworkd virtstoraged virtnodedevd virtsecretd virtnwfilterd virtinterfaced virtlogd virtlockd; do
+    systemctl enable $s.socket
+done
+# Red "default" (NAT) encendida desde el inicio, como en CachyOS.
+mkdir -p /etc/libvirt/qemu/networks/autostart
+ln -sf ../default.xml /etc/libvirt/qemu/networks/autostart/default.xml
+test -f /etc/libvirt/qemu/networks/default.xml
+
 # TDP Control (bandeja de KDE): límite de TDP vía steamos-manager, pensado para
 # handhelds; en un PC de escritorio no sirve. Nada depende de él.
 dnf5 remove -y plasma-applet-tdp-control
