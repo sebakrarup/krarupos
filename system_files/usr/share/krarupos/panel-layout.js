@@ -31,9 +31,12 @@ colorizer.writeConfig("globalSettings", "{\"panel\":{\"normal\":{\"enabled\":fal
 
 panel.addWidget("org.kde.plasma.marginsseparator")
 
+// Bandeja: siempre visibles el volumen, el bluetooth y la red; el resto oculto
+// (sigue funcionando, se ve con la flecha).
 var bandeja = panel.addWidget("org.kde.plasma.systemtray")
 bandeja.currentConfigGroup = ["General"]
-bandeja.writeConfig("hiddenItems", ["steam", "org.kde.plasma.clipboard", "org.kde.plasma.brightness", "org.kde.plasma.networkmanagement", "Xwayland Video Bridge", "org.kde.plasma.battery"])
+bandeja.writeConfig("shownItems", ["org.kde.plasma.volume", "org.kde.plasma.bluetooth", "org.kde.plasma.networkmanagement"])
+bandeja.writeConfig("hiddenItems", ["org.kde.kdeconnect", "org.kde.plasma.vault", "org.kde.kscreen", "org.kde.plasma.battery", "org.kde.plasma.brightness", "org.kde.plasma.cameraindicator", "org.kde.plasma.clipboard", "org.kde.plasma.devicenotifier", "org.kde.plasma.keyboardindicator", "org.kde.plasma.keyboardlayout", "org.kde.plasma.manage-inputmethod", "org.kde.plasma.mediacontroller", "org.kde.plasma.notifications", "org.kde.plasma.printmanager", "org.kde.plasma.weather", "steam", "TelegramDesktop", "Xwayland Video Bridge"])
 
 panel.addWidget("org.kde.plasma.digitalclock")
 
