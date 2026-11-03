@@ -1,0 +1,139 @@
+#!/usr/bin/python3 -I
+# brillo-suave-daemon: teclas de brillo con rampa suave por DDC/CI, sin la espera de ~1 s de powerdevil.
+# - Toque: mueve PASO % con rampa.  Mantener: sigue subiendo/bajando hasta soltar.
+# - Escribe VCP 0x10 directo al bus I2C del monitor; al quedar quieto sincroniza powerdevil.
+import fcntl, os, re, subprocess, time
+from gi.repository import Gio, GLib
+
+PASO = int(os.environ.get("BRILLO_PASO", "5"))      # % por toque
+TICK = 35                                            # ms por paso de 1 %
+ESPERA_REPETIR = 300                                 # ms manteniendo antes de seguir solo
+KEYS = {"subir": 0x010000B2, "bajar": 0x010000B3}   # Qt::Key_MonBrightnessUp/Down
+COMP = "brillo-suave"
+SB, DISP = "org.kde.ScreenBrightness", "/org/kde/ScreenBrightness/display0"
+
+bus = Gio.bus_get_sync(Gio.BusType.SESSION)
+
+def call(dest, path, iface, method, params=None, reply=None):
+    return bus.call_sync(dest, path, iface, method, params,
+                         GLib.VariantType(reply) if reply else None, 0, 2000, None)
+
+def i2c_bus():
+    out = subprocess.run(["ddcutil", "detect", "--brief"], capture_output=True, text=True).stdout
+    m = re.search(r"/dev/i2c-(\d+)", out)
+    return int(m.group(1)) if m else None
+
+b = i2c_bus()
+if b is None:                       # sin monitor DDC/CI (p. ej. portátil): se deja todo a powerdevil
+    print("brillo-suave: no hay monitor con DDC/CI, no hago nada", flush=True)
+    raise SystemExit(0)
+fd = os.open(f"/dev/i2c-{b}", os.O_RDWR)
+fcntl.ioctl(fd, 0x0703, 0x37)
+
+def escribir(v):
+    msg = [0x51, 0x84, 0x03, 0x10, 0x00, v]
+    chk = 0x6E
+    for x in msg: chk ^= x
+    for _ in range(3):
+        try: os.write(fd, bytes(msg + [chk])); return
+        except OSError: time.sleep(0.02)
+
+def leer_powerdevil():
+    try:
+        v = call(SB, DISP, "org.freedesktop.DBus.Properties", "Get",
+                 GLib.Variant("(ss)", (SB + ".Display", "Brightness")), "(v)").unpack()[0]
+        return round(v / 100)
+    except Exception:
+        return None
+
+def osd(v):
+    bus.call("org.kde.plasmashell", "/org/kde/osdService", "org.kde.osdService", "brightnessChanged",
+             GLib.Variant("(i)", (v,)), None, 0, 1000, None, None, None)
+
+def sync_powerdevil():
+    global sync_id
+    sync_id = 0
+    bus.call(SB, DISP, SB + ".Display", "SetBrightness", GLib.Variant("(iu)", (cur * 100, 1)),
+             None, 0, 2000, None, None, None)
+    return False
+
+cur = leer_powerdevil() or 50
+obj = cur
+sostenida = None       # "subir"/"bajar" mientras se mantiene
+t_presion = 0
+tick_id = sync_id = 0
+activo = False         # hay una interacción en curso (no releer powerdevil)
+
+def tick():
+    global cur, obj, tick_id
+    if sostenida and time.monotonic() - t_presion > ESPERA_REPETIR / 1000:
+        d = 1 if sostenida == "subir" else -1
+        obj = max(0, min(100, cur + d))
+    if cur != obj:
+        cur += 1 if obj > cur else -1
+        escribir(cur); osd(cur)
+        return True
+    if sostenida:
+        return True
+    tick_id = 0
+    programar_sync()
+    return False
+
+def programar_sync():
+    global sync_id, activo
+    if sync_id: GLib.source_remove(sync_id)
+    sync_id = GLib.timeout_add(1200, fin_interaccion)
+
+def fin_interaccion():
+    global activo
+    activo = False
+    return sync_powerdevil()
+
+def arrancar_tick():
+    global tick_id
+    if not tick_id:
+        tick_id = GLib.timeout_add(TICK, tick)
+
+def presionada(accion):
+    global cur, obj, sostenida, t_presion, activo, sync_id
+    if sostenida == accion:            # autorepetición: ya la estamos manteniendo
+        return
+    if sync_id: GLib.source_remove(sync_id); sync_id = 0
+    if not activo:
+        v = leer_powerdevil()
+        if v is not None: cur = obj = v
+        activo = True
+    sostenida, t_presion = accion, time.monotonic()
+    obj = max(0, min(100, obj + (PASO if accion == "subir" else -PASO)))
+    osd(obj)
+    arrancar_tick()
+
+def soltada(accion):
+    global sostenida, obj
+    if sostenida != accion: return
+    if time.monotonic() - t_presion > ESPERA_REPETIR / 1000:
+        obj = cur                      # mantenida: parar donde va
+    sostenida = None
+    arrancar_tick()
+
+def senal(conn, sender, path, iface, signal, params):
+    comp, accion, _ts = params.unpack()
+    if comp != COMP or accion not in KEYS: return
+    (presionada if signal == "globalShortcutPressed" else soltada)(accion)
+
+KGA = ("org.kde.kglobalaccel", "/kglobalaccel", "org.kde.KGlobalAccel")
+# Quitarle las teclas a powerdevil (Shift+tecla, 1 %, se queda con él).
+for a in ("Increase Screen Brightness", "Decrease Screen Brightness"):
+    call(*KGA, "setForeignShortcut", GLib.Variant("(asai)", (["org_kde_powerdevil", a, "", ""], [])))
+for accion, key in KEYS.items():
+    nombre = "Subir brillo (suave)" if accion == "subir" else "Bajar brillo (suave)"
+    aid = [COMP, accion, "Brillo suave", nombre]
+    call(*KGA, "doRegister", GLib.Variant("(as)", (aid,)))
+    call(*KGA, "setShortcut", GLib.Variant("(asaiu)", (aid, [key], 6)), "(ai)")  # SetPresent|NoAutoloading
+
+ruta = call(*KGA, "getComponent", GLib.Variant("(s)", (COMP,)), "(o)").unpack()[0]
+for s in ("globalShortcutPressed", "globalShortcutReleased"):
+    bus.signal_subscribe("org.kde.kglobalaccel", "org.kde.kglobalaccel.Component", s, ruta,
+                         None, Gio.DBusSignalFlags.NONE, senal)
+print(f"brillo-suave: escuchando en {ruta}, brillo {cur} %", flush=True)
+GLib.MainLoop().run()

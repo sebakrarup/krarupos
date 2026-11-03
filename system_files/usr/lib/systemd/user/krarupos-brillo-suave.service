@@ -1,0 +1,12 @@
+[Unit]
+Description=Teclas de brillo con rampa suave (DDC/CI directo, sin la espera de powerdevil)
+PartOf=graphical-session.target
+After=plasma-workspace.target
+
+[Service]
+ExecStart=/usr/libexec/krarupos-brillo-suave
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=plasma-workspace.target

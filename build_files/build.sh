@@ -408,6 +408,9 @@ systemctl --global enable krarupos-proton-default.service
 systemctl --global enable krarupos-claude.service
 # Sunshine preautorizado en el portal de KDE (sin diálogo de permiso), para cada usuario.
 systemctl --global enable krarupos-sunshine-portal.service
+# Teclas de brillo del monitor con rampa suave por DDC/CI (powerdevil espera ~1 s
+# y cambia de golpe); mantener la tecla sigue subiendo. Sin monitor DDC no hace nada.
+systemctl --global enable krarupos-brillo-suave.service
 
 ### Pantalla de arranque
 
