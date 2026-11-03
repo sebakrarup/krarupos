@@ -77,8 +77,9 @@ convertir() {
         fi
         vf="libplacebo=w=$nw:h=$nh:colorspace=bt2020nc:color_primaries=bt2020:color_trc=smpte2084:range=tv:format=p010le,hwupload=derive_device=vaapi"
         etiqueta+=" -> HDR10"
-    # Decodificación por GPU si el formato lo permite; si no, por CPU y se sube a la GPU
-    elif [[ $codec =~ ^(h264|hevc|av1|vp9|vp8|mpeg2video|vc1)$ ]] &&
+    # Decodificación por GPU si el formato lo permite (la RX 9070 no decodifica VC-1, MPEG-2 ni VP8);
+    # si no, por CPU y se sube a la GPU
+    elif [[ $codec =~ ^(h264|hevc|av1|vp9)$ ]] &&
        [[ $pixfmt =~ ^(yuv420p|yuvj420p|yuv420p10le)$ ]] &&
        ! { [ "$codec" = h264 ] && [ "$pixfmt" = yuv420p10le ]; }; then
         hw_in=(-hwaccel vaapi -hwaccel_device "$DEV" -hwaccel_output_format vaapi)
