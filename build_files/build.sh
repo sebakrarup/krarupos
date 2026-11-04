@@ -39,6 +39,12 @@ sed -i \
 grep -q '^# Welcome to krarupOS' "$motd"
 grep -q "ghcr.io/sebakrarup/$imagen:latest" "$motd"
 
+# fastfetch: mostrar la imagen real. No sale de image-info.json (ver arriba), que
+# se queda con el nombre de Bazzite.
+fastfetch=/usr/share/ublue-os/bazzite/fastfetch.jsonc
+sed -i "s|\"text\": \"/usr/libexec/bazzite-fetch-image\"|\"text\": \"echo $imagen:latest\"|" "$fastfetch"
+grep -q "echo $imagen:latest" "$fastfetch"
+
 ### Programas del sistema
 
 # rocm-smi: btop lo necesita para mostrar las GPUs AMD.
