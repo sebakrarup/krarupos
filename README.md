@@ -45,7 +45,7 @@ Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
 - **Perilla de volumen en las TTY**: cambia el volumen del sistema (tope de 100 %), sin mpv ni otro programa abierto. En Plasma sigue mandando el escritorio.
 - **btop con la temperatura de la CPU** junto al promedio (sensor Tctl en Ryzen).
 - **Bienvenida de la terminal** con "Welcome to krarupOS" y la imagen de krarupOS.
-- **fastfetch** con el logo de krarupOS una vez por sesión, en la primera terminal.
+- **fastfetch** con el logo de krarupOS y un color por línea, una vez por sesión, en la primera terminal.
 - **Alias**: `krarup` muestra `fastfetch` con el logo de krarupOS; `ruedaON` y `ruedaOFF` cambian la rueda del G502 X a alta resolución o a normal (para todos los usuarios).
 - **Rueda del G502 X en resolución normal** al conectar (el kernel pone alta resolución y hace scroll con solo rozarla); solo si está ese mouse.
 - **Scroll natural en el G502 X** en KDE (solo ese mouse, también con input-remapper).

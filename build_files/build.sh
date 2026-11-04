@@ -64,6 +64,30 @@ sed -i \
     -e '}' "$fastfetch"
 grep -q '"source": "/usr/share/krarupos/fastfetch-logo.txt"' "$fastfetch"
 grep -q '"position": "top"' "$fastfetch"
+# Un color por línea, de los del prompt, sin negrita (9x y 38;5;n no dependen de la negrita;
+# el "verde" y el "cian" del tema de Konsole son otros colores, por eso van fijos). La
+# configuración es JSONC con comas finales: se quitan para leerla.
+python3 - "$fastfetch" <<'PYEOF'
+import json, re, sys
+ruta = sys.argv[1]
+d = json.loads(re.sub(r",(\s*[}\]])", r"\1", open(ruta).read()))
+VERDE, NARANJA, AZUL, MORADO, AMARILLO, CIAN = "38;5;40", "38;5;3", "94", "95", "93", "38;5;51"
+ROJO, BLANCO = "38;5;196", "38;5;231"
+COLORES = {
+    "command": VERDE, "os": AZUL, "kernel": NARANJA, "uptime": MORADO,
+    "host": AMARILLO, "cpu": VERDE, "gpu": ROJO, "memory": AMARILLO, "disk": BLANCO,
+    "display": AZUL, "battery": AMARILLO, "gamepad": CIAN,
+    "de": VERDE, "wm": NARANJA, "shell": VERDE, "terminal": MORADO, "packages": AMARILLO,
+}
+hechos = 0
+for m in d["modules"]:
+    if isinstance(m, dict) and m["type"] in COLORES:
+        m["keyColor"] = m["outputColor"] = COLORES[m["type"]]
+        hechos += 1
+assert hechos >= 10, "fastfetch: la configuración de Bazzite cambió"
+d["display"]["brightColor"] = False
+json.dump(d, open(ruta, "w"), ensure_ascii=False, indent=4)
+PYEOF
 
 ### Programas del sistema
 
