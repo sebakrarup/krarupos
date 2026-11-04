@@ -33,6 +33,23 @@ LOG="$SALIDA/hevc-1080p.log"
 es_ingles='^(eng|en)$'
 es_espanol='^(spa|es|esp)$'
 
+# Nombre de la pista de audio: el del original ("DTS 5.1") ya no sería cierto
+nombre_idioma() {
+    case $1 in
+        eng|en) echo Inglés ;;
+        spa|es|esp) echo Español ;;
+        jpn|ja) echo Japonés ;;
+        fra|fre|fr) echo Francés ;;
+        ita|it) echo Italiano ;;
+        deu|ger|de) echo Alemán ;;
+        por|pt) echo Portugués ;;
+        rus|ru) echo Ruso ;;
+        kor|ko) echo Coreano ;;
+        zho|chi|zh) echo Chino ;;
+        *) echo Audio ;;
+    esac
+}
+
 convertir() {
     local entrada=$1 destino=$2
     local info
@@ -106,7 +123,7 @@ convertir() {
                  + ([$ok[] | select(idioma=="es")] | sort_by(latino))[0:1])
         | map(select(. != null))
         | reduce .[] as $p ([]; if any(.[]; idioma == ($p | idioma)) then . else . + [$p] end)
-        | .[] | "\(.index) \(.channels // 2)"' <<<"$info")
+        | .[] | "\(.index) \(.channels // 2) \(.tags.language // "und" | ascii_downcase)"' <<<"$info")
 
     # Subtítulos en inglés y español
     local subs
@@ -117,10 +134,11 @@ convertir() {
 
     local args=(-map "0:$vidx" -disposition:v:0 default)
     local n=0 idx ch
-    while read -r idx ch; do
+    while read -r idx ch lang; do
         [ -z "$idx" ] && continue
         # Todo a estéreo: 5.1/7.1 se mezclan (AAC multicanal falla en varios reproductores)
-        args+=(-map "0:$idx" "-c:a:$n" aac "-b:a:$n" 192k "-filter:a:$n" "aformat=channel_layouts=stereo")
+        args+=(-map "0:$idx" "-c:a:$n" aac "-b:a:$n" 192k "-filter:a:$n" "aformat=channel_layouts=stereo"
+              "-metadata:s:a:$n" "title=$(nombre_idioma "$lang") AAC 2.0")
         [ "$n" -eq 0 ] && args+=("-disposition:a:$n" default) || args+=("-disposition:a:$n" 0)
         n=$((n + 1))
     done <<<"$audios"
