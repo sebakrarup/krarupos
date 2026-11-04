@@ -88,11 +88,10 @@ convertir() {
     local hw_in=() vf extra=()
     [ -n "$perfil" ] && extra=(-bsf:v dovi_rpu=strip=1)
     if [[ $perfil == 5.* ]]; then
-        hw_in=(-init_hw_device "vaapi=va:$DEV" -init_hw_device vulkan=vk@va -filter_hw_device vk)
-        if [[ $codec =~ ^(h264|hevc|av1)$ ]]; then
-            hw_in+=(-hwaccel vulkan -hwaccel_device vk -hwaccel_output_format vulkan)
-        fi
-        vf="libplacebo=w=$nw:h=$nh:colorspace=bt2020nc:color_primaries=bt2020:color_trc=smpte2084:range=tv:format=p010le,hwupload=derive_device=vaapi"
+        # Sin -filter_hw_device de Vulkan: desde ffmpeg 9 libplacebo no arranca con él
+        # (Fedora 45). Crea su propio Vulkan, recibe y entrega cuadros normales.
+        hw_in=(-init_hw_device "vaapi=va:$DEV" -filter_hw_device va)
+        vf="libplacebo=w=$nw:h=$nh:colorspace=bt2020nc:color_primaries=bt2020:color_trc=smpte2084:range=tv:format=p010le,format=p010le,hwupload"
         etiqueta+=" -> HDR10"
     # Decodificación por GPU si el formato lo permite (la RX 9070 no decodifica VC-1, MPEG-2 ni VP8);
     # si no, por CPU y se sube a la GPU

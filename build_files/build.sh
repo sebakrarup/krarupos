@@ -38,6 +38,15 @@ sed -i \
     "$motd"
 grep -q '^# Welcome to krarupOS' "$motd"
 grep -q "ghcr.io/sebakrarup/$imagen:latest" "$motd"
+# Sin los links de Bazzite (Report an issue, Documentation, Discord, Bluesky) ni la
+# tabla de comandos. Queda el título, la imagen, el estado y el consejo del día.
+sed -i -e '/\.bazzite\.gg\//d' -e '/^|/d' "$motd"
+cat -s "$motd" >"$motd.nuevo"
+mv "$motd.nuevo" "$motd"
+if grep -q -e 'bazzite\.gg/' -e '^|' "$motd"; then
+    echo "quedaron links o comandos en la bienvenida" >&2
+    exit 1
+fi
 
 # fastfetch: mostrar la imagen real. No sale de image-info.json (ver arriba), que
 # se queda con el nombre de Bazzite.

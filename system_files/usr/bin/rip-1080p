@@ -83,16 +83,15 @@ convertir() {
 
     local hw_in=() vf
     if [ "$hdr" -eq 1 ]; then
-        # Tonemapping con libplacebo (Vulkan) y de vuelta a VAAPI para codificar
+        # Tonemapping con libplacebo y de vuelta a VAAPI para codificar
         local tm="libplacebo=w=$nw:h=$nh:colorspace=bt709:color_primaries=bt709:color_trc=bt709:range=tv:format=p010le:tonemapping=bt.2390"
-        hw_in=(-init_hw_device "vaapi=va:$DEV" -init_hw_device vulkan=vk@va -filter_hw_device vk)
-        if [[ $codec =~ ^(h264|hevc|av1)$ ]]; then
-            hw_in+=(-hwaccel vulkan -hwaccel_device vk -hwaccel_output_format vulkan)
-        fi
+        # Sin -filter_hw_device de Vulkan: desde ffmpeg 9 libplacebo no arranca con él
+        # (Fedora 45). Crea su propio Vulkan, recibe y entrega cuadros normales.
+        hw_in=(-init_hw_device "vaapi=va:$DEV" -filter_hw_device va)
         # Ya es SDR: quitar los metadatos HDR10/DV para que no se marque como HDR
         local sd="sidedata=mode=delete:type=MASTERING_DISPLAY_METADATA,sidedata=mode=delete:type=CONTENT_LIGHT_LEVEL"
         sd+=",sidedata=mode=delete:type=DOVI_METADATA,sidedata=mode=delete:type=DOVI_RPU_BUFFER"
-        vf="$tm,$sd,hwupload=derive_device=vaapi"
+        vf="$tm,$sd,format=p010le,hwupload"
     # Decodificación por GPU si el formato lo permite (la RX 9070 no decodifica VC-1, MPEG-2 ni VP8);
     # si no, por CPU y se sube a la GPU
     elif [[ $codec =~ ^(h264|hevc|av1|vp9)$ ]] &&
