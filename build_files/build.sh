@@ -44,6 +44,17 @@ grep -q "ghcr.io/sebakrarup/$imagen:latest" "$motd"
 fastfetch=/usr/share/ublue-os/bazzite/fastfetch.jsonc
 sed -i "s|\"text\": \"/usr/libexec/bazzite-fetch-image\"|\"text\": \"echo $imagen:latest\"|" "$fastfetch"
 grep -q "echo $imagen:latest" "$fastfetch"
+# Logo de krarupOS (krarup azul, OS rosado, arriba de los datos porque es ancho). Colores
+# básicos con negrita para que también se distingan en las TTY (16 colores).
+sed -i \
+    -e '/"logo"/,/}/{' \
+    -e 's|"source": ".*"|"source": "/usr/share/krarupos/fastfetch-logo.txt"|' \
+    -e 's|"type": "file",|&\n        "position": "top",|' \
+    -e 's|"1": "94"|"1": "1;34"|' \
+    -e 's|"2": "47"|"2": "1;35"|' \
+    -e '}' "$fastfetch"
+grep -q '"source": "/usr/share/krarupos/fastfetch-logo.txt"' "$fastfetch"
+grep -q '"position": "top"' "$fastfetch"
 
 ### Programas del sistema
 
