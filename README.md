@@ -39,6 +39,7 @@ Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
 - **Curva de ventiladores del H150i Platinum** automática solo si está ese cooler (y la RM850i si está): se aplica al arrancar y al despertar, y termina. Apagar: `sudo systemctl mask krarupos-corsair`.
 - **Sin TDP Control** en la bandeja de KDE (es para handhelds).
 - **Letra grande en las TTY** (Terminus 16x32, como en CachyOS); la de Fedora queda diminuta en 4K.
+- **Consola clásica en las TTY** en vez de kmscon (el valor por defecto de Fedora 45), para que mpv muestre video.
 - **TTY hasta Ctrl+Alt+F12** (por defecto solo hasta F6).
 - **Mouse en las TTY** (gpm): seleccionar con el botón izquierdo y pegar con el del medio.
 - **Perilla de volumen en las TTY**: cambia el volumen del sistema (tope de 100 %), sin mpv ni otro programa abierto. En Plasma sigue mandando el escritorio.

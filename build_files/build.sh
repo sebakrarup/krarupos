@@ -420,6 +420,11 @@ systemctl enable uupd.timer
 # SSH desde el primer arranque, solo con llave (etc/ssh/sshd_config.d/40-krarupos.conf).
 # La llave de CachyOS va en /etc/skel/.ssh/authorized_keys para cada usuario nuevo.
 systemctl enable sshd.service
+# Consola clásica en las TTY en vez de kmscon (el valor por defecto de Fedora 45):
+# con kmscon mpv no muestra video, y no aplican la letra grande ni gpm.
+systemctl disable kmsconvt@.service
+systemctl enable getty@.service
+[ "$(readlink /etc/systemd/system/autovt@.service)" = /usr/lib/systemd/system/getty@.service ]
 # Mouse en las TTY.
 systemctl enable gpm.service
 # YouTube (VacuumTube) en Steam, para cada usuario.

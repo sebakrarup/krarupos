@@ -1,0 +1,4 @@
+# Consola clásica en las TTY: Fedora 45 activa kmscon (81-atomic-desktop.preset),
+# y con kmscon mpv no puede mostrar video en una TTY. Gana el preset de número menor.
+disable kmsconvt@.service
+enable getty@.service
