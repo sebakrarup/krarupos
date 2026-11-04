@@ -3,5 +3,12 @@
 # manda sobre /etc/vconsole.conf, que escribe el instalador. En un PC real llega
 # antes que la consola de amdgpu; getty@.service.d/50-krarupos-letra.conf la pone
 # al abrir cada TTY.
-kargs = ["vconsole.font=ter-v32b"]
+# vt.default_*: paleta de las TTY igual a la del kernel, salvo el color 7 (el de todo el
+# texto normal) en blanco puro en vez de gris (170,170,170).
+kargs = [
+    "vconsole.font=ter-v32b",
+    "vt.default_red=0,170,0,170,0,170,0,255,85,255,85,255,85,255,85,255",
+    "vt.default_grn=0,0,170,85,0,0,170,255,85,85,255,255,85,85,255,255",
+    "vt.default_blu=0,0,0,0,170,170,170,255,85,85,85,85,255,255,255,255",
+]
 match-architectures = ["x86_64"]
