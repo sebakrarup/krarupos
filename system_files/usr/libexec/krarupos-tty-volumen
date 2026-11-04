@@ -1,0 +1,96 @@
+#!/usr/bin/python3 -I
+"""Perilla de volumen del teclado en las TTY: volumen del sistema, tope 100 %.
+
+En Plasma lo maneja el escritorio, así que aquí solo se actúa si la VT activa
+no es una sesión gráfica. Lee los teclados directo de /dev/input (logind da
+acceso por uaccess), por lo que funciona aunque no haya nada abierto.
+"""
+import json, os, re, selectors, struct, subprocess, time
+
+EV_KEY, MUTE, DOWN, UP = 1, 113, 114, 115
+EVENTO = struct.Struct("llHHi")
+PASO = "2%"
+TOPE = "1.0"
+SINK = "@DEFAULT_AUDIO_SINK@"
+GRAFICAS = {"wayland", "x11", "mir"}
+
+
+def teclados():
+    """Dispositivos /dev/input/eventN con teclas de subir y bajar volumen."""
+    with open("/proc/bus/input/devices") as f:
+        bloques = f.read().split("\n\n")
+    for b in bloques:
+        ev = re.search(r"H: Handlers=.*\b(event\d+)", b)
+        k = re.search(r"B: KEY=(.*)", b)
+        if not (ev and k):
+            continue
+        bits = 0
+        for i, palabra in enumerate(reversed(k.group(1).split())):
+            bits |= int(palabra, 16) << (64 * i)
+        if bits >> DOWN & 1 and bits >> UP & 1:
+            yield "/dev/input/" + ev.group(1)
+
+
+def en_tty():
+    """True salvo que la VT activa sea una sesión gráfica."""
+    try:
+        with open("/sys/class/tty/tty0/active") as f:
+            activa = f.read().strip()
+        r = subprocess.run(["loginctl", "list-sessions", "--json=short"],
+                           capture_output=True, text=True, timeout=2)
+        for s in json.loads(r.stdout):
+            if s.get("tty") == activa:
+                t = subprocess.run(
+                    ["loginctl", "show-session", s["session"], "-p", "Type", "--value"],
+                    capture_output=True, text=True, timeout=2)
+                return t.stdout.strip() not in GRAFICAS
+    except (OSError, ValueError, subprocess.SubprocessError) as e:
+        print("no se pudo leer la sesión activa:", e, flush=True)
+        return False
+    return True
+
+
+def wpctl(*args):
+    subprocess.run(["wpctl", *args], timeout=2, check=False)
+
+
+def tecla(codigo, valor):
+    if codigo == MUTE:
+        if valor == 1 and en_tty():
+            wpctl("set-mute", SINK, "toggle")
+    elif codigo in (DOWN, UP) and valor in (1, 2) and en_tty():
+        wpctl("set-volume", "-l", TOPE, SINK, PASO + ("-" if codigo == DOWN else "+"))
+
+
+def main():
+    sel = selectors.DefaultSelector()
+    abiertos = {}
+    proximo = 0
+    while True:
+        if time.monotonic() >= proximo:
+            proximo = time.monotonic() + 5
+            for ruta in teclados():
+                if ruta not in abiertos:
+                    try:
+                        fd = os.open(ruta, os.O_RDONLY | os.O_NONBLOCK)
+                    except OSError:
+                        continue
+                    abiertos[ruta] = fd
+                    sel.register(fd, selectors.EVENT_READ, ruta)
+        for clave, _ in sel.select(timeout=max(0, proximo - time.monotonic())):
+            try:
+                datos = os.read(clave.fd, EVENTO.size * 64)
+            except BlockingIOError:
+                continue
+            except OSError:  # teclado desconectado
+                sel.unregister(clave.fd)
+                os.close(clave.fd)
+                del abiertos[clave.data]
+                continue
+            for _, _, tipo, codigo, valor in EVENTO.iter_unpack(datos):
+                if tipo == EV_KEY:
+                    tecla(codigo, valor)
+
+
+if __name__ == "__main__":
+    main()

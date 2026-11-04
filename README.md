@@ -41,6 +41,7 @@ Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
 - **Letra grande en las TTY** (Terminus 16x32, como en CachyOS); la de Fedora queda diminuta en 4K.
 - **TTY hasta Ctrl+Alt+F12** (por defecto solo hasta F6).
 - **Mouse en las TTY** (gpm): seleccionar con el botón izquierdo y pegar con el del medio.
+- **Perilla de volumen en las TTY**: cambia el volumen del sistema (tope de 100 %), sin mpv ni otro programa abierto. En Plasma sigue mandando el escritorio.
 - **btop con la temperatura de la CPU** junto al promedio (sensor Tctl en Ryzen).
 - **Bienvenida de la terminal** con "Welcome to krarupOS" y la imagen de krarupOS.
 - **Alias**: `krarup` muestra `fastfetch`; `ruedaON` y `ruedaOFF` cambian la rueda del G502 X a alta resolución o a normal (para todos los usuarios).

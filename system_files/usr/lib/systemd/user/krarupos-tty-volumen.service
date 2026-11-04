@@ -1,0 +1,11 @@
+[Unit]
+Description=Perilla de volumen en las TTY (volumen del sistema, tope 100 %)
+After=wireplumber.service
+
+[Service]
+ExecStart=/usr/libexec/krarupos-tty-volumen
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

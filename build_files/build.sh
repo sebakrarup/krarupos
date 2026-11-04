@@ -411,6 +411,9 @@ systemctl --global enable krarupos-sunshine-portal.service
 # Teclas de brillo del monitor con rampa suave por DDC/CI (powerdevil espera ~1 s
 # y cambia de golpe); mantener la tecla sigue subiendo. Sin monitor DDC no hace nada.
 systemctl --global enable krarupos-brillo-suave.service
+# Perilla de volumen del teclado en las TTY: volumen del sistema con tope de 100 %.
+# En Plasma no hace nada, porque ahí la maneja el escritorio.
+systemctl --global enable krarupos-tty-volumen.service
 
 ### Pantalla de arranque
 
