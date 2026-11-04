@@ -12,7 +12,7 @@ panel.hiding = "dodgewindows"
 
 var kickoff = panel.addWidget("org.kde.plasma.kickoff")
 kickoff.currentConfigGroup = ["General"]
-kickoff.writeConfig("icon", "archlinux")
+kickoff.writeConfig("icon", "about_kde")
 
 var tareas = panel.addWidget("org.kde.plasma.icontasks")
 tareas.currentConfigGroup = ["General"]
