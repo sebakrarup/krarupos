@@ -187,6 +187,23 @@ dnf5 install -y darkly
 dnf5 -y copr disable deltacopy/darkly
 test -n "$(find /usr/lib64/qt6/plugins/styles -iname '*darkly*')"
 
+# Wallpaper: la Vía Láctea de KDE con el logo de krarupOS en la esquina. Paquete aparte
+# para no pisar el original; conserva autor y licencia (CC-BY-SA-4.0).
+fondo=/usr/share/wallpapers/krarupOS
+cp -a /usr/share/wallpapers/MilkyWay "$fondo"
+mv /usr/share/krarupos/MilkyWay-krarupOS.png "$fondo/contents/images/5120x2880.png"
+python3 - "$fondo/metadata.json" <<'EOF'
+import json, sys
+p = sys.argv[1]
+d = json.load(open(p))
+k = d["KPlugin"]
+k["Id"] = "krarupOS"
+k["Name"] = "krarupOS"
+for key in [x for x in k if x.startswith("Name[")]:
+    del k[key]
+json.dump(d, open(p, "w"), ensure_ascii=False, indent=4)
+EOF
+
 # Aspecto global "krarupOS": Breeze oscuro con los íconos, el cursor y el
 # wallpaper (Vía Láctea) de krarupOS. Los usuarios lo pueden cambiar.
 lnf=/usr/share/plasma/look-and-feel/com.krarupos.desktop
@@ -206,13 +223,13 @@ json.dump(d, open(p, "w"), ensure_ascii=False, indent=4)
 EOF
 sed -i \
     -e 's/^Theme=breeze-dark$/Theme=Tela-circle-dracula-dark/' \
-    -e 's/^Image=Next$/Image=MilkyWay/' \
+    -e 's/^Image=Next$/Image=krarupOS/' \
     -e 's/^cursorTheme=breeze_cursors$/cursorTheme=Bibata-Modern-Ice\ncursorSize=28/' \
     -e 's/^ColorScheme=BreezeDark$/ColorScheme=BreezeDarkSeba/' \
     -e '/^\[kdeglobals\]\[KDE\]/,/^\[/ s/^widgetStyle=Breeze$/widgetStyle=Darkly/' \
     "$lnf/contents/defaults"
 grep -q '^Theme=Tela-circle-dracula-dark$' "$lnf/contents/defaults"
-grep -q '^Image=MilkyWay$' "$lnf/contents/defaults"
+grep -q '^Image=krarupOS$' "$lnf/contents/defaults"
 grep -q '^cursorTheme=Bibata-Modern-Ice$' "$lnf/contents/defaults"
 grep -q '^ColorScheme=BreezeDarkSeba$' "$lnf/contents/defaults"
 grep -q '^widgetStyle=Darkly$' "$lnf/contents/defaults"
