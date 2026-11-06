@@ -89,6 +89,11 @@ d["display"]["brightColor"] = False
 json.dump(d, open(ruta, "w"), ensure_ascii=False, indent=4)
 PYEOF
 
+# La ISO: bootc-image-builder (anaconda-iso) solo lee los repos de /etc/yum.repos.d, y
+# Fedora 45 movió los suyos a /usr/share/dnf5/repos.d: sin esto no encuentra ningún paquete
+# ("No match for argument") y falla (osbuild/image-builder#2704). Quitar cuando se arregle.
+cp /usr/share/dnf5/repos.d/fedora.repo /usr/share/dnf5/repos.d/fedora-updates.repo /etc/yum.repos.d/
+
 ### Programas del sistema
 
 # rocm-smi: btop lo necesita para mostrar las GPUs AMD.
