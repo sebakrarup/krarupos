@@ -1,0 +1,30 @@
+#!/usr/bin/bash
+# Dolphin y el resto de KDE (Solid) muestran en "Dispositivos" la raíz del sistema
+# (composefs: ~50 MB, 0 libres, 100 % en rojo) y la partición /boot. Son del
+# sistema y no sirven para guardar nada, así que se esconden en cada arranque.
+set -euo pipefail
+
+# Raíz: Solid muestra un overlay montado en / salvo que tenga x-gvfs-hide. Las
+# opciones x-* las guarda libmount en /run/mount/utab (no van al kernel), y Solid
+# las lee de ahí junto con las del montaje.
+if [[ $(findmnt -no FSTYPE /) == overlay ]]; then
+    src=$(findmnt -no SOURCE /)
+    mkdir -p /run/mount
+    (
+        flock 9
+        if ! grep -qs ' TARGET=/ ' /run/mount/utab; then
+            echo "SRC=$src TARGET=/ ROOT=/ OPTS=x-gvfs-hide" >>/run/mount/utab
+        fi
+    ) 9>/run/mount/utab.lock
+fi
+
+# /boot: udisks la ignora con UDISKS_IGNORE, como ya hace con la partición EFI.
+fuente=$(findmnt -no SOURCE /boot || findmnt -s -no SOURCE /boot || true)
+dev=$(findfs "$fuente" 2>/dev/null || true)
+uuid=$([[ -b $dev ]] && blkid -s UUID -o value "$dev" || true)
+if [[ -n $uuid ]]; then
+    mkdir -p /run/udev/rules.d
+    echo "ENV{ID_FS_UUID}==\"$uuid\", ENV{UDISKS_IGNORE}=\"1\"" >/run/udev/rules.d/90-krarupos-boot.rules
+    udevadm control --reload
+    udevadm trigger --action=change --settle "$dev"
+fi

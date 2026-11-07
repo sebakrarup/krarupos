@@ -47,6 +47,7 @@ Hay tres variantes, que se construyen todos los días sobre la última Bazzite:
 - **btop con la temperatura de la CPU** junto al promedio (sensor Tctl en Ryzen).
 - **Bienvenida de la terminal** con "Welcome to krarupOS" y la imagen de krarupOS.
 - **Konsole** sin barra de desplazamiento (el scroll sigue funcionando).
+- **Dolphin sin discos del sistema** en Dispositivos: ni la raíz (composefs, ~50 MB al 100 % en rojo) ni `/boot`.
 - **Ventanas**: el foco sigue al puntero del mouse.
 - **Prompt** con los colores de krarupOS (`seba@krarupOS:~$`).
 - **fastfetch** con el logo de krarupOS y un color por línea, una vez por sesión, en la primera terminal.
