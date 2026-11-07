@@ -10,6 +10,8 @@ COPY system_files /system_files
 
 # Base Image
 FROM ${BASE_IMAGE}
+# Para que build.sh sepa qué base se usó (variante NVIDIA).
+ARG BASE_IMAGE
 ## Other possible base images include:
 # FROM ghcr.io/ublue-os/bazzite:testing
 # FROM ghcr.io/ublue-os/aurora:stable

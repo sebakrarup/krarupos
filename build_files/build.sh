@@ -29,15 +29,40 @@ grep -qx 'DEFAULT_HOSTNAME="krarupOS"' /usr/lib/os-release
 # de Bazzite (rollback, modo juego, ujust).
 case $(jq -r '."image-name"' /usr/share/ublue-os/image-info.json) in
     *deck*) imagen=krarupos-deck ;;
-    *nvidia*) imagen=krarupos-nvidia ;;
     *) imagen=krarupos ;;
 esac
+# Variante NVIDIA: la base trae el módulo del driver (bazzite-nvidia-open).
+if [[ $imagen == krarupos && -n $(find /usr/lib/modules -name 'nvidia.ko*' -print -quit) ]]; then
+    imagen=krarupos-nvidia
+fi
+# Containerfile pasa la base: si es NVIDIA y no se encontró el driver, mejor fallar.
+if [[ ${BASE_IMAGE:-} == *nvidia* && $imagen != krarupos-nvidia ]]; then
+    echo "base $BASE_IMAGE sin el módulo nvidia" >&2
+    exit 1
+fi
 # NVIDIA: mpv decodifica con NVDEC (CUDA) en vez de VAAPI, que en NVIDIA pasa por
 # un traductor (nvidia-vaapi-driver) con menos formatos.
 if [[ $imagen == krarupos-nvidia ]]; then
     mpvconf=/etc/skel/.var/app/io.mpv.Mpv/config/mpv/mpv.conf
     sed -i -e 's/^# GPU decoding: .*/# GPU decoding (NVIDIA): NVDEC/' -e 's/^hwdec=vaapi$/hwdec=nvdec/' "$mpvconf"
     grep -qx 'hwdec=nvdec' "$mpvconf"
+
+    # Sin lo que es solo para GPUs AMD: LACT y su configuración de la RX 9070 XT,
+    # OverDrive de amdgpu (kargs), rip-1080p/rip-4k (codifican por VAAPI de AMD).
+    # amdgpu_top y rocm-smi no se instalan (más abajo).
+    sed -i -e '/^# Primero LACT/d' -e '/^io\.github\.ilya_zlobintsev\.LACT$/d' /usr/share/krarupos/flatpaks.txt
+    if grep -q LACT /usr/share/krarupos/flatpaks.txt; then exit 1; fi
+    rm -r /usr/lib/systemd/system/lactd.service /usr/lib/systemd/system/lactd.service.d \
+        /usr/libexec/krarupos-lact /usr/lib/bootc/kargs.d/10-krarupos-amdgpu.toml \
+        /usr/bin/rip-1080p /usr/bin/rip-4k
+    # Caché de shaders: la de NVIDIA (no Mesa), también de 10 GB.
+    rm /usr/lib/environment.d/60-krarupos-mesa.conf
+    cat >/usr/lib/environment.d/60-krarupos-nvidia.conf <<'EOF'
+# Caché de shaders de NVIDIA: 10 GB (por defecto 1 GB) para que los juegos
+# grandes no vuelvan a compilar shaders.
+__GL_SHADER_DISK_CACHE_SIZE=10737418240
+__GL_SHADER_DISK_CACHE_SKIP_CLEANUP=1
+EOF
 fi
 motd=/usr/share/ublue-os/motd/template.md
 sed -i \
@@ -104,7 +129,7 @@ cp /usr/share/dnf5/repos.d/fedora.repo /usr/share/dnf5/repos.d/fedora-updates.re
 
 ### Programas del sistema
 
-# rocm-smi: btop lo necesita para mostrar las GPUs AMD.
+# rocm-smi: btop lo necesita para mostrar las GPUs AMD (no en la variante NVIDIA).
 # liquidctl: refrigeración líquida y fuentes (H150i, RM850i); permisos sin root en
 # usr/lib/udev/rules.d/71-liquidctl.rules (Fedora no trae las reglas).
 # terminus-fonts-console: letra grande en las TTY (ter-v32b, kargs.d/10-krarupos-consola.toml).
@@ -113,7 +138,9 @@ cp /usr/share/dnf5/repos.d/fedora.repo /usr/share/dnf5/repos.d/fedora-updates.re
 # Red: iperf3 (velocidad entre equipos), wol (Wake-on-LAN), nethogs (red por programa).
 # headsetcontrol: luces/batería/sidetone del G733 (trae regla udev uaccess, sin sudo).
 # ncdu: espacio por carpeta. perl-Image-ExifTool: exiftool para datos de fotos.
-dnf5 install -y nmap htop rocm-smi liquidctl terminus-fonts-console gpm \
+amd=(rocm-smi)
+[[ $imagen == krarupos-nvidia ]] && amd=()
+dnf5 install -y nmap htop "${amd[@]}" liquidctl terminus-fonts-console gpm \
     mediainfo mkvtoolnix yt-dlp iperf3 wol nethogs ncdu perl-Image-ExifTool headsetcontrol
 
 # liquidctl muestra SyntaxWarning de docopt en cada uso: la imagen deja la fecha
@@ -148,10 +175,12 @@ test -f /etc/libvirt/qemu/networks/default.xml
 dnf5 remove -y plasma-applet-tdp-control
 
 # amdgpu_top no está en los repos de Fedora: se instala el .rpm oficial
-# de la última versión publicada por su autor.
-amdgpu_top_rpm=$(curl -fsSL --retry 3 https://api.github.com/repos/Umio-Yasuno/amdgpu_top/releases/latest |
-    grep -oE '"browser_download_url": *"[^"]*\.x86_64\.rpm"' | cut -d'"' -f4 | head -1)
-dnf5 install -y "$amdgpu_top_rpm"
+# de la última versión publicada por su autor. Solo con GPUs AMD.
+if [[ $imagen != krarupos-nvidia ]]; then
+    amdgpu_top_rpm=$(curl -fsSL --retry 3 https://api.github.com/repos/Umio-Yasuno/amdgpu_top/releases/latest |
+        grep -oE '"browser_download_url": *"[^"]*\.x86_64\.rpm"' | cut -d'"' -f4 | head -1)
+    dnf5 install -y "$amdgpu_top_rpm"
+fi
 
 ### Modo juego
 
@@ -465,7 +494,7 @@ sed -i '/^NoDisplay=true$/d' /usr/share/applications/input-remapper-gtk.desktop
 if grep -qx 'Hidden=true' /etc/xdg/autostart/input-remapper-autoload.desktop; then exit 1; fi
 systemctl enable krarupos-flatpaks.service
 # LACT sin la ventana de instalar su servicio; arranca cuando LACT ya está instalada.
-systemctl enable lactd.service
+[[ $imagen == krarupos-nvidia ]] || systemctl enable lactd.service
 # Decky Loader: se instala solo una vez, cuando Steam ya abrió (usr/libexec/krarupos-decky).
 systemctl enable krarupos-decky.service
 # Perfil de energía en performance al primer arranque (no en equipos con batería).
