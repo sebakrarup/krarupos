@@ -89,6 +89,13 @@ jobs:
           # Bazzite usa btrfs; la imagen no dice qué formato usar.
           additional-args: --use-librepo=True --rootfs btrfs
 
+      - name: krarupOS logos in the installer
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xorriso squashfs-tools isomd5sum
+          sudo ./disk_config/marca-instalador.sh "${{ steps.build.outputs.output-directory }}"
+          sudo chown -R "${USER_UID}:${USER_GID}" "${{ steps.build.outputs.output-directory }}"
+
       - name: Upload disk images and Checksum to Job Artifacts
         if: inputs.upload-to-s3 != true && github.event_name != 'pull_request'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
