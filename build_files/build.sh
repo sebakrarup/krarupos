@@ -215,7 +215,8 @@ tela_tag=$(curl -fsSL --retry 3 https://api.github.com/repos/vinceliuice/Tela-ci
 git clone --depth 1 --branch "$tela_tag" https://github.com/vinceliuice/Tela-circle-icon-theme.git /tmp/tela
 (cd /tmp/tela && ./install.sh -d /usr/share/icons dracula)
 # Carpetas de usuario con color (en Dolphin y su barra lateral, cualquier idioma):
-# Home verde, Descargas roja, Música amarilla, Imágenes morada y Videos azul.
+# Home verde, Descargas roja, Música amarilla, Imágenes morada, Videos azul y Red
+# (Network) naranja.
 # Se reemplazan los íconos por los de color que trae el mismo tema, en todos los
 # tamaños (los chicos son los de la barra lateral).
 color=/usr/share/icons/Tela-circle-dracula/scalable/places
@@ -225,6 +226,7 @@ declare -A carpeta_color=(
     [folder-music]=folder_color_yellow_music
     [folder-pictures]=folder_color_purple_pictures
     [folder-video]=folder_color_blue_videos [folder-videos]=folder_color_blue_videos
+    [folder-network]=orange-network
 )
 for nombre in "${!carpeta_color[@]}"; do
     destino=$color/${carpeta_color[$nombre]}.svg

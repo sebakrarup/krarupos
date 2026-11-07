@@ -37,6 +37,12 @@ if [[ ! -x "$casa/homebrew/services/PluginLoader" ]]; then
 fi
 
 /usr/libexec/krarupos-decky-plugins.py "$casa/homebrew/plugins" "$usuario"
+
+# ~/homebrew (la carpeta de Decky) en café en Dolphin, si nadie le puso otro ícono.
+if [[ ! -e "$casa/homebrew/.directory" ]]; then
+    printf '[Desktop Entry]\nIcon=folder-brown\n' >"$casa/homebrew/.directory"
+    chown "$usuario:" "$casa/homebrew/.directory"
+fi
 systemctl restart plugin_loader.service
 
 mkdir -p "$(dirname "$marca")"
