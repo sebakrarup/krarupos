@@ -47,14 +47,11 @@ if [[ $imagen == krarupos-nvidia ]]; then
     sed -i -e 's/^# GPU decoding: .*/# GPU decoding (NVIDIA): NVDEC/' -e 's/^hwdec=vaapi$/hwdec=nvdec/' "$mpvconf"
     grep -qx 'hwdec=nvdec' "$mpvconf"
 
-    # Sin lo que es solo para GPUs AMD: LACT y su configuración de la RX 9070 XT,
-    # OverDrive de amdgpu (kargs), rip-1080p/rip-4k (codifican por VAAPI de AMD).
-    # amdgpu_top y rocm-smi no se instalan (más abajo).
-    sed -i -e '/^# Primero LACT/d' -e '/^io\.github\.ilya_zlobintsev\.LACT$/d' /usr/share/krarupos/flatpaks.txt
-    if grep -q LACT /usr/share/krarupos/flatpaks.txt; then exit 1; fi
-    rm -r /usr/lib/systemd/system/lactd.service /usr/lib/systemd/system/lactd.service.d \
-        /usr/libexec/krarupos-lact /usr/lib/bootc/kargs.d/10-krarupos-amdgpu.toml \
-        /usr/bin/rip-1080p /usr/bin/rip-4k
+    # Sin lo que es solo para GPUs AMD: OverDrive de amdgpu (kargs) y
+    # rip-1080p/rip-4k (codifican por VAAPI de AMD). amdgpu_top y rocm-smi no se
+    # instalan (más abajo). LACT sí queda: también maneja GPUs NVIDIA
+    # (ventiladores, potencia, overclock); krarupos-lact no hace nada sin la RX 9070 XT.
+    rm /usr/lib/bootc/kargs.d/10-krarupos-amdgpu.toml /usr/bin/rip-1080p /usr/bin/rip-4k
     # Caché de shaders: la de NVIDIA (no Mesa), también de 10 GB.
     rm /usr/lib/environment.d/60-krarupos-mesa.conf
     cat >/usr/lib/environment.d/60-krarupos-nvidia.conf <<'EOF'
@@ -494,7 +491,7 @@ sed -i '/^NoDisplay=true$/d' /usr/share/applications/input-remapper-gtk.desktop
 if grep -qx 'Hidden=true' /etc/xdg/autostart/input-remapper-autoload.desktop; then exit 1; fi
 systemctl enable krarupos-flatpaks.service
 # LACT sin la ventana de instalar su servicio; arranca cuando LACT ya está instalada.
-[[ $imagen == krarupos-nvidia ]] || systemctl enable lactd.service
+systemctl enable lactd.service
 # Decky Loader: se instala solo una vez, cuando Steam ya abrió (usr/libexec/krarupos-decky).
 systemctl enable krarupos-decky.service
 # Perfil de energía en performance al primer arranque (no en equipos con batería).

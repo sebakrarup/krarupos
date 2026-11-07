@@ -8,7 +8,7 @@ Hay tres variantes, que se construyen todos los días sobre la última Bazzite:
 |---|---|---|
 | `ghcr.io/sebakrarup/krarupos` | `bazzite:stable` | Escritorio KDE |
 | `ghcr.io/sebakrarup/krarupos-deck` | `bazzite-deck:stable` | KDE + modo juego de Steam |
-| `ghcr.io/sebakrarup/krarupos-nvidia` | `bazzite-nvidia-open:stable` | Escritorio KDE con NVIDIA (RTX 16xx en adelante), sin lo que es solo para AMD (LACT, OverDrive, `amdgpu_top`, `rocm-smi`, `rip-1080p`, `rip-4k`) |
+| `ghcr.io/sebakrarup/krarupos-nvidia` | `bazzite-nvidia-open:stable` | Escritorio KDE con NVIDIA (RTX 16xx en adelante), sin lo que es solo para AMD (OverDrive, `amdgpu_top`, `rocm-smi`, `rip-1080p`, `rip-4k`) |
 
 ## Qué trae
 
@@ -53,7 +53,7 @@ Hay tres variantes, que se construyen todos los días sobre la última Bazzite:
 - **Alias**: `krarup` muestra `fastfetch` con el logo de krarupOS; `foto` muestra fotos en una TTY; `ruedaON` y `ruedaOFF` cambian la rueda del G502 X a alta resolución o a normal (para todos los usuarios).
 - **Rueda del G502 X en resolución normal** al conectar (el kernel pone alta resolución y hace scroll con solo rozarla); solo si está ese mouse.
 - **Scroll natural en el G502 X** en KDE (solo ese mouse, también con input-remapper).
-- **LACT listo sin configurar** (no en la variante NVIDIA): es la primera app que se instala y su servicio viene incluido; con la RX 9070 XT de Seba pone 250 W y Zero RPM apagado (una vez, como en CachyOS). OverDrive de amdgpu activado (`amdgpu.ppfeaturemask`), que LACT necesita para Zero RPM y overclock.
+- **LACT listo sin configurar** (también en la variante NVIDIA, sin la configuración de la RX 9070 XT): es la primera app que se instala y su servicio viene incluido; con la RX 9070 XT de Seba pone 250 W y Zero RPM apagado (una vez, como en CachyOS). OverDrive de amdgpu activado (`amdgpu.ppfeaturemask`), que LACT necesita para Zero RPM y overclock.
 - **input-remapper** activado, con los presets de un Logitech G502 X LS.
 - **Apps GTK** (como Transmission Remote) con el tema Breeze y los colores de KDE, también las Flatpak.
 - **Konsole** con el perfil krarupOS (colores Vapor sin transparencia, Fira Code 16).
