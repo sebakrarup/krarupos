@@ -426,7 +426,7 @@ favoritos=(
     com.moonlight_stream.Moonlight steam net.lutris.Lutris systemsettings
     io.github.ublue_os.yafti_gtk org.kde.konsole org.kde.dolphin com.vysp3r.ProtonPlus
     io.missioncenter.MissionCenter com.dec05eba.gpu_screen_recorder tv.kodi.Kodi
-    rocks.shy.VacuumTube dev.lizardbyte.app.Sunshine
+    rocks.shy.VacuumTube dev.lizardbyte.app.Sunshine com.google.Chrome
 )
 # Deck: "Gaming Mode" en el menú y en favoritos (después de Steam) en vez del
 # "Return to Gaming Mode" que Bazzite deja en el escritorio de cada usuario nuevo.
