@@ -302,6 +302,8 @@ done
 kwriteconfig6 --file /etc/xdg/ksplashrc --group KSplash --key Theme com.krarupos.desktop
 # Konsole: perfil krarupOS (colores Vapor sin transparencia, Fira Code 16).
 kwriteconfig6 --file /etc/xdg/konsolerc --group "Desktop Entry" --key DefaultProfile krarupOS.profile
+# Ventanas: el foco sigue al puntero del mouse.
+kwriteconfig6 --file /etc/xdg/kwinrc --group Windows --key FocusPolicy FocusFollowsMouse
 # Apps GTK con el tema Breeze (toma los colores de KDE) en vez de Vapor/Adwaita.
 # settings.ini lo leen las apps del sistema; el gschema lo pasa el portal a
 # las Flatpak, que además necesitan org.gtk.Gtk3theme.Breeze (flatpaks.txt).
