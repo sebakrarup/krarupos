@@ -2,11 +2,15 @@
 # Instala los plugins de Decky de la lista desde la tienda oficial, igual que
 # Decky (backend/decky_loader/browser.py, _install): última versión, zip
 # verificado con su sha256, extraído en ~/homebrew/plugins y con los mismos
-# dueños. Los que ya estén no se tocan.
+# dueños. Además los plugins propios de krarupOS que vienen en la imagen
+# (LOCALES). Los que ya estén no se tocan.
 # Uso: krarupos-decky-plugins.py <carpeta de plugins> <usuario>
 import hashlib, io, json, os, pwd, shutil, sys, urllib.request, zipfile
 
-PLUGINS = ["CSS Loader", "TabMaster", "Animation Changer", "SteamGridDB"]
+PLUGINS = ["CSS Loader", "Animation Changer", "SteamGridDB"]
+# Tabs krarupOS reemplaza a TabMaster, que se comía la memoria (2026-11-02).
+# Código en decky/tabs-krarupos del repo.
+LOCALES = {"Tabs krarupOS": "/usr/share/krarupos/decky/pestanas-krarup"}
 TIENDA = "https://plugins.deckbrew.xyz/plugins"
 ZIPS = "https://cdn.tzatzikiweeb.moe/file/steam-deck-homebrew/versions/{}.zip"
 
@@ -32,6 +36,20 @@ def instalados():
     return nombres
 
 
+def permisos(destino):
+    # Como set_plugin_dir_permissions: el contenido es del usuario (o de root
+    # si el plugin pide "root"), la carpeta y plugin.json de root, con 755.
+    with open(os.path.join(destino, "plugin.json")) as f:
+        de_root = "root" in json.load(f).get("flags", [])
+    if not de_root:
+        for base, dirs, archivos in os.walk(destino):
+            for n in dirs + archivos:
+                os.chown(os.path.join(base, n), uid, gid, follow_symlinks=False)
+    for p in (destino, os.path.join(destino, "plugin.json")):
+        os.chown(p, 0, 0)
+        os.chmod(p, 0o755)
+
+
 os.makedirs(carpeta, exist_ok=True)
 tienda = {p["name"]: p for p in json.loads(bajar(TIENDA))}
 ya = instalados()
@@ -50,16 +68,14 @@ for nombre in PLUGINS:
         destino = os.path.join(carpeta, raiz.pop())
         shutil.rmtree(destino, ignore_errors=True)
         z.extractall(carpeta)
-
-    # Como set_plugin_dir_permissions: el contenido es del usuario (o de root
-    # si el plugin pide "root"), la carpeta y plugin.json de root, con 755.
-    with open(os.path.join(destino, "plugin.json")) as f:
-        de_root = "root" in json.load(f).get("flags", [])
-    if not de_root:
-        for base, dirs, archivos in os.walk(destino):
-            for n in dirs + archivos:
-                os.chown(os.path.join(base, n), uid, gid, follow_symlinks=False)
-    for p in (destino, os.path.join(destino, "plugin.json")):
-        os.chown(p, 0, 0)
-        os.chmod(p, 0o755)
+    permisos(destino)
     print(f"Instalado {nombre} {version['name']}")
+
+for nombre, origen in LOCALES.items():
+    if nombre in ya:
+        continue
+    destino = os.path.join(carpeta, os.path.basename(origen))
+    shutil.rmtree(destino, ignore_errors=True)
+    shutil.copytree(origen, destino)
+    permisos(destino)
+    print(f"Instalado {nombre} (krarupOS)")

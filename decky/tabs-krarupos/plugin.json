@@ -1,0 +1,7 @@
+{
+  "name": "Tabs krarupOS",
+  "author": "krarupOS",
+  "flags": [],
+  "api_version": 1,
+  "publish": { "tags": ["library"], "description": "Pestañas de colecciones en la biblioteca, sin backend.", "image": "" }
+}
