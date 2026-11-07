@@ -200,6 +200,13 @@ if [[ -x /usr/bin/gamescope ]]; then
     getcap /usr/bin/gamescope | grep -q cap_sys_nice
 fi
 
+### Carpetas de usuario
+
+# Sin "Public" (compartir en red) ni "Templates" (plantillas de Crear nuevo):
+# xdg-user-dirs no las crea en los usuarios nuevos.
+sed -i -e 's/^TEMPLATES=/#TEMPLATES=/' -e 's/^PUBLICSHARE=/#PUBLICSHARE=/' /etc/xdg/user-dirs.defaults
+if grep -qE '^(TEMPLATES|PUBLICSHARE)=' /etc/xdg/user-dirs.defaults; then exit 1; fi
+
 ### Tema
 
 # Íconos Tela-circle-dracula (claro, normal y oscuro), última versión.
@@ -207,6 +214,27 @@ tela_tag=$(curl -fsSL --retry 3 https://api.github.com/repos/vinceliuice/Tela-ci
     grep -oE '"name": *"[^"]*"' | head -1 | cut -d'"' -f4)
 git clone --depth 1 --branch "$tela_tag" https://github.com/vinceliuice/Tela-circle-icon-theme.git /tmp/tela
 (cd /tmp/tela && ./install.sh -d /usr/share/icons dracula)
+# Carpetas de usuario con color (en Dolphin y su barra lateral, cualquier idioma):
+# Home verde, Descargas roja, Música amarilla, Imágenes morada y Videos azul.
+# Se reemplazan los íconos por los de color que trae el mismo tema, en todos los
+# tamaños (los chicos son los de la barra lateral).
+color=/usr/share/icons/Tela-circle-dracula/scalable/places
+declare -A carpeta_color=(
+    [user-home]=green-user-home
+    [folder-download]=folder_color_red_downloads [folder-downloads]=folder_color_red_downloads
+    [folder-music]=folder_color_yellow_music
+    [folder-pictures]=folder_color_purple_pictures
+    [folder-video]=folder_color_blue_videos [folder-videos]=folder_color_blue_videos
+)
+for nombre in "${!carpeta_color[@]}"; do
+    destino=$color/${carpeta_color[$nombre]}.svg
+    test -f "$destino"
+    find /usr/share/icons/Tela-circle-dracula* -path '*/places/*' -name "$nombre.svg" \
+        -exec ln -sfn "$destino" {} \;
+done
+test "$(readlink -f "$color/folder-download.svg")" = "$(readlink -f "$color/folder_color_red_downloads.svg")"
+test "$(readlink -f /usr/share/icons/Tela-circle-dracula-dark/16/places/folder-music.svg)" = "$(readlink -f "$color/folder_color_yellow_music.svg")"
+for t in /usr/share/icons/Tela-circle-dracula*; do gtk-update-icon-cache -f -q "$t"; done
 
 # Cursor Bibata-Modern-Ice, última versión.
 bibata_url=$(curl -fsSL --retry 3 https://api.github.com/repos/ful1e5/Bibata_Cursor/releases/latest |

@@ -19,6 +19,7 @@ Hay tres variantes, que se construyen todos los días sobre la última Bazzite:
   Además `ncdu` (espacio por carpeta) y `exiftool` (datos de fotos).
 - **Máquinas virtuales**: virt-manager con KVM/QEMU y libvirt (red NAT lista, TPM para Windows 11); los administradores lo usan sin contraseña.
 - **Tema**: estilo Darkly, colores Breeze oscuro (bordes sin contraste), pantalla de inicio Vapor con el logo de krarupOS, letra 15, íconos Tela-circle-dracula-dark, cursor Bibata-Modern-Ice
+- **Carpetas de usuario con color** en Dolphin: Home verde, Descargas roja, Música amarilla, Imágenes morada y Videos azul. Sin las carpetas `Public` ni `Templates`.
   y el wallpaper Vía Láctea de KDE con el logo de krarupOS en la esquina (CC-BY-SA-4.0, ruvkr). Aparece como el aspecto global "krarupOS".
 - **Panel**: a la izquierda, centrado, flotante y transparente (Panel Colorizer), con el ícono de Arch en el menú y
   un punto bajo las apps abiertas (azul la activa, gris las demás, naranja si piden atención) en vez de cuadros.
