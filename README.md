@@ -49,7 +49,7 @@ Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
 - **Ventanas**: el foco sigue al puntero del mouse.
 - **Prompt** con los colores de krarupOS (`seba@krarupOS:~$`).
 - **fastfetch** con el logo de krarupOS y un color por línea, una vez por sesión, en la primera terminal.
-- **Alias**: `krarup` muestra `fastfetch` con el logo de krarupOS; `ruedaON` y `ruedaOFF` cambian la rueda del G502 X a alta resolución o a normal (para todos los usuarios).
+- **Alias**: `krarup` muestra `fastfetch` con el logo de krarupOS; `foto` muestra fotos en una TTY; `ruedaON` y `ruedaOFF` cambian la rueda del G502 X a alta resolución o a normal (para todos los usuarios).
 - **Rueda del G502 X en resolución normal** al conectar (el kernel pone alta resolución y hace scroll con solo rozarla); solo si está ese mouse.
 - **Scroll natural en el G502 X** en KDE (solo ese mouse, también con input-remapper).
 - **LACT listo sin configurar**: es la primera app que se instala y su servicio viene incluido; con la RX 9070 XT de Seba pone 250 W y Zero RPM apagado (una vez, como en CachyOS). OverDrive de amdgpu activado (`amdgpu.ppfeaturemask`), que LACT necesita para Zero RPM y overclock.

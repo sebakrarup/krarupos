@@ -4,3 +4,6 @@ alias krarup='fastfetch'
 # ruedaOFF = resolución normal (la que se pone sola al conectarlo).
 alias ruedaON='/usr/libexec/krarupos-g502-rueda on'
 alias ruedaOFF='/usr/libexec/krarupos-g502-rueda off'
+# Ver fotos en una TTY a resolución completa: foto ~/Pictures/*.jpg
+# Teclas: > siguiente, < anterior, q salir.
+alias foto='flatpak run io.mpv.Mpv --vo=drm --image-display-duration=inf'
