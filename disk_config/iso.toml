@@ -1,6 +1,6 @@
 # Instalador de krarupOS. Instala la imagen que lleva dentro y la deja
 # apuntando a ghcr.io, con firma, para que se actualice sola.
-# build-disk.yml cambia "krarupos" por "krarupos-deck" para la variante deck.
+# build-disk.yml cambia "krarupos" por la variante elegida (krarupos-deck, krarupos-nvidia).
 [customizations.installer.kickstart]
 contents = """
 %post

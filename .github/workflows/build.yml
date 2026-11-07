@@ -35,6 +35,9 @@ jobs:
             base_image: ghcr.io/ublue-os/bazzite:stable
           - image_name: krarupos-deck
             base_image: ghcr.io/ublue-os/bazzite-deck:stable
+          # NVIDIA RTX 16xx en adelante (driver abierto), escritorio.
+          - image_name: krarupos-nvidia
+            base_image: ghcr.io/ublue-os/bazzite-nvidia-open:stable
     env:
       BASE_IMAGE: ${{ matrix.base_image }}
 

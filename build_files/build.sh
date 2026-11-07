@@ -29,8 +29,16 @@ grep -qx 'DEFAULT_HOSTNAME="krarupOS"' /usr/lib/os-release
 # de Bazzite (rollback, modo juego, ujust).
 case $(jq -r '."image-name"' /usr/share/ublue-os/image-info.json) in
     *deck*) imagen=krarupos-deck ;;
+    *nvidia*) imagen=krarupos-nvidia ;;
     *) imagen=krarupos ;;
 esac
+# NVIDIA: mpv decodifica con NVDEC (CUDA) en vez de VAAPI, que en NVIDIA pasa por
+# un traductor (nvidia-vaapi-driver) con menos formatos.
+if [[ $imagen == krarupos-nvidia ]]; then
+    mpvconf=/etc/skel/.var/app/io.mpv.Mpv/config/mpv/mpv.conf
+    sed -i -e 's/^# GPU decoding: .*/# GPU decoding (NVIDIA): NVDEC/' -e 's/^hwdec=vaapi$/hwdec=nvdec/' "$mpvconf"
+    grep -qx 'hwdec=nvdec' "$mpvconf"
+fi
 motd=/usr/share/ublue-os/motd/template.md
 sed -i \
     -e 's/^# Welcome to Bazzite/# Welcome to krarupOS/' \

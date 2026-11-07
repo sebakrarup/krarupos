@@ -2,12 +2,13 @@
 
 Bazzite con KDE, mis apps y mi configuración, lista para usar.
 
-Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
+Hay tres variantes, que se construyen todos los días sobre la última Bazzite:
 
 | Imagen | Base | Para |
 |---|---|---|
 | `ghcr.io/sebakrarup/krarupos` | `bazzite:stable` | Escritorio KDE |
 | `ghcr.io/sebakrarup/krarupos-deck` | `bazzite-deck:stable` | KDE + modo juego de Steam |
+| `ghcr.io/sebakrarup/krarupos-nvidia` | `bazzite-nvidia-open:stable` | Escritorio KDE con NVIDIA (RTX 16xx en adelante) |
 
 ## Qué trae
 
@@ -74,7 +75,7 @@ Reiniciar, y después pasar a la versión con firma:
 rpm-ostree rebase ostree-image-signed:docker://ghcr.io/sebakrarup/krarupos-deck:latest
 ```
 
-(Para la variante de escritorio, cambiar `krarupos-deck` por `krarupos`.)
+(Para escritorio, cambiar `krarupos-deck` por `krarupos`; con NVIDIA, por `krarupos-nvidia`.)
 
 ## Agregar o quitar apps
 
