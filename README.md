@@ -59,6 +59,7 @@ Hay dos variantes, que se construyen todos los días sobre la última Bazzite:
 - **Dolphin** con íconos y vistas previas grandes, ruta completa y barra de herramientas propia.
 - **Apps predeterminadas**: videos con mpv, Firefox como navegador y magnet links/torrents con Transmission Remote (sin que Firefox pregunte).
 - **mpv con decodificación por GPU** (`hwdec=vaapi`): evita tirones en AV1 y videos a muchos fps.
+- **mpv se cierra al terminar el video**, como antes de la versión 0.42.
 - **Favoritos** en el menú de inicio y Mission Center en el panel.
 
 ## Cambiarse a krarupOS desde Bazzite
