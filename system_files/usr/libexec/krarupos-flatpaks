@@ -35,6 +35,12 @@ fi
 if flatpak remotes --system --columns=name,url | grep -q '^flathub[[:space:]]*file://'; then
     flatpak remote-modify --system --gpg-verify --url="$flathub" flathub
 fi
+# Idiomas de las apps: solo español e inglés. La ISO trae solo esos (pesa menos) y,
+# con el valor de Flatpak por defecto (todos), sus paquetes .Locale no se instalan.
+# Solo si nadie lo cambió antes.
+if [[ $(flatpak config --system --get languages 2>/dev/null) == "*unset*" ]]; then
+    flatpak config --system --set languages "es;en"
+fi
 if [[ -f $iso/repo/summary && -f $iso/apps.txt ]]; then
     instaladas=$(flatpak list --system --columns=application)
     de_iso=()

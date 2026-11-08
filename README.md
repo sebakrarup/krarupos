@@ -12,7 +12,7 @@ Hay tres variantes, que se construyen todos los días sobre la última Bazzite:
 
 ## Qué trae
 
-- **Apps** (Flatpak, se instalan solas en el primer arranque; las de `disk_config/flatpaks-iso.txt` vienen dentro de la ISO y se instalan sin internet): ver
+- **Apps** (Flatpak, se instalan solas en el primer arranque; las de `disk_config/flatpaks-iso.txt` vienen dentro de la ISO con sus idiomas, español e inglés, y se instalan sin internet; las apps Flatpak quedan con esos dos idiomas): ver
   [`flatpaks.txt`](system_files/usr/share/krarupos/flatpaks.txt).
 - **Programas**: `nmap`, `htop`, `amdgpu_top` y `rocm-smi` (para que `btop` muestre GPUs AMD). Los dos últimos no van en la variante NVIDIA.
   Videos: `mediainfo`, `mkvtoolnix` y `yt-dlp`. Red: `iperf3`, `wol` (Wake-on-LAN) y `nethogs`.
