@@ -89,11 +89,20 @@ jobs:
           # Bazzite usa btrfs; la imagen no dice qué formato usar.
           additional-args: --use-librepo=True --rootfs btrfs
 
+      # Apps de Flathub dentro de la ISO (disk_config/flatpaks-iso.txt).
+      - name: Flatpak apps for the ISO
+        run: |
+          df -h / "${{ steps.build.outputs.output-directory }}"
+          sudo apt-get update
+          sudo apt-get install -y flatpak ostree
+          ./disk_config/flatpaks-iso.sh "$RUNNER_TEMP/flatpak-iso"
+          df -h /
+
       - name: krarupOS logos in the installer
         run: |
-          sudo apt-get update
           sudo apt-get install -y xorriso squashfs-tools isomd5sum
-          sudo ./disk_config/marca-instalador.sh "${{ steps.build.outputs.output-directory }}"
+          sudo ./disk_config/marca-instalador.sh "${{ steps.build.outputs.output-directory }}" "$RUNNER_TEMP/flatpak-iso"
+          sudo rm -rf "$RUNNER_TEMP/flatpak-iso"
           sudo chown -R "${USER_UID}:${USER_GID}" "${{ steps.build.outputs.output-directory }}"
 
       - name: Upload disk images and Checksum to Job Artifacts

@@ -2,7 +2,8 @@
 # Cambia los logos de Fedora del instalador (Anaconda) por los de krarupOS.
 # bootc-image-builder arma el instalador con los paquetes de Fedora
 # (fedora-logos), así que se cambian después, dentro de la ISO ya armada.
-# Uso (como root): marca-instalador.sh <carpeta con la ISO>
+# Uso (como root): marca-instalador.sh <carpeta con la ISO> [carpeta de flatpaks-iso.sh]
+# Con la segunda carpeta, la ISO también lleva las apps de Flathub (/krarupos-flatpak).
 set -euo pipefail
 
 aqui=$(dirname "$(readlink -f "$0")")
@@ -29,9 +30,14 @@ mksquashfs "$tmp/raiz" "$tmp/install.img" -comp zstd -b 131072 -noappend -quiet
 rm -rf "$tmp/raiz"
 
 # replay repite el arranque de la ISO original (BIOS, UEFI y la partición EFI).
+apps=()
+if [[ -n ${2:-} ]]; then
+    [[ -f $2/repo/summary && -f $2/apps.txt ]]
+    apps=(-map "$2/repo" /krarupos-flatpak/repo -map "$2/apps.txt" /krarupos-flatpak/apps.txt)
+fi
 xorriso -indev "$iso" -outdev "$tmp/nueva.iso" -volid "$volid" \
     -boot_image any replay \
-    -update "$tmp/install.img" /images/install.img
+    -update "$tmp/install.img" /images/install.img "${apps[@]}"
 # Suma para "Test this media" (rd.live.check).
 implantisomd5 --force "$tmp/nueva.iso"
 mv "$tmp/nueva.iso" "$iso"

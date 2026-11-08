@@ -1,0 +1,17 @@
+# Apps de Flathub que vienen dentro de la ISO y se instalan sin internet en el
+# primer arranque. Las demás de system_files/usr/share/krarupos/flatpaks.txt se
+# bajan de Flathub como siempre. Cada una debe estar también en flatpaks.txt.
+# Lo que más pesa son los runtimes (GNOME, KDE, Freedesktop): agregar una app que
+# usa uno que ya está cuesta solo lo que pesa la app.
+io.github.ilya_zlobintsev.LACT
+org.mozilla.firefox
+com.google.Chrome
+io.mpv.Mpv
+org.telegram.desktop
+com.moonlight_stream.Moonlight
+dev.lizardbyte.app.Sunshine
+com.vysp3r.ProtonPlus
+io.github.Foldex.AdwSteamGtk
+# Mission Center va en el panel; usa el mismo runtime que ProtonPlus (GNOME 50).
+io.missioncenter.MissionCenter
+org.gtk.Gtk3theme.Breeze//3.22

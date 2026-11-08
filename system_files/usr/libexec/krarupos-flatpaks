@@ -19,6 +19,44 @@ cp -f /usr/share/krarupos/firefox-prefs.js "$preferencias/02-krarupos.js"
 anotadas=/var/lib/krarupos/flatpaks-instaladas
 mkdir -p "$(dirname "$anotadas")"
 touch "$anotadas"
+
+# Apps que vienen en la ISO (disk_config/flatpaks-iso.sh): el instalador deja su
+# repositorio en /var y aquí se instalan sin internet. Se instalan desde el
+# remoto "flathub" apuntado un momento a esa carpeta, así quedan como cualquier
+# app de Flathub y se actualizan desde ahí. Después se borra la carpeta.
+flathub=https://dl.flathub.org/repo/
+iso=/var/lib/krarupos/flatpak-iso
+if [[ -f /etc/flatpak/remotes.d/flathub.flatpakrepo ]]; then
+    flatpak remote-add --system --if-not-exists flathub /etc/flatpak/remotes.d/flathub.flatpakrepo
+else
+    flatpak remote-add --system --if-not-exists flathub "${flathub}flathub.flatpakrepo"
+fi
+# Si se cortó a mitad de camino, flathub quedó apuntando a la carpeta.
+if flatpak remotes --system --columns=name,url | grep -q '^flathub[[:space:]]*file://'; then
+    flatpak remote-modify --system --gpg-verify --url="$flathub" flathub
+fi
+if [[ -f $iso/repo/summary && -f $iso/apps.txt ]]; then
+    instaladas=$(flatpak list --system --columns=application)
+    de_iso=()
+    while read -r app; do
+        id=${app%%//*}
+        grep -qxF "$id" "$anotadas" && continue
+        grep -qxF "$id" <<<"$instaladas" && continue
+        de_iso+=("$app")
+    done <"$iso/apps.txt"
+    if ((${#de_iso[@]})); then
+        echo "Instalando desde la ISO: ${de_iso[*]}"
+        flatpak remote-modify --system --no-gpg-verify --url="file://$iso/repo" flathub
+        flatpak install --system --noninteractive --or-update flathub "${de_iso[@]}" ||
+            echo "No se pudieron instalar todas las apps de la ISO; se bajan de Flathub" >&2
+        flatpak remote-modify --system --gpg-verify --url="$flathub" flathub
+        if flatpak info --system io.github.ilya_zlobintsev.LACT >/dev/null 2>&1; then
+            systemctl start --no-block lactd.service || true
+        fi
+    fi
+    rm -rf "$iso"
+fi
+
 instaladas=$(flatpak list --system --columns=application)
 
 # La versión anterior guardaba solo la suma de la lista.
@@ -43,8 +81,6 @@ if ((!${#faltan[@]})); then
     echo "No hay apps nuevas en la lista; nada que hacer."
     exit 0
 fi
-
-flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
 # A veces una descarga de Flathub se queda colgada para siempre (2026-10-27:
 # WhatSie detenida sin bajar nada y todas las demás esperando). Con un tope por

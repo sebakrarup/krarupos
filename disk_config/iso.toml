@@ -14,6 +14,31 @@ UTC
 EOF
 bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry ghcr.io/sebakrarup/krarupos:latest
 %end
+
+%post --nochroot
+# Apps de Flathub que trae la ISO (disk_config/flatpaks-iso.sh): se copian al /var
+# del sistema instalado y krarupos-flatpaks las instala en el primer arranque.
+origen=""
+for d in /run/install/repo /run/install/source /run/install/isodir; do
+    [ -d "$d/krarupos-flatpak/repo" ] && origen=$d/krarupos-flatpak && break
+done
+if [ -z "$origen" ]; then
+    mkdir -p /mnt/krarupos-iso
+    if mount -o ro /dev/disk/by-label/Container-Installer-x86_64 /mnt/krarupos-iso; then
+        [ -d /mnt/krarupos-iso/krarupos-flatpak/repo ] && origen=/mnt/krarupos-iso/krarupos-flatpak
+    fi
+fi
+var=""
+for d in /mnt/sysroot/ostree/deploy/*/var /mnt/sysimage/var; do
+    [ -d "$d" ] && var=$d && break
+done
+if [ -n "$origen" ] && [ -n "$var" ]; then
+    mkdir -p "$var/lib/krarupos"
+    rm -rf "$var/lib/krarupos/flatpak-iso"
+    cp -r "$origen" "$var/lib/krarupos/flatpak-iso" || rm -rf "$var/lib/krarupos/flatpak-iso"
+fi
+umount /mnt/krarupos-iso 2>/dev/null || true
+%end
 """
 
 [customizations.installer.modules]
