@@ -383,6 +383,9 @@ done
 kwriteconfig6 --file /etc/xdg/ksplashrc --group KSplash --key Theme com.krarupos.desktop
 # Konsole: perfil krarupOS (colores Vapor sin transparencia, Fira Code 16).
 kwriteconfig6 --file /etc/xdg/konsolerc --group "Desktop Entry" --key DefaultProfile krarupOS.profile
+# Ícono de Konsole: utilities-x-terminal del tema Tela-circle (el que eligió el usuario).
+sed -i 's/^Icon=utilities-terminal$/Icon=utilities-x-terminal/' /usr/share/applications/org.kde.konsole.desktop
+grep -qx 'Icon=utilities-x-terminal' /usr/share/applications/org.kde.konsole.desktop
 # Ventanas: el foco sigue al puntero del mouse.
 kwriteconfig6 --file /etc/xdg/kwinrc --group Windows --key FocusPolicy FocusFollowsMouse
 # Sesión: al entrar, empezar vacía (sin reabrir las apps de la sesión anterior).
