@@ -202,10 +202,11 @@ fi
 
 ### Carpetas de usuario
 
-# Sin "Public" (compartir en red) ni "Templates" (plantillas de Crear nuevo):
-# xdg-user-dirs no las crea en los usuarios nuevos.
-sed -i -e 's/^TEMPLATES=/#TEMPLATES=/' -e 's/^PUBLICSHARE=/#PUBLICSHARE=/' /etc/xdg/user-dirs.defaults
-if grep -qE '^(TEMPLATES|PUBLICSHARE)=' /etc/xdg/user-dirs.defaults; then exit 1; fi
+# Sin "Public" (compartir en red), "Templates" (plantillas de Crear nuevo) ni
+# "Projects" (nueva en xdg-user-dirs 0.20): no se crean en los usuarios nuevos.
+sed -i -e 's/^TEMPLATES=/#TEMPLATES=/' -e 's/^PUBLICSHARE=/#PUBLICSHARE=/' \
+    -e 's/^PROJECTS=/#PROJECTS=/' /etc/xdg/user-dirs.defaults
+if grep -qE '^(TEMPLATES|PUBLICSHARE|PROJECTS)=' /etc/xdg/user-dirs.defaults; then exit 1; fi
 
 ### Tema
 
