@@ -250,6 +250,9 @@ dolphin_svg=$(readlink -f "$apps/org.kde.dolphin.svg")
 rm -f "$apps/org.kde.dolphin.svg"
 sed 's/style="color:#44475a"/style="color:#7e57c2"/' "$dolphin_svg" >"$apps/org.kde.dolphin.svg"
 grep -q 'color:#7e57c2' "$apps/org.kde.dolphin.svg"
+# System Settings (preferences-system) con el azul de la carpeta Videos (#5677fc).
+sed -i 's/style="color:#44475a"/style="color:#5677fc"/' "$apps/preferences-system.svg"
+grep -q 'color:#5677fc' "$apps/preferences-system.svg"
 for t in /usr/share/icons/Tela-circle-dracula*; do gtk-update-icon-cache -f -q "$t"; done
 
 # Cursor Bibata-Modern-Ice, última versión.
