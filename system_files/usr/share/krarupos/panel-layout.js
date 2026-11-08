@@ -12,7 +12,7 @@ panel.hiding = "dodgewindows"
 
 var kickoff = panel.addWidget("org.kde.plasma.kickoff")
 kickoff.currentConfigGroup = ["General"]
-kickoff.writeConfig("icon", "about_kde")
+kickoff.writeConfig("icon", "org.alienarena.alienarena")
 
 var tareas = panel.addWidget("org.kde.plasma.icontasks")
 tareas.currentConfigGroup = ["General"]

@@ -496,7 +496,7 @@ pins = [
 lista = ",\n".join(f'{" " * 20}"{x}"' for x in pins)
 s, n = re.subn(r'(writeConfig\("launchers", \[)\s*.*?(\s*\]\);)', lambda m: m[1] + "\n" + lista + m[2], s, flags=re.S)
 assert n == 1, n
-# Ícono del menú de inicio (about_kde, del tema Tela-circle) y panel de 54 px de alto.
+# Ícono del menú de inicio (org.alienarena.alienarena, del tema Tela-circle) y panel de 54 px de alto.
 if "layout-templates" in p:
     s, n = re.subn(r'^panel\.height = .*$', 'panel.height = 54', s, flags=re.M)
     assert n == 1, n
@@ -504,7 +504,7 @@ if "layout-templates" in p:
     assert s.count(viejo) == 1
     s = s.replace(viejo, 'var kickoff = panel.addWidget("org.kde.plasma.kickoff")\n'
                          'kickoff.currentConfigGroup = ["General"]\n'
-                         'kickoff.writeConfig("icon", "about_kde")\n')
+                         'kickoff.writeConfig("icon", "org.alienarena.alienarena")\n')
 open(p, "w").write(s)
 EOF
 done
