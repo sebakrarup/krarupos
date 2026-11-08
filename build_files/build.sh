@@ -481,7 +481,7 @@ Prepend=$prepend
 IgnoreDefaults=true
 EOF
 
-# Panel: navegador (Firefox), Configuración, Konsole, Dolphin y Mission Center.
+# Panel: navegador (Firefox), Configuración, Konsole, Dolphin y Mission Center (y Gaming Mode en deck).
 for f in /usr/share/plasma/layout-templates/org.kde.plasma.desktop.defaultPanel/contents/layout.js \
     /usr/share/plasma/shells/org.kde.plasma.desktop/contents/updates/bazzite-pins.js; do
     [[ -f $f ]] || continue
@@ -511,6 +511,25 @@ if "layout-templates" in p:
 open(p, "w").write(s)
 EOF
 done
+
+# Deck: "Gaming Mode" también fijo en el panel, después de Mission Center.
+if [[ -f /usr/share/applications/krarupos-gaming-mode.desktop ]]; then
+    for f in /usr/share/plasma/layout-templates/org.kde.plasma.desktop.defaultPanel/contents/layout.js \
+        /usr/share/plasma/shells/org.kde.plasma.desktop/contents/updates/bazzite-pins.js \
+        "$lnf/contents/layouts/org.kde.plasma.desktop-layout.js"; do
+        [[ -f $f ]] || continue
+        python3 - "$f" <<'EOF'
+import re, sys
+p = sys.argv[1]
+s = open(p).read()
+s, n = re.subn(r'^(\s*)"applications:io\.missioncenter\.MissionCenter\.desktop"',
+               lambda m: m[0] + ',\n' + m[1] + '"applications:krarupos-gaming-mode.desktop"', s, flags=re.M)
+assert n == 1, (p, n)
+open(p, "w").write(s)
+EOF
+    done
+    grep -q 'krarupos-gaming-mode' "$lnf/contents/layouts/org.kde.plasma.desktop-layout.js"
+fi
 
 ### Firma
 
