@@ -64,7 +64,7 @@ Hay tres variantes, que se construyen todos los días sobre la última Bazzite:
 - **Apps predeterminadas**: videos con mpv, Firefox como navegador y magnet links/torrents con Transmission Remote (sin que Firefox pregunte).
 - **mpv con decodificación por GPU** (`hwdec=vaapi`): evita tirones en AV1 y videos a muchos fps.
 - **mpv se cierra al terminar el video**, como antes de la versión 0.42.
-- **Favoritos** en el menú de inicio y Mission Center en el panel.
+- **Panel fijado**: Firefox, Configuración, Konsole, Dolphin y Mission Center, en ese orden. **Favoritos** del menú sin esas apps (ya están en el panel).
 
 ## Cambiarse a krarupOS desde Bazzite
 

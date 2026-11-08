@@ -421,13 +421,14 @@ kwriteconfig6 --file /etc/xdg/kdeglobals --group General --key BrowserApplicatio
 
 ### Favoritos
 
-# Menú de inicio, en el orden del usuario.
+# Menú de inicio, en el orden del usuario. Sin lo que ya está en el panel
+# (Firefox, Configuración, Konsole, Dolphin, Mission Center).
 # /etc/xdg manda sobre /usr/share/kde-settings, donde Bazzite pone los suyos.
 favoritos=(
-    preferred://browser io.github.kolunmi.Bazaar org.jellyfin.JellyfinDesktop org.telegram.desktop
-    com.moonlight_stream.Moonlight steam net.lutris.Lutris systemsettings
-    io.github.ublue_os.yafti_gtk org.kde.konsole org.kde.dolphin com.vysp3r.ProtonPlus
-    io.missioncenter.MissionCenter com.dec05eba.gpu_screen_recorder tv.kodi.Kodi
+    io.github.kolunmi.Bazaar org.jellyfin.JellyfinDesktop org.telegram.desktop
+    com.moonlight_stream.Moonlight steam net.lutris.Lutris
+    io.github.ublue_os.yafti_gtk com.vysp3r.ProtonPlus
+    com.dec05eba.gpu_screen_recorder tv.kodi.Kodi
     rocks.shy.VacuumTube dev.lizardbyte.app.Sunshine com.google.Chrome
 )
 # Deck: "Gaming Mode" en el menú y en favoritos (después de Steam) en vez del
@@ -460,7 +461,7 @@ Prepend=$prepend
 IgnoreDefaults=true
 EOF
 
-# Panel: Configuración, navegador, Konsole, Dolphin y Mission Center.
+# Panel: navegador (Firefox), Configuración, Konsole, Dolphin y Mission Center.
 for f in /usr/share/plasma/layout-templates/org.kde.plasma.desktop.defaultPanel/contents/layout.js \
     /usr/share/plasma/shells/org.kde.plasma.desktop/contents/updates/bazzite-pins.js; do
     [[ -f $f ]] || continue
@@ -469,8 +470,8 @@ import re, sys
 p = sys.argv[1]
 s = open(p).read()
 pins = [
-    "applications:systemsettings.desktop",
     "preferred://browser",
+    "applications:systemsettings.desktop",
     "applications:org.kde.konsole.desktop",
     "preferred://filemanager",
     "applications:io.missioncenter.MissionCenter.desktop",

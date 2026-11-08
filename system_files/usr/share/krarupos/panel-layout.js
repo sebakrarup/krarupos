@@ -17,8 +17,8 @@ kickoff.writeConfig("icon", "about_kde")
 var tareas = panel.addWidget("org.kde.plasma.icontasks")
 tareas.currentConfigGroup = ["General"]
 tareas.writeConfig("launchers", [
-    "applications:systemsettings.desktop",
     "preferred://browser",
+    "applications:systemsettings.desktop",
     "applications:org.kde.konsole.desktop",
     "preferred://filemanager",
     "applications:io.missioncenter.MissionCenter.desktop"
