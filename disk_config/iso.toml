@@ -38,6 +38,15 @@ if [ -n "$origen" ] && [ -n "$var" ]; then
     cp -r "$origen" "$var/lib/krarupos/flatpak-iso" || rm -rf "$var/lib/krarupos/flatpak-iso"
 fi
 umount /mnt/krarupos-iso 2>/dev/null || true
+
+# Nombre del disco del sistema: el instalador lo deja "krarupos_<nombre del PC>" y
+# así aparece en Dolphin. Solo cambia la etiqueta (el arranque usa el UUID).
+for d in /mnt/sysroot /mnt/sysimage; do
+    if [ "$(findmnt -no FSTYPE "$d" 2>/dev/null)" = btrfs ]; then
+        btrfs filesystem label "$d" krarupOS || true
+        break
+    fi
+done
 %end
 """
 
