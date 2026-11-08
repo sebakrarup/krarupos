@@ -28,3 +28,14 @@ if [[ -n $uuid ]]; then
     udevadm control --reload
     udevadm trigger --action=change --settle "$dev"
 fi
+
+# Disco del sistema (donde está /sysroot) con el ícono de disco del sistema, en
+# vez del de SSD de 95-krarupos-iconos-discos.rules.
+uuid=$(findmnt -no UUID /sysroot 2>/dev/null || true)
+dev=$(findmnt -no SOURCE /sysroot 2>/dev/null | sed 's/\[.*\]//' || true)
+if [[ -n $uuid && -b $dev ]]; then
+    mkdir -p /run/udev/rules.d
+    echo "SUBSYSTEM==\"block\", ENV{ID_FS_UUID}==\"$uuid\", ENV{UDISKS_ICON_NAME}=\"drive-harddisk-system\"" >/run/udev/rules.d/96-krarupos-sistema.rules
+    udevadm control --reload
+    udevadm trigger --action=change --settle "$dev"
+fi

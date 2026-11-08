@@ -1,0 +1,6 @@
+# Ícono de SSD (NVMe o SATA no rotatorio, que no sea USB) en los dispositivos de KDE,
+# en vez del de disco duro genérico. El disco del sistema lleva otro ícono, que pone
+# krarupos-ocultar-sistema (96-krarupos-sistema.rules en /run).
+# Ojo: KDE Frameworks 6.31 lee mal UDISKS_ICON_NAME (usa QObject::property en vez
+# de prop); el arreglo ya está en Solid master, así que esto se ve desde la 6.32.
+SUBSYSTEM=="block", KERNEL=="nvme*|sd*", ENV{ID_BUS}!="usb", ATTRS{queue/rotational}=="0", ENV{UDISKS_ICON_NAME}="drive-harddisk-solidstate"
