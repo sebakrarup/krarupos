@@ -20,7 +20,7 @@ Hay tres variantes, que se construyen todos los días sobre la última Bazzite:
 - **Máquinas virtuales**: virt-manager con KVM/QEMU y libvirt (red NAT lista, TPM para Windows 11); los administradores lo usan sin contraseña.
 - **Tema**: estilo Darkly, colores Breeze oscuro (bordes sin contraste), pantalla de inicio Vapor con el logo de krarupOS, letra 15, íconos Tela-circle-dracula-dark, cursor Bibata-Modern-Ice
 - **Carpetas de usuario con color** en Dolphin: Home verde, Descargas roja, Música amarilla, Imágenes morada, Videos azul, Red (Network) naranja, Archivos recientes rojo y Ubicaciones recientes café; `homebrew` (Decky) café. El ícono de Dolphin con el círculo morado de Imágenes y el de System Settings con el azul de Videos. Sin las carpetas `Public`, `Templates` ni `Projects`. Dolphin se abre la primera vez en 1403×1187 en pantallas 4K.
-  y el wallpaper Vía Láctea de KDE con el logo de krarupOS en la esquina (CC-BY-SA-4.0, ruvkr). Aparece como el aspecto global "krarupOS".
+  y el wallpaper Vía Láctea de KDE con el logo de krarupOS abajo a la izquierda (CC-BY-SA-4.0, ruvkr). Aparece como el aspecto global "krarupOS".
 - **Panel**: a la derecha, centrado, flotante y transparente (Panel Colorizer), con el ícono `org.alienarena.alienarena` en el menú y
   un punto bajo las apps abiertas (azul la activa, gris las demás, naranja si piden atención) en vez de cuadros.
 - **Logo krarupOS** (letra MuseoModerno, la del logo de Bazzite) en la pantalla de arranque, en la de inicio de KDE y en el instalador (la ISO).

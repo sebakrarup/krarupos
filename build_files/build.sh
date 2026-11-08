@@ -273,7 +273,7 @@ dnf5 install -y darkly
 dnf5 -y copr disable deltacopy/darkly
 test -n "$(find /usr/lib64/qt6/plugins/styles -iname '*darkly*')"
 
-# Wallpaper: la Vía Láctea de KDE con el logo de krarupOS en la esquina. Paquete aparte
+# Wallpaper: la Vía Láctea de KDE con el logo de krarupOS abajo a la izquierda. Paquete aparte
 # para no pisar el original; conserva autor y licencia (CC-BY-SA-4.0).
 fondo=/usr/share/wallpapers/krarupOS
 cp -a /usr/share/wallpapers/MilkyWay "$fondo"
