@@ -243,6 +243,13 @@ ln -sfn "$color/red-folder-recent.svg" /usr/share/icons/Tela-circle-dracula/scal
 ln -sfn "$color/brown-folder-recent.svg" "$color/folder-open-recent.svg"
 test "$(readlink -f "$color/folder-download.svg")" = "$(readlink -f "$color/folder_color_red_downloads.svg")"
 test "$(readlink -f /usr/share/icons/Tela-circle-dracula-dark/16/places/folder-music.svg)" = "$(readlink -f "$color/folder_color_yellow_music.svg")"
+# Ícono de Dolphin con el círculo morado de la carpeta Imágenes (#7e57c2) en vez
+# del gris. Solo org.kde.dolphin: system-file-manager lo usan otras apps.
+apps=/usr/share/icons/Tela-circle-dracula/scalable/apps
+dolphin_svg=$(readlink -f "$apps/org.kde.dolphin.svg")
+rm -f "$apps/org.kde.dolphin.svg"
+sed 's/style="color:#44475a"/style="color:#7e57c2"/' "$dolphin_svg" >"$apps/org.kde.dolphin.svg"
+grep -q 'color:#7e57c2' "$apps/org.kde.dolphin.svg"
 for t in /usr/share/icons/Tela-circle-dracula*; do gtk-update-icon-cache -f -q "$t"; done
 
 # Cursor Bibata-Modern-Ice, última versión.
