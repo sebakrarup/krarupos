@@ -50,6 +50,7 @@ Hay tres variantes, que se construyen todos los días sobre la última Bazzite:
 - **Konsole** sin barra de desplazamiento (el scroll sigue funcionando).
 - **Dolphin sin discos del sistema** en Dispositivos: ni la raíz (composefs, ~50 MB al 100 % en rojo) ni `/boot`.
 - **Ventanas**: el foco sigue al puntero del mouse.
+- **Sesión vacía** al entrar: no se vuelven a abrir las apps de la sesión anterior.
 - **Prompt** con los colores de krarupOS (`seba@krarupOS:~$`).
 - **fastfetch** con el logo de krarupOS y un color por línea, una vez por sesión, en la primera terminal.
 - **Alias**: `krarup` muestra `fastfetch` con el logo de krarupOS; `foto` muestra fotos en una TTY; `ruedaON` y `ruedaOFF` cambian la rueda del G502 X a alta resolución o a normal (para todos los usuarios).
@@ -58,7 +59,7 @@ Hay tres variantes, que se construyen todos los días sobre la última Bazzite:
 - **LACT listo sin configurar** (también en la variante NVIDIA, sin la configuración de la RX 9070 XT): es la primera app que se instala y su servicio viene incluido; con la RX 9070 XT de Seba pone 250 W y Zero RPM apagado (una vez, como en CachyOS). OverDrive de amdgpu activado (`amdgpu.ppfeaturemask`), que LACT necesita para Zero RPM y overclock.
 - **input-remapper** activado, con los presets de un Logitech G502 X LS.
 - **Apps GTK** (como Transmission Remote) con el tema Breeze y los colores de KDE, también las Flatpak.
-- **Konsole** con el perfil krarupOS (colores Vapor sin transparencia, Fira Code 16).
+- **Konsole** con el perfil krarupOS (colores Vapor sin transparencia, Fira Code 16); la primera ventana se abre de 124×42 para que quepan la bienvenida y fastfetch, en ese orden.
 - **Dolphin** con íconos y vistas previas grandes, ruta completa y barra de herramientas propia.
 - **Apps predeterminadas**: videos con mpv, Firefox como navegador y magnet links/torrents con Transmission Remote (sin que Firefox pregunte).
 - **mpv con decodificación por GPU** (`hwdec=vaapi`): evita tirones en AV1 y videos a muchos fps.

@@ -1,3 +1,4 @@
+# Nombre con zz-: corre después de user-motd.sh, así primero sale la bienvenida.
 # fastfetch una vez por sesión: en la primera terminal interactiva después de iniciar
 # sesión. La marca va en XDG_RUNTIME_DIR, que se vacía al cerrar la sesión del usuario.
 # Se apaga junto con la bienvenida: ujust toggle-user-motd.

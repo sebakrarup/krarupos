@@ -368,6 +368,8 @@ kwriteconfig6 --file /etc/xdg/ksplashrc --group KSplash --key Theme com.krarupos
 kwriteconfig6 --file /etc/xdg/konsolerc --group "Desktop Entry" --key DefaultProfile krarupOS.profile
 # Ventanas: el foco sigue al puntero del mouse.
 kwriteconfig6 --file /etc/xdg/kwinrc --group Windows --key FocusPolicy FocusFollowsMouse
+# Sesión: al entrar, empezar vacía (sin reabrir las apps de la sesión anterior).
+kwriteconfig6 --file /etc/xdg/ksmserverrc --group General --key loginMode emptySession
 # Apps GTK con el tema Breeze (toma los colores de KDE) en vez de Vapor/Adwaita.
 # settings.ini lo leen las apps del sistema; el gschema lo pasa el portal a
 # las Flatpak, que además necesitan org.gtk.Gtk3theme.Breeze (flatpaks.txt).
