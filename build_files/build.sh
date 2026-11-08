@@ -215,8 +215,8 @@ tela_tag=$(curl -fsSL --retry 3 https://api.github.com/repos/vinceliuice/Tela-ci
 git clone --depth 1 --branch "$tela_tag" https://github.com/vinceliuice/Tela-circle-icon-theme.git /tmp/tela
 (cd /tmp/tela && ./install.sh -d /usr/share/icons dracula)
 # Carpetas de usuario con color (en Dolphin y su barra lateral, cualquier idioma):
-# Home verde, Descargas roja, Música amarilla, Imágenes morada, Videos azul y Red
-# (Network) naranja.
+# Home verde, Descargas roja, Música amarilla, Imágenes morada, Videos azul, Red
+# (Network) naranja, Archivos recientes rojo y Ubicaciones recientes café.
 # Se reemplazan los íconos por los de color que trae el mismo tema, en todos los
 # tamaños (los chicos son los de la barra lateral).
 color=/usr/share/icons/Tela-circle-dracula/scalable/places
@@ -227,6 +227,8 @@ declare -A carpeta_color=(
     [folder-pictures]=folder_color_purple_pictures
     [folder-video]=folder_color_blue_videos [folder-videos]=folder_color_blue_videos
     [folder-network]=orange-network
+    [document-open-recent]=red-folder-recent
+    [folder-open-recent]=brown-folder-recent
 )
 for nombre in "${!carpeta_color[@]}"; do
     destino=$color/${carpeta_color[$nombre]}.svg
@@ -234,6 +236,10 @@ for nombre in "${!carpeta_color[@]}"; do
     find /usr/share/icons/Tela-circle-dracula* -path '*/places/*' -name "$nombre.svg" \
         -exec ln -sfn "$destino" {} \;
 done
+# Los de "recientes" también están en apps/ (el de tamaño grande, el que usa la barra
+# lateral, sale de ahí) y "Ubicaciones recientes" no tiene versión grande.
+ln -sfn "$color/red-folder-recent.svg" /usr/share/icons/Tela-circle-dracula/scalable/apps/document-open-recent.svg
+ln -sfn "$color/brown-folder-recent.svg" "$color/folder-open-recent.svg"
 test "$(readlink -f "$color/folder-download.svg")" = "$(readlink -f "$color/folder_color_red_downloads.svg")"
 test "$(readlink -f /usr/share/icons/Tela-circle-dracula-dark/16/places/folder-music.svg)" = "$(readlink -f "$color/folder_color_yellow_music.svg")"
 for t in /usr/share/icons/Tela-circle-dracula*; do gtk-update-icon-cache -f -q "$t"; done
