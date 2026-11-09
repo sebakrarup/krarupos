@@ -1,0 +1,10 @@
+[Unit]
+Description=Ajustar letras y Dolphin cuando cambia la resolución de la pantalla
+
+[Path]
+# KWin guarda aquí cada cambio de pantallas (resolución, escala, monitor nuevo).
+PathChanged=%h/.config/kwinoutputconfig.json
+Unit=krarupos-letras.service
+
+[Install]
+WantedBy=plasma-workspace.target

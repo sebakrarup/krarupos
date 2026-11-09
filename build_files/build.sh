@@ -586,6 +586,9 @@ if grep -qx 'Hidden=true' /etc/xdg/autostart/input-remapper-autoload.desktop; th
 systemctl enable krarupos-flatpaks.service
 # Dolphin sin la raíz del sistema ni /boot en Dispositivos (usr/libexec/krarupos-ocultar-sistema).
 systemctl enable krarupos-ocultar-sistema.service
+# Letras de KDE y tamaños de Dolphin según la resolución de la pantalla principal
+# (usr/libexec/krarupos-letras); no toca lo que alguien cambie a mano.
+systemctl --global enable krarupos-letras.service krarupos-letras.path
 # Sensores (RAM, placa) detectados solos en el primer arranque (usr/libexec/krarupos-sensores).
 systemctl enable krarupos-sensores.service
 # LACT sin la ventana de instalar su servicio; arranca cuando LACT ya está instalada.

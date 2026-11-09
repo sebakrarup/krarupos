@@ -1,0 +1,87 @@
+#!/usr/bin/bash
+# Tamaños de KDE según la resolución de la pantalla principal:
+#   - letras: 4K 15, 1440p 13, 1080p o menos 12 (la más pequeña legible, 2 menos;
+#     también las de las vistas de Dolphin);
+#   - Dolphin: panel lateral (Lugares) Huge (48) en 4K y Large (32) en menos;
+#     zoom de íconos 192 px en 4K, 160 en 1440p y 144 en 1080p.
+# Corre al entrar a la sesión y cada vez que KWin guarda la configuración de
+# pantallas (krarupos-letras.path). Cada valor que alguien cambie a mano (en
+# Configuración o en Dolphin) no se toca más. Dolphin abierto toma los cambios
+# la próxima vez que se abra.
+set -uo pipefail
+
+estado=${XDG_STATE_HOME:-$HOME/.local/state}/krarupos-letras.d
+config=${XDG_CONFIG_HOME:-$HOME/.config}
+
+ancho=$(kscreen-doctor -j 2>/dev/null | python3 -I -c '
+import json, sys
+salidas = [o for o in json.load(sys.stdin)["outputs"] if o.get("enabled") and o.get("currentModeId")]
+salidas.sort(key=lambda o: o.get("priority") or 99)
+o = salidas[0]
+modo = next(m for m in o["modes"] if m["id"] == o["currentModeId"])
+print(max(modo["size"]["width"], modo["size"]["height"]))
+') || exit 0
+
+if (( ancho >= 3840 )); then letra=15 lugares=48 zoom=192
+elif (( ancho >= 2560 )); then letra=13 lugares=32 zoom=160
+else letra=12 lugares=32 zoom=144
+fi
+
+# Valor de una clave en el archivo del usuario (sin los valores por defecto de
+# /etc/xdg; KDE no guarda en el usuario un valor igual al de /etc/xdg).
+leer() {
+    awk -v g="[$2]" -v k="$3" '
+        $0 == g { dentro = 1; next }
+        /^\[/ { dentro = 0 }
+        dentro && index($0, k "=") == 1 { print substr($0, length(k) + 2); exit }
+    ' "$config/$1" 2>/dev/null
+}
+
+# a_mano <archivo> <grupo> <clave>: el usuario lo cambió (no es lo que dejó este
+# script la última vez).
+a_mano() {
+    local actual
+    actual=$(leer "$1" "$2" "$3")
+    [[ -n $actual && $actual != "$(cat "$estado/$1|$2|$3" 2>/dev/null)" ]]
+}
+
+cambios=()
+# poner <archivo> <grupo> <clave> <valor>
+poner() {
+    local nota="$estado/$1|$2|$3" actual anterior
+    a_mano "$1" "$2" "$3" && return
+    actual=$(leer "$1" "$2" "$3")
+    anterior=$(cat "$nota" 2>/dev/null)
+    [[ $actual == "$4" ]] && return
+    [[ -z $actual && $anterior == "$4" ]] && return
+    kwriteconfig6 --file "$config/$1" --group "$2" --key "$3" "$4"
+    mkdir -p "$estado"
+    echo "$4" >"$nota"
+    cambios+=("$1")
+}
+
+fuente() { echo "Noto Sans,$1,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0"; }
+
+poner kdeglobals General font "$(fuente $letra)"
+poner kdeglobals General menuFont "$(fuente $letra)"
+poner kdeglobals General toolBarFont "$(fuente $letra)"
+poner kdeglobals General smallestReadableFont "$(fuente $((letra - 2)))"
+poner kdeglobals WM activeFont "$(fuente $letra)"
+
+poner dolphinrc IconsMode ViewFont "$(fuente $letra)"
+poner dolphinrc DetailsMode ViewFont "$(fuente $letra)"
+# El zoom de Dolphin son dos valores (sin y con miniaturas): si cambió uno a mano,
+# no se toca ninguno.
+if ! a_mano dolphinrc IconsMode IconSize && ! a_mano dolphinrc IconsMode PreviewSize; then
+    poner dolphinrc IconsMode IconSize "$zoom"
+    poner dolphinrc IconsMode PreviewSize "$zoom"
+fi
+poner dolphinrc PlacesPanel IconSize "$lugares"
+poner dolphinrc "KFileDialog Settings" "Places Icons Static Size" "$lugares"
+
+# Avisar: las apps de KDE y el panel cambian al tiro; KWin, los títulos de ventana.
+if [[ " ${cambios[*]} " == *" kdeglobals "* ]]; then
+    dbus-send --session --type=signal /KGlobalSettings org.kde.KGlobalSettings.notifyChange int32:1 int32:0
+    dbus-send --session --type=method_call --dest=org.kde.KWin /KWin org.kde.KWin.reconfigure 2>/dev/null
+fi
+exit 0

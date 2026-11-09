@@ -1,0 +1,10 @@
+[Unit]
+Description=Letras de KDE y tamaños de Dolphin según la resolución de la pantalla
+After=plasma-workspace.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/krarupos-letras
+
+[Install]
+WantedBy=plasma-workspace.target
