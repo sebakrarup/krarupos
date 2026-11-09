@@ -1,0 +1,12 @@
+#!/usr/bin/bash
+# Letra grande (ter-v32b) en las TTY que ya tienen getty, cuando fbcon recién toma
+# la consola. Con NVIDIA la toma recién al pasar a una TTY por primera vez: el
+# setfont de getty@ (50-krarupos-letra.conf) corrió una fracción de segundo antes,
+# con la consola todavía "dummy", y systemd-vconsole-setup falla porque tty1 es la
+# de la sesión gráfica. Lo llama 90-krarupos-letra-tty.rules.
+sleep 1
+for unidad in $(systemctl list-units --plain --no-legend --state=running 'getty@tty*.service' | awk '{print $1}'); do
+    tty=${unidad#getty@}
+    tty=${tty%.service}
+    setfont -C "/dev/$tty" ter-v32b || true
+done

@@ -1,0 +1,2 @@
+# Cuando fbcon toma la consola (vtcon nuevo), letra grande en las TTY abiertas.
+ACTION=="add", SUBSYSTEM=="vtconsole", KERNEL=="vtcon*", RUN+="/usr/bin/systemd-run --no-block --collect --quiet /usr/libexec/krarupos-letra-tty"
