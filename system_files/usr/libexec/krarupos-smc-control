@@ -1,0 +1,10 @@
+#!/usr/bin/bash
+# Secret Maryo Chronicles: antes de cada partida (pre-launch de Lutris) deja el
+# control encendido. El juego lo apaga en su configuración si arranca sin control
+# conectado y después no lo vuelve a buscar. Start queda para el menú (venía en LB).
+for c in "$HOME"/.local/share/secret-maryo-chronicles/prefix/drive_c/users/*/AppData/Roaming/smc/config.xml; do
+    [[ -f $c ]] || continue
+    sed -i -e 's|"joy_enabled" Value="0"|"joy_enabled" Value="1"|' \
+        -e 's|"joy_button_exit" Value="4"|"joy_button_exit" Value="7"|' "$c"
+done
+exit 0

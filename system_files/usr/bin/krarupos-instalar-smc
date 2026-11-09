@@ -1,0 +1,40 @@
+#!/usr/bin/bash
+# Instala Secret Maryo Chronicles (juego libre, GPL) con el instalador de Lutris
+# (versión 1.9 de Windows con Wine, más la música en alta calidad) y le pone a la
+# partida el pre-launch krarupos-smc-control, que deja el control Xbox encendido.
+set -uo pipefail
+
+nombre="Secret Maryo Chronicles"
+juegos=$HOME/.local/share/lutris/games
+
+configurar() {
+    local yml
+    for yml in "$juegos"/secret-maryo-chronicles-*.yml; do
+        [[ -f $yml ]] || continue
+        python3 -I - "$yml" <<'PY'
+import sys, yaml
+p = sys.argv[1]
+d = yaml.safe_load(open(p)) or {}
+s = d.setdefault("system", {}) or {}
+d["system"] = s
+if s.get("prelaunch_command") != "/usr/libexec/krarupos-smc-control" or not s.get("prelaunch_wait"):
+    s["prelaunch_command"] = "/usr/libexec/krarupos-smc-control"
+    s["prelaunch_wait"] = True
+    yaml.safe_dump(d, open(p, "w"), default_flow_style=False, allow_unicode=True, sort_keys=False)
+PY
+        return 0
+    done
+    return 1
+}
+
+if configurar; then
+    kdialog --title "$nombre" --msgbox "$nombre ya está instalado: búscalo en Lutris o en el menú de aplicaciones.\n\nQuedó con el control Xbox encendido."
+    exit 0
+fi
+
+lutris lutris:install/secret-maryo-chronicles-19-vulkan &
+# Lutris instala en su ventana; cuando aparece la partida, se le pone el pre-launch.
+for _ in $(seq 720); do
+    sleep 5
+    configurar && exit 0
+done
