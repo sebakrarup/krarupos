@@ -23,6 +23,9 @@ set -uo pipefail
 estado=${XDG_STATE_HOME:-$HOME/.local/state}/krarupos-letras.d
 config=${XDG_CONFIG_HOME:-$HOME/.config}
 
+# Solo con KWin corriendo: al salir de la sesión (por ejemplo al pasar a Game Mode)
+# KWin guarda las pantallas y se activa esto, pero kscreen-doctor sin KWin se cae.
+busctl --user status org.kde.KWin >/dev/null 2>&1 || exit 0
 ancho=$(kscreen-doctor -j 2>/dev/null | python3 -I -c '
 import json, sys
 salidas = [o for o in json.load(sys.stdin)["outputs"] if o.get("enabled") and o.get("currentModeId")]
@@ -30,7 +33,7 @@ salidas.sort(key=lambda o: o.get("priority") or 99)
 o = salidas[0]
 modo = next(m for m in o["modes"] if m["id"] == o["currentModeId"])
 print(max(modo["size"]["width"], modo["size"]["height"]))
-') || exit 0
+' 2>/dev/null) || exit 0
 
 if (( ancho >= 3840 )); then letra=15 lugares=48 zoom=192 panel=66 menu="816 684" konsole=16 mc="1202 823" firefox=1.2 puntero=28
 elif (( ancho >= 2560 )); then letra=13 lugares=32 zoom=160 panel=60 menu="776 618" konsole=14 mc="1191 793" firefox=1 puntero=24
