@@ -388,6 +388,8 @@ sed -i 's/^Icon=utilities-terminal$/Icon=utilities-x-terminal/' /usr/share/appli
 grep -qx 'Icon=utilities-x-terminal' /usr/share/applications/org.kde.konsole.desktop
 # Ventanas: el foco sigue al puntero del mouse.
 kwriteconfig6 --file /etc/xdg/kwinrc --group Windows --key FocusPolicy FocusFollowsMouse
+# Sin efecto de zoom (lupa): se activaba sin querer con Meta+rueda / Meta+=.
+kwriteconfig6 --file /etc/xdg/kwinrc --group Plugins --key zoomEnabled false
 # Sesión: al entrar, empezar vacía (sin reabrir las apps de la sesión anterior).
 kwriteconfig6 --file /etc/xdg/ksmserverrc --group General --key loginMode emptySession
 # Apps GTK con el tema Breeze (toma los colores de KDE) en vez de Vapor/Adwaita.
