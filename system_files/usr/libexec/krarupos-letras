@@ -6,7 +6,10 @@
 #     zoom de íconos 192 px en 4K, 160 en 1440p y 144 en 1080p (el tamaño de la
 #     ventana lo recuerda Dolphin por resolución: /etc/skel/.local/state/dolphinstaterc);
 #   - panel de KDE: grosor 66 en 4K, 60 en 1440p y 54 en 1080p; menú de inicio
-#     816x684, 776x618 y 736x553.
+#     816x684, 776x618 y 736x553;
+#   - Konsole: letra 16 en 4K (el perfil de la imagen), 14 en 1440p y 13 en 1080p,
+#     con una copia del perfil krarupOS en ~/.local/share/konsole (en 1080p se abre
+#     maximizado: /etc/skel/.local/state/konsolestaterc).
 # Corre al entrar a la sesión y cada vez que KWin guarda la configuración de
 # pantallas (krarupos-letras.path). Cada valor que alguien cambie a mano (en
 # Configuración o en Dolphin) no se toca más. Dolphin abierto toma los cambios
@@ -25,9 +28,9 @@ modo = next(m for m in o["modes"] if m["id"] == o["currentModeId"])
 print(max(modo["size"]["width"], modo["size"]["height"]))
 ') || exit 0
 
-if (( ancho >= 3840 )); then letra=15 lugares=48 zoom=192 panel=66 menu="816 684"
-elif (( ancho >= 2560 )); then letra=13 lugares=32 zoom=160 panel=60 menu="776 618"
-else letra=12 lugares=32 zoom=144 panel=54 menu="736 553"
+if (( ancho >= 3840 )); then letra=15 lugares=48 zoom=192 panel=66 menu="816 684" konsole=16
+elif (( ancho >= 2560 )); then letra=13 lugares=32 zoom=160 panel=60 menu="776 618" konsole=14
+else letra=12 lugares=32 zoom=144 panel=54 menu="736 553" konsole=13
 fi
 # Los de la imagen (panel-layout.js), para saber si alguien los cambió a mano.
 panel_imagen="66 816 684"
@@ -83,6 +86,27 @@ if ! a_mano dolphinrc IconsMode IconSize && ! a_mano dolphinrc IconsMode Preview
 fi
 poner dolphinrc PlacesPanel IconSize "$lugares"
 poner dolphinrc "KFileDialog Settings" "Places Icons Static Size" "$lugares"
+
+# Konsole: el perfil de la imagen es de solo lectura; una copia con el mismo nombre
+# en la carpeta del usuario lo reemplaza. Si alguien cambió el perfil en Konsole
+# (la copia ya no es la que dejó este script), no se toca.
+perfil_imagen=/usr/share/konsole/krarupOS.profile
+perfil=${XDG_DATA_HOME:-$HOME/.local/share}/konsole/krarupOS.profile
+copia="$estado/konsole.profile"
+if [[ -f $perfil_imagen ]] && { [[ ! -e $perfil ]] || cmp -s "$perfil" "$copia"; }; then
+    if (( konsole == 16 )); then
+        [[ -e $perfil ]] && rm -f "$perfil" "$copia"
+    else
+        mkdir -p "$(dirname "$perfil")" "$estado"
+        sed "s/^Font=Fira Code,16,/Font=Fira Code,$konsole,/" "$perfil_imagen" >"$copia.nuevo"
+        if ! cmp -s "$copia.nuevo" "$perfil"; then
+            cp "$copia.nuevo" "$perfil"
+            mv "$copia.nuevo" "$copia"
+        else
+            rm -f "$copia.nuevo"
+        fi
+    fi
+fi
 
 # Avisar: las apps de KDE cambian al tiro; KWin, los títulos de ventana. El
 # panel (plasmashell) no toma las letras nuevas en vivo: se reinicia.
