@@ -1,0 +1,12 @@
+[Unit]
+Description=Detectar los sensores de temperatura (sensors-detect) en el primer arranque
+ConditionPathExists=!/etc/sysconfig/lm_sensors
+After=systemd-modules-load.service
+Before=lm_sensors.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/krarupos-sensores
+
+[Install]
+WantedBy=multi-user.target

@@ -40,6 +40,7 @@ Hay tres variantes, que se construyen todos los días sobre la última Bazzite:
 - **Wake-on-LAN** activo en el cable de red (paquete mágico), para prender el PC desde otro equipo. En la BIOS también tiene que estar permitido (en MSI: "Resume By PCI-E Device").
 - **Perfil de energía en performance** desde el primer arranque (en PCs sin batería; portátiles y Deck se quedan en balanced). Solo una vez: si se cambia en KDE, se respeta.
 - **Watts de la CPU** visibles en MangoHud y el overlay de Steam (lectura de RAPL sin root).
+- **Mission Center sin contraseña**: trae hecha su "preparación" (nethogs con permisos para la red por programa, RAPL legible y sensores detectados en el primer arranque) y no muestra la bienvenida que la pide.
 - **Caché de shaders de 10 GB** (Fedora usa 1 GB), para que los juegos grandes no vuelvan a compilar shaders. En NVIDIA, la caché de NVIDIA (también 10 GB).
 - **liquidctl** para refrigeración líquida y fuentes Corsair/NZXT/etc., sin `sudo`.
 - **Curva de ventiladores del H150i Platinum** automática solo si está ese cooler (y la RM850i si está): se aplica al arrancar y al despertar, y termina. Apagar: `sudo systemctl mask krarupos-corsair`.

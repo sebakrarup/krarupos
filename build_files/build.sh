@@ -142,6 +142,11 @@ amd=(rocm-smi)
 [[ $nvidia == 1 ]] && amd=()
 dnf5 install -y nmap htop "${amd[@]}" liquidctl terminus-fonts-console gpm \
     mediainfo mkvtoolnix yt-dlp iperf3 wol nethogs ncdu perl-Image-ExifTool headsetcontrol
+# Mission Center: red por programa con nethogs sin pedir contraseña. Son los
+# permisos que pone su "preparación" (pkexec), que en krarupOS falla porque /usr
+# es de solo lectura.
+setcap "cap_net_admin,cap_net_raw,cap_dac_read_search,cap_sys_ptrace+pe" /usr/bin/nethogs
+getcap /usr/bin/nethogs | grep -q cap_sys_ptrace
 
 # liquidctl muestra SyntaxWarning de docopt en cada uso: la imagen deja la fecha
 # de los archivos en 0, el .pyc no coincide y Python recompila docopt (y liquidctl)
@@ -581,6 +586,8 @@ if grep -qx 'Hidden=true' /etc/xdg/autostart/input-remapper-autoload.desktop; th
 systemctl enable krarupos-flatpaks.service
 # Dolphin sin la raíz del sistema ni /boot en Dispositivos (usr/libexec/krarupos-ocultar-sistema).
 systemctl enable krarupos-ocultar-sistema.service
+# Sensores (RAM, placa) detectados solos en el primer arranque (usr/libexec/krarupos-sensores).
+systemctl enable krarupos-sensores.service
 # LACT sin la ventana de instalar su servicio; arranca cuando LACT ya está instalada.
 systemctl enable lactd.service
 # Decky Loader: se instala solo una vez, cuando Steam ya abrió (usr/libexec/krarupos-decky).

@@ -1,0 +1,8 @@
+#!/usr/bin/bash
+# Primer arranque: detecta los sensores (temperatura de la RAM, placa madre...) con
+# sensors-detect, lo mismo que hace la "preparación" de Mission Center con
+# contraseña. Deja /etc/sysconfig/lm_sensors y carga los módulos con lm_sensors.
+set -uo pipefail
+sensors-detect --auto >/dev/null || exit 0
+[[ -f /etc/sysconfig/lm_sensors ]] && systemctl restart lm_sensors.service
+exit 0

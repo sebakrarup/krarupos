@@ -1,0 +1,4 @@
+[io/missioncenter/MissionCenter]
+# Sin la ventana de bienvenida que ofrece la "preparación" con contraseña:
+# krarupOS ya la trae hecha (nethogs, RAPL y sensores).
+first-time-running=false
