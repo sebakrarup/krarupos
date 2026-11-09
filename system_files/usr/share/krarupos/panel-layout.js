@@ -44,7 +44,10 @@ bandeja.currentConfigGroup = ["General"]
 bandeja.writeConfig("shownItems", ["org.kde.plasma.volume", "org.kde.plasma.bluetooth", "org.kde.plasma.networkmanagement"])
 bandeja.writeConfig("hiddenItems", ["org.kde.kdeconnect", "org.kde.plasma.vault", "org.kde.kscreen", "org.kde.plasma.battery", "org.kde.plasma.brightness", "org.kde.plasma.cameraindicator", "org.kde.plasma.clipboard", "org.kde.plasma.devicenotifier", "org.kde.plasma.keyboardindicator", "org.kde.plasma.keyboardlayout", "org.kde.plasma.manage-inputmethod", "org.kde.plasma.mediacontroller", "org.kde.plasma.notifications", "org.kde.plasma.printmanager", "org.kde.plasma.weather", "steam", "TelegramDesktop", "Xwayland Video Bridge"])
 
-panel.addWidget("org.kde.plasma.digitalclock")
+// Reloj: solo la hora, sin la fecha (se ve al pasar el mouse o al hacer clic).
+var reloj = panel.addWidget("org.kde.plasma.digitalclock")
+reloj.currentConfigGroup = ["Appearance"]
+reloj.writeConfig("showDate", false)
 
 var desktopsArray = desktopsForActivity(currentActivity());
 for (var j = 0; j < desktopsArray.length; j++) {
