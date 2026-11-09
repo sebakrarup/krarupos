@@ -2,3 +2,6 @@
 # Sin la ventana de bienvenida que ofrece la "preparación" con contraseña:
 # krarupOS ya la trae hecha (nethogs, RAPL y sensores).
 first-time-running=false
+# Tamaño de la ventana la primera vez (el de Seba en 4K).
+window-width=1202
+window-height=823
