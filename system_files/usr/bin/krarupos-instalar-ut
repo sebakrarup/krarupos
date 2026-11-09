@@ -1,0 +1,29 @@
+#!/usr/bin/bash
+# Instala Unreal Tournament (99) o Unreal Tournament 2004 con el instalador oficial
+# de OldUnreal (en /usr/share/krarupos/oldunreal, bajado de su GitHub al armar la
+# imagen). El instalador muestra las condiciones de Epic Games, baja el juego de
+# archive.org, le pone el parche de OldUnreal para Linux y crea su acceso en el menú.
+# Uso: krarupos-instalar-ut 99|2004
+set -uo pipefail
+
+case ${1:-} in
+99)   nombre="Unreal Tournament"; script=install-ut99.sh; carpeta=UnrealTournament ;;
+2004) nombre="Unreal Tournament 2004"; script=install-ut2004.sh; carpeta=UT2004 ;;
+*)    echo "uso: krarupos-instalar-ut 99|2004" >&2; exit 2 ;;
+esac
+
+destino=$HOME/.local/share/OldUnreal/$carpeta
+if [[ -d $destino/System ]]; then
+    kdialog --title "$nombre" --msgbox "$nombre ya está instalado en $destino.\n\nBúscalo en el menú de aplicaciones."
+    exit 0
+fi
+
+instalador=/usr/share/krarupos/oldunreal/$script
+# En una ventana de Konsole para ver el avance; las preguntas salen con kdialog.
+exec konsole --hide-menubar -p tabtitle="Instalar $nombre" -e bash -c '
+"$1" --ui-mode kdialog --application-entry install --desktop-shortcut skip
+r=$?
+echo
+if [[ $r == 0 ]]; then echo "Listo: busca \"$2\" en el menú de aplicaciones."; else echo "La instalación no terminó (código $r)."; fi
+read -rp "Presiona Enter para cerrar esta ventana. "
+' bash "$instalador" "$nombre"

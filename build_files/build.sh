@@ -355,6 +355,18 @@ assert plugin_id == "luisbocanegra.panel.colorizer", plugin_id
 z.extractall("/usr/share/plasma/plasmoids/" + plugin_id)
 EOF
 test -f /usr/share/plasma/plasmoids/luisbocanegra.panel.colorizer/contents/ui/main.qml
+# Unreal Tournament (99) y 2004: instaladores oficiales de OldUnreal (el juego no
+# va en la imagen: cada uno acepta las condiciones de Epic y lo baja de archive.org).
+# Los usan los accesos "Instalar Unreal Tournament" (/usr/bin/krarupos-instalar-ut).
+mkdir -p /usr/share/krarupos/oldunreal
+for s in install-ut99.sh install-ut2004.sh; do
+    curl -fsSL --retry 3 -o "/usr/share/krarupos/oldunreal/$s" \
+        "https://raw.githubusercontent.com/OldUnreal/FullGameInstallers/master/Linux/$s"
+    bash -n "/usr/share/krarupos/oldunreal/$s"
+    grep -q 'OldUnreal <https://oldunreal.com>' "/usr/share/krarupos/oldunreal/$s"
+    chmod 755 "/usr/share/krarupos/oldunreal/$s"
+done
+command -v 7z kdialog >/dev/null
 # Apps del panel: sin cuadros azules de fondo; la activa lleva un punto azul
 # abajo, las abiertas uno gris (más tenue si están minimizadas) y las que piden
 # atención uno naranja. Reemplaza el tasks.svgz de Breeze.

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Instalar Unreal Tournament
+Comment=Baja e instala Unreal Tournament con el instalador oficial de OldUnreal
+Exec=/usr/bin/krarupos-instalar-ut 99
+Icon=applications-games
+Terminal=false
+Type=Application
+Categories=Game;
