@@ -38,6 +38,9 @@ jobs:
           # NVIDIA RTX 16xx en adelante (driver abierto), escritorio.
           - image_name: krarupos-nvidia
             base_image: ghcr.io/ublue-os/bazzite-nvidia-open:stable
+          # NVIDIA con modo juego de Steam.
+          - image_name: krarupos-deck-nvidia
+            base_image: ghcr.io/ublue-os/bazzite-deck-nvidia:stable
     env:
       BASE_IMAGE: ${{ matrix.base_image }}
 

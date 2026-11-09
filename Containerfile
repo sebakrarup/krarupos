@@ -1,6 +1,7 @@
 # Imagen base: el workflow la cambia para cada variante
 # (krarupos = escritorio, krarupos-deck = con modo juego,
-# krarupos-nvidia = escritorio con driver NVIDIA abierto).
+# krarupos-nvidia = escritorio con driver NVIDIA abierto,
+# krarupos-deck-nvidia = modo juego con driver NVIDIA).
 ARG BASE_IMAGE=ghcr.io/ublue-os/bazzite:stable
 
 # Allow build scripts to be referenced without being copied into the final image

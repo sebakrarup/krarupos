@@ -18,6 +18,7 @@ on:
           - krarupos
           - krarupos-deck
           - krarupos-nvidia
+          - krarupos-deck-nvidia
   pull_request:
     branches:
       - main

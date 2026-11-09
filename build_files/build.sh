@@ -31,18 +31,21 @@ case $(jq -r '."image-name"' /usr/share/ublue-os/image-info.json) in
     *deck*) imagen=krarupos-deck ;;
     *) imagen=krarupos ;;
 esac
-# Variante NVIDIA: la base trae el módulo del driver (bazzite-nvidia-open).
-if [[ $imagen == krarupos && -n $(find /usr/lib/modules -name 'nvidia.ko*' -print -quit) ]]; then
-    imagen=krarupos-nvidia
+# Variantes NVIDIA: la base trae el módulo del driver (bazzite-nvidia-open,
+# bazzite-deck-nvidia) → krarupos-nvidia o krarupos-deck-nvidia.
+nvidia=0
+if [[ -n $(find /usr/lib/modules -name 'nvidia.ko*' -print -quit) ]]; then
+    nvidia=1
+    imagen=$imagen-nvidia
 fi
 # Containerfile pasa la base: si es NVIDIA y no se encontró el driver, mejor fallar.
-if [[ ${BASE_IMAGE:-} == *nvidia* && $imagen != krarupos-nvidia ]]; then
+if [[ ${BASE_IMAGE:-} == *nvidia* && $nvidia != 1 ]]; then
     echo "base $BASE_IMAGE sin el módulo nvidia" >&2
     exit 1
 fi
 # NVIDIA: mpv decodifica con NVDEC (CUDA) en vez de VAAPI, que en NVIDIA pasa por
 # un traductor (nvidia-vaapi-driver) con menos formatos.
-if [[ $imagen == krarupos-nvidia ]]; then
+if [[ $nvidia == 1 ]]; then
     mpvconf=/etc/skel/.var/app/io.mpv.Mpv/config/mpv/mpv.conf
     sed -i -e 's/^# GPU decoding: .*/# GPU decoding (NVIDIA): NVDEC/' -e 's/^hwdec=vaapi$/hwdec=nvdec/' "$mpvconf"
     grep -qx 'hwdec=nvdec' "$mpvconf"
@@ -136,7 +139,7 @@ cp /usr/share/dnf5/repos.d/fedora.repo /usr/share/dnf5/repos.d/fedora-updates.re
 # headsetcontrol: luces/batería/sidetone del G733 (trae regla udev uaccess, sin sudo).
 # ncdu: espacio por carpeta. perl-Image-ExifTool: exiftool para datos de fotos.
 amd=(rocm-smi)
-[[ $imagen == krarupos-nvidia ]] && amd=()
+[[ $nvidia == 1 ]] && amd=()
 dnf5 install -y nmap htop "${amd[@]}" liquidctl terminus-fonts-console gpm \
     mediainfo mkvtoolnix yt-dlp iperf3 wol nethogs ncdu perl-Image-ExifTool headsetcontrol
 
@@ -173,7 +176,7 @@ dnf5 remove -y plasma-applet-tdp-control
 
 # amdgpu_top no está en los repos de Fedora: se instala el .rpm oficial
 # de la última versión publicada por su autor. Solo con GPUs AMD.
-if [[ $imagen != krarupos-nvidia ]]; then
+if [[ $nvidia != 1 ]]; then
     amdgpu_top_rpm=$(curl -fsSL --retry 3 https://api.github.com/repos/Umio-Yasuno/amdgpu_top/releases/latest |
         grep -oE '"browser_download_url": *"[^"]*\.x86_64\.rpm"' | cut -d'"' -f4 | head -1)
     dnf5 install -y "$amdgpu_top_rpm"

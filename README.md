@@ -9,6 +9,7 @@ Hay tres variantes, que se construyen todos los días sobre la última Bazzite:
 | `ghcr.io/sebakrarup/krarupos` | `bazzite:stable` | Escritorio KDE |
 | `ghcr.io/sebakrarup/krarupos-deck` | `bazzite-deck:stable` | KDE + modo juego de Steam |
 | `ghcr.io/sebakrarup/krarupos-nvidia` | `bazzite-nvidia-open:stable` | Escritorio KDE con NVIDIA (RTX 16xx en adelante), sin lo que es solo para AMD (OverDrive, `amdgpu_top`, `rocm-smi`, `rip-1080p`, `rip-4k`) |
+| `ghcr.io/sebakrarup/krarupos-deck-nvidia` | `bazzite-deck-nvidia:stable` | KDE + modo juego de Steam con NVIDIA (RTX 16xx en adelante), sin lo que es solo para AMD |
 
 ## Qué trae
 
