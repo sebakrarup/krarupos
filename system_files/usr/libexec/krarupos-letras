@@ -7,6 +7,7 @@
 #     ventana lo recuerda Dolphin por resolución: /etc/skel/.local/state/dolphinstaterc);
 #   - panel de KDE: grosor 66 en 4K, 60 en 1440p y 54 en 1080p; menú de inicio
 #     816x684, 776x618 y 736x553;
+#   - Mission Center: ventana 1202x823 en 4K, 1191x793 en 1440p y 1180x763 en 1080p;
 #   - Konsole: letra 16 en 4K (el perfil de la imagen), 14 en 1440p y 13 en 1080p,
 #     con una copia del perfil krarupOS en ~/.local/share/konsole (en 1080p se abre
 #     maximizado: /etc/skel/.local/state/konsolestaterc).
@@ -28,9 +29,9 @@ modo = next(m for m in o["modes"] if m["id"] == o["currentModeId"])
 print(max(modo["size"]["width"], modo["size"]["height"]))
 ') || exit 0
 
-if (( ancho >= 3840 )); then letra=15 lugares=48 zoom=192 panel=66 menu="816 684" konsole=16
-elif (( ancho >= 2560 )); then letra=13 lugares=32 zoom=160 panel=60 menu="776 618" konsole=14
-else letra=12 lugares=32 zoom=144 panel=54 menu="736 553" konsole=13
+if (( ancho >= 3840 )); then letra=15 lugares=48 zoom=192 panel=66 menu="816 684" konsole=16 mc="1202 823"
+elif (( ancho >= 2560 )); then letra=13 lugares=32 zoom=160 panel=60 menu="776 618" konsole=14 mc="1191 793"
+else letra=12 lugares=32 zoom=144 panel=54 menu="736 553" konsole=13 mc="1180 763"
 fi
 # Los de la imagen (panel-layout.js), para saber si alguien los cambió a mano.
 panel_imagen="66 816 684"
@@ -86,6 +87,26 @@ if ! a_mano dolphinrc IconsMode IconSize && ! a_mano dolphinrc IconsMode Preview
 fi
 poner dolphinrc PlacesPanel IconSize "$lugares"
 poner dolphinrc "KFileDialog Settings" "Places Icons Static Size" "$lugares"
+
+# Mission Center (Flatpak): su configuración es un keyfile de GLib, no de KDE.
+# Sin nota de este script, cuenta como suyo el tamaño de /etc/skel (1202x823).
+mc_conf=$HOME/.var/app/io.missioncenter.MissionCenter/config/glib-2.0/settings/keyfile
+mc_grupo="[io/missioncenter/MissionCenter]"
+mc_leer() { awk -v g="$mc_grupo" -v k="$1" '
+    $0 == g { dentro = 1; next }
+    /^\[/ { dentro = 0 }
+    dentro && index($0, k "=") == 1 { print substr($0, length(k) + 2); exit }
+' "$mc_conf" 2>/dev/null; }
+if [[ -f $mc_conf ]]; then
+    mc_actual="$(mc_leer window-width) $(mc_leer window-height)"
+    mc_anterior=$(cat "$estado/missioncenter" 2>/dev/null || echo "1202 823")
+    if [[ $mc_actual == "$mc_anterior" && $mc_actual != "$mc" ]]; then
+        read -r mc_ancho mc_alto <<<"$mc"
+        sed -i -e "s/^window-width=.*/window-width=$mc_ancho/" -e "s/^window-height=.*/window-height=$mc_alto/" "$mc_conf"
+        mkdir -p "$estado"
+        echo "$mc" >"$estado/missioncenter"
+    fi
+fi
 
 # Konsole: el perfil de la imagen es de solo lectura; una copia con el mismo nombre
 # en la carpeta del usuario lo reemplaza. Si alguien cambió el perfil en Konsole
