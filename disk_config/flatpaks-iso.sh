@@ -1,6 +1,7 @@
 #!/usr/bin/bash
-# Arma un repositorio de Flatpak (ostree, modo archive) con las apps de
-# flatpaks-iso.txt y todo lo que necesitan (runtimes, extensiones, idiomas),
+# Arma un repositorio de Flatpak (ostree, modo archive) con las apps de la lista
+# de krarupOS (system_files/usr/share/krarupos/flatpaks.txt) y todo lo que
+# necesitan (runtimes, extensiones, idiomas),
 # para meterlo en la ISO. El sistema instalado lo usa en el primer arranque
 # (usr/libexec/krarupos-flatpaks) y después actualiza desde Flathub.
 # Uso: flatpaks-iso.sh <carpeta de salida>
@@ -14,7 +15,7 @@ while read -r app; do
     app=${app%%#*}
     app=${app//[[:space:]]/}
     [[ -n $app ]] && apps+=("$app")
-done <"$aqui/flatpaks-iso.txt"
+done <"$aqui/../system_files/usr/share/krarupos/flatpaks.txt"
 
 # Instalación temporal de usuario: flatpak resuelve las dependencias.
 FLATPAK_USER_DIR=$(mktemp -d --tmpdir="$salida")

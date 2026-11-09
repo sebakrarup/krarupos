@@ -1,5 +1,7 @@
 # Apps de Flathub que krarupOS instala solas.
 # Una por línea. Si agregas una, se instala en la siguiente actualización.
+# La ISO trae todas adentro (disk_config/flatpaks-iso.sh) y se instalan sin internet,
+# salvo Chrome y Spotify, que al instalarse bajan su programa de Google y Spotify.
 # Cada app se instala una sola vez por computador: si alguien la desinstala, no vuelve.
 
 # Primero LACT: maneja la GPU (krarupos-lact) y conviene tenerla pronto.
@@ -21,6 +23,7 @@ rocks.shy.VacuumTube
 org.kde.gwenview
 com.dec05eba.gpu_screen_recorder
 org.kde.optiimage
+com.spotify.Client
 
 # Juegos
 io.github.ryubing.Ryujinx
@@ -29,6 +32,8 @@ dev.lizardbyte.app.Sunshine
 com.vysp3r.ProtonPlus
 # Temas para Steam (estilo Adwaita y otros)
 io.github.Foldex.AdwSteamGtk
+# Roblox
+org.vinegarhq.Sober
 
 # Oficina y utilidades
 org.kde.okular

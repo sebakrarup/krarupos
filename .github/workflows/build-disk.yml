@@ -89,7 +89,7 @@ jobs:
           # Bazzite usa btrfs; la imagen no dice qué formato usar.
           additional-args: --use-librepo=True --rootfs btrfs
 
-      # Apps de Flathub dentro de la ISO (disk_config/flatpaks-iso.txt).
+      # Apps de Flathub dentro de la ISO: todas las de system_files/usr/share/krarupos/flatpaks.txt.
       - name: Flatpak apps for the ISO
         run: |
           df -h / "${{ steps.build.outputs.output-directory }}"

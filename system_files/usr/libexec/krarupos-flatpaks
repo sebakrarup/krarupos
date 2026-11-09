@@ -53,8 +53,13 @@ if [[ -f $iso/repo/summary && -f $iso/apps.txt ]]; then
     if ((${#de_iso[@]})); then
         echo "Instalando desde la ISO: ${de_iso[*]}"
         flatpak remote-modify --system --no-gpg-verify --url="file://$iso/repo" flathub
-        flatpak install --system --noninteractive --or-update flathub "${de_iso[@]}" ||
-            echo "No se pudieron instalar todas las apps de la ISO; se bajan de Flathub" >&2
+        # Una por una: Chrome y Spotify bajan su programa de internet al instalarse y,
+        # sin conexión, fallan; así no arrastran a las demás. Las que fallen se bajan
+        # de Flathub más abajo (o en el próximo arranque con internet).
+        for app in "${de_iso[@]}"; do
+            flatpak install --system --noninteractive --or-update flathub "$app" ||
+                echo "No se pudo instalar $app desde la ISO; se baja de Flathub" >&2
+        done
         flatpak remote-modify --system --gpg-verify --url="$flathub" flathub
         if flatpak info --system io.github.ilya_zlobintsev.LACT >/dev/null 2>&1; then
             systemctl start --no-block lactd.service || true
