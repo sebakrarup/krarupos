@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 # Tamaños de KDE según la resolución de la pantalla principal:
-#   - letras: 4K 15, 1440p 13, 1080p o menos 12 (la más pequeña legible, 2 menos;
-#     también las de las vistas de Dolphin);
+#   - letras: 4K 15, 1440p 13, 1080p o menos 12, también la de ancho fijo (Fira
+#     Code) y las de las vistas de Dolphin; la más pequeña legible, 2 menos;
 #   - Dolphin: panel lateral (Lugares) Huge (48) en 4K y Large (32) en menos;
 #     zoom de íconos 192 px en 4K, 160 en 1440p y 144 en 1080p (el tamaño de la
 #     ventana lo recuerda Dolphin por resolución: /etc/skel/.local/state/dolphinstaterc);
@@ -72,11 +72,12 @@ poner() {
     cambios+=("$1")
 }
 
-fuente() { echo "Noto Sans,$1,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0"; }
+fuente() { echo "${2:-Noto Sans},$1,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0"; }
 
 poner kdeglobals General font "$(fuente $letra)"
 poner kdeglobals General menuFont "$(fuente $letra)"
 poner kdeglobals General toolBarFont "$(fuente $letra)"
+poner kdeglobals General fixed "$(fuente $letra "Fira Code")"
 poner kdeglobals General smallestReadableFont "$(fuente $((letra - 2)))"
 poner kdeglobals WM activeFont "$(fuente $letra)"
 
