@@ -20,9 +20,13 @@ com.jeffser.Popcorn
 com.github.taiko2k.tauonmb
 page.codeberg.impromptux.ytdl-gui
 rocks.shy.VacuumTube
+com.obsproject.Studio
 org.kde.gwenview
 com.dec05eba.gpu_screen_recorder
 org.kde.optiimage
+org.gimp.GIMP
+# Revelado de fotos RAW
+org.darktable.Darktable
 com.spotify.Client
 
 # Juegos
@@ -44,6 +48,8 @@ org.onlyoffice.desktopeditors
 
 # Sistema
 io.missioncenter.MissionCenter
+# Velocidad de los discos
+io.github.jonmagon.kdiskmark
 
 # Tema Breeze para las apps GTK (como Transmission Remote); toma los colores de
 # KDE (BreezeDarkSeba), así que se ven oscuras igual que el resto.
