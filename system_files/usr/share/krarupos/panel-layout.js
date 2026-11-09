@@ -13,6 +13,11 @@ panel.hiding = "dodgewindows"
 var kickoff = panel.addWidget("org.kde.plasma.kickoff")
 kickoff.currentConfigGroup = ["General"]
 kickoff.writeConfig("icon", "org.alienarena.alienarena")
+// Tamaño con que se abre la primera vez (el de Seba en 4K); después KDE guarda
+// el que deje cada usuario al agrandarlo o achicarlo.
+kickoff.currentConfigGroup = []
+kickoff.writeConfig("popupWidth", 816)
+kickoff.writeConfig("popupHeight", 684)
 
 var tareas = panel.addWidget("org.kde.plasma.icontasks")
 tareas.currentConfigGroup = ["General"]
