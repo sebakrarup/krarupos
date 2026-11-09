@@ -1,9 +1,11 @@
 [Unit]
-Description=Ajustar letras y Dolphin cuando cambia la resolución de la pantalla
+Description=Ajustar tamaños cuando cambia la resolución de la pantalla (o Firefox crea su perfil)
 
 [Path]
 # KWin guarda aquí cada cambio de pantallas (resolución, escala, monitor nuevo).
 PathChanged=%h/.config/kwinoutputconfig.json
+# Firefox crea su perfil la primera vez que se abre: ahí se le pone el zoom.
+PathChanged=%h/.var/app/org.mozilla.firefox/config/mozilla/firefox/profiles.ini
 Unit=krarupos-letras.service
 
 [Install]

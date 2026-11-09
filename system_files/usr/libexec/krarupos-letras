@@ -8,6 +8,8 @@
 #   - panel de KDE: grosor 66 en 4K, 60 en 1440p y 54 en 1080p; menú de inicio
 #     816x684, 776x618 y 736x553;
 #   - Mission Center: ventana 1202x823 en 4K, 1191x793 en 1440p y 1180x763 en 1080p;
+#   - Firefox: zoom por defecto 120 % en 4K y 100 % en menos (con Firefox abierto
+#     la base de datos está bloqueada: se espera a que se cierre);
 #   - Konsole: letra 16 en 4K (el perfil de la imagen), 14 en 1440p y 13 en 1080p,
 #     con una copia del perfil krarupOS en ~/.local/share/konsole (en 1080p se abre
 #     maximizado: /etc/skel/.local/state/konsolestaterc).
@@ -29,9 +31,9 @@ modo = next(m for m in o["modes"] if m["id"] == o["currentModeId"])
 print(max(modo["size"]["width"], modo["size"]["height"]))
 ') || exit 0
 
-if (( ancho >= 3840 )); then letra=15 lugares=48 zoom=192 panel=66 menu="816 684" konsole=16 mc="1202 823"
-elif (( ancho >= 2560 )); then letra=13 lugares=32 zoom=160 panel=60 menu="776 618" konsole=14 mc="1191 793"
-else letra=12 lugares=32 zoom=144 panel=54 menu="736 553" konsole=13 mc="1180 763"
+if (( ancho >= 3840 )); then letra=15 lugares=48 zoom=192 panel=66 menu="816 684" konsole=16 mc="1202 823" firefox=1.2
+elif (( ancho >= 2560 )); then letra=13 lugares=32 zoom=160 panel=60 menu="776 618" konsole=14 mc="1191 793" firefox=1
+else letra=12 lugares=32 zoom=144 panel=54 menu="736 553" konsole=13 mc="1180 763" firefox=1
 fi
 # Los de la imagen (panel-layout.js), para saber si alguien los cambió a mano.
 panel_imagen="66 816 684"
@@ -106,6 +108,54 @@ if [[ -f $mc_conf ]]; then
         mkdir -p "$estado"
         echo "$mc" >"$estado/missioncenter"
     fi
+fi
+
+# Firefox (Flatpak): el zoom por defecto es el valor global browser.content.full-zoom
+# de content-prefs.sqlite en cada perfil (sin valor = 100 %). Firefox abierto tiene
+# la base bloqueada: entonces queda esperando a que se cierre y vuelve a correr.
+mkdir -p "$estado"
+bloqueada=0
+for db in "$HOME"/.var/app/org.mozilla.firefox/config/mozilla/firefox/*/content-prefs.sqlite \
+          "$HOME"/.var/app/org.mozilla.firefox/.mozilla/firefox/*/content-prefs.sqlite; do
+    [[ -f $db ]] || continue
+    perfil_ff=$(basename "$(dirname "$db")")
+    r=$(python3 -I - "$db" "$firefox" "$estado/firefox|$perfil_ff" <<'PY'
+import os, sqlite3, sys, time
+db, objetivo, nota = sys.argv[1], float(sys.argv[2]), sys.argv[3]
+try:
+    anterior = float(open(nota).read())
+except (OSError, ValueError):
+    anterior = 1.0          # perfil nuevo: sin valor global = 100 %
+try:
+    c = sqlite3.connect(db, timeout=1, isolation_level=None)
+    c.execute("begin immediate")
+except sqlite3.OperationalError:
+    print("bloqueada"); sys.exit()
+fila = c.execute("select s.id, p.value from settings s left join prefs p on p.settingID = s.id"
+                 " and p.groupID is null where s.name = 'browser.content.full-zoom'").fetchone()
+actual = float(fila[1]) if fila and fila[1] is not None else 1.0
+if abs(actual - anterior) > 1e-6:
+    c.execute("rollback"); print("a mano"); sys.exit()
+if abs(actual - objetivo) > 1e-6:
+    if fila:
+        sid = fila[0]
+    else:
+        sid = c.execute("insert into settings (name) values ('browser.content.full-zoom')").lastrowid
+    c.execute("delete from prefs where groupID is null and settingID = ?", (sid,))
+    if abs(objetivo - 1.0) > 1e-6:
+        c.execute("insert into prefs (groupID, settingID, value, timestamp) values (null, ?, ?, ?)",
+                  (sid, objetivo, round(time.time(), 3)))
+c.execute("commit")
+open(nota, "w").write(repr(objetivo))
+print("ok")
+PY
+)
+    [[ $r == bloqueada ]] && bloqueada=1
+done
+if (( bloqueada )) && ! systemctl --user is-active -q krarupos-letras-firefox.service; then
+    systemd-run --user --unit=krarupos-letras-firefox --collect --quiet bash -c \
+        'while flatpak ps --columns=application | grep -qx org.mozilla.firefox; do sleep 20; done
+         exec /usr/libexec/krarupos-letras' 2>/dev/null
 fi
 
 # Konsole: el perfil de la imagen es de solo lectura; una copia con el mismo nombre
