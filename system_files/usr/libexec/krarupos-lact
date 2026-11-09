@@ -1,6 +1,11 @@
 #!/usr/bin/bash
-# Antes de lactd: si está la RX 9070 XT de Seba (1002:7550, placa 1849:5401),
-# le pone la configuración de CachyOS: límite de 250 W y Zero RPM apagado.
+# Antes de lactd: si está una GPU conocida de la familia, le pone su
+# configuración de LACT:
+#   - RX 9070 XT de Seba (1002:7550, placa 1849:5401): la de CachyOS, límite de
+#     250 W y Zero RPM apagado;
+#   - RTX 3080 Gigabyte de Erik (10DE:2206, placa 1458:4040): curva de
+#     ventiladores (40 % hasta 20 °C, 50 % a 50, 60 % a 60, 75 % a 70 y 100 % a
+#     80 °C), 300 W y PowerMizer adaptativo.
 # Solo una vez, para no pisar lo que se cambie después en LACT. En PCs con
 # otra GPU no hace nada.
 set -euo pipefail
@@ -14,43 +19,72 @@ chcon -t bin_t /var/lib/flatpak/app/io.github.ilya_zlobintsev.LACT/x86_64/stable
 
 [[ -f "$marca" ]] && exit 0
 
-for disp in /sys/bus/pci/devices/*; do
-    [[ $(<"$disp/vendor") == 0x1002 && $(<"$disp/device") == 0x7550 &&
-        $(<"$disp/subsystem_vendor") == 0x1849 && $(<"$disp/subsystem_device") == 0x5401 ]] || continue
-    # Mismo formato de LACT: vendor:device-subvendor:subdevice-ranura.
-    id="1002:7550-1849:5401-$(basename "$disp")"
+mkdir -p "$(dirname "$config")"
+[[ -f "$config" ]] && cp -f "$config" "$config.antes-krarupos"
+python3 -I - "$config" <<'EOF'
+import glob, os, subprocess, sys, yaml
 
-    # Si LACT ya tiene esta GPU configurada, se respeta.
-    if [[ -f "$config" ]] && grep -qF "$id:" "$config"; then
-        break
-    fi
-    mkdir -p "$(dirname "$config")"
-    [[ -f "$config" ]] && cp -f "$config" "$config.antes-krarupos"
-    python3 -I - "$config" "$id" <<'EOF'
-import os, sys, yaml
+ruta = sys.argv[1]
 
-ruta, id = sys.argv[1], sys.argv[2]
+# Por vendor:device-subvendor:subdevice (en mayúsculas, como LACT).
+conocidas = {
+    "1002:7550-1849:5401": ("RX 9070 XT", {
+        "fan_control_enabled": False,
+        "pmfw_options": {"zero_rpm": False},
+        "power_cap": 250.0,
+        "performance_level": "auto",
+    }),
+    "10DE:2206-1458:4040": ("RTX 3080", {
+        "fan_control_enabled": True,
+        "fan_control_settings": {
+            "mode": "curve",
+            "static_speed": 1.0,
+            "temperature_key": "edge",
+            "interval_ms": 500,
+            "curve": {20: 0.4, 50: 0.5, 60: 0.6, 70: 0.75, 80: 1.0},
+            "spindown_delay_ms": 5000,
+            "change_threshold": 2,
+        },
+        "power_mizer_mode": "Adaptive",
+        "power_cap": 300.0,
+    }),
+}
+
+def leer(disp, archivo):
+    with open(os.path.join(disp, archivo)) as f:
+        return f.read().strip().removeprefix("0x").upper()
+
 config = {}
 if os.path.exists(ruta):
     with open(ruta) as f:
         config = yaml.safe_load(f) or {}
-config.setdefault("version", 7)
-config.setdefault("daemon", {"log_level": "info", "admin_group": "wheel", "disable_clocks_cleanup": False})
-config.setdefault("apply_settings_timer", 5)
 gpus = config.get("gpus") or {}
-gpus[id] = {
-    "fan_control_enabled": False,
-    "pmfw_options": {"zero_rpm": False},
-    "power_cap": 250.0,
-    "performance_level": "auto",
-}
-config["gpus"] = gpus
-with open(ruta, "w") as f:
-    yaml.safe_dump(config, f, sort_keys=False)
+cambio = False
+for disp in sorted(glob.glob("/sys/bus/pci/devices/*")):
+    try:
+        modelo = f"{leer(disp, 'vendor')}:{leer(disp, 'device')}-{leer(disp, 'subsystem_vendor')}:{leer(disp, 'subsystem_device')}"
+    except OSError:
+        continue
+    if modelo not in conocidas:
+        continue
+    # Mismo formato de LACT: vendor:device-subvendor:subdevice-ranura.
+    id = f"{modelo}-{os.path.basename(disp)}"
+    if id in gpus:
+        continue            # LACT ya tiene esta GPU configurada: se respeta.
+    nombre, ajustes = conocidas[modelo]
+    gpus[id] = ajustes
+    cambio = True
+    subprocess.run(["logger", "-t", "krarupos-lact", f"{nombre} {id}: configuración de krarupOS"])
+if cambio:
+    config.setdefault("version", 7)
+    config.setdefault("daemon", {"log_level": "info", "admin_group": "wheel", "disable_clocks_cleanup": False})
+    config.setdefault("apply_settings_timer", 5)
+    config["gpus"] = gpus
+    with open(ruta, "w") as f:
+        yaml.safe_dump(config, f, sort_keys=False)
 EOF
-    logger -t krarupos-lact "RX 9070 XT $id: 250 W y Zero RPM apagado"
-    break
-done
+# Si no se cambió nada, el respaldo sobra.
+[[ -f "$config.antes-krarupos" ]] && cmp -s "$config" "$config.antes-krarupos" && rm -f "$config.antes-krarupos"
 
 mkdir -p "$(dirname "$marca")"
 touch "$marca"
