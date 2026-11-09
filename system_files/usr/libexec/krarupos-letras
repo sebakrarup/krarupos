@@ -69,6 +69,13 @@ poner() {
     anterior=$(cat "$nota" 2>/dev/null)
     [[ $actual == "$4" ]] && return
     [[ -z $actual && $anterior == "$4" ]] && return
+    # Sin valor propio y lo que rige (el de /etc/xdg) ya es el pedido: solo se
+    # anota, sin escribir ni avisar (en 4K, el primer inicio no reinicia el panel).
+    if [[ -z $actual && $(kreadconfig6 --file "$1" --group "$2" --key "$3") == "$4" ]]; then
+        mkdir -p "$estado"
+        echo "$4" >"$nota"
+        return
+    fi
     kwriteconfig6 --file "$config/$1" --group "$2" --key "$3" "$4"
     mkdir -p "$estado"
     echo "$4" >"$nota"
@@ -197,8 +204,17 @@ fi
 if [[ " ${cambios[*]} " == *" kdeglobals "* ]]; then
     dbus-send --session --type=signal /KGlobalSettings org.kde.KGlobalSettings.notifyChange int32:1 int32:0
     dbus-send --session --type=method_call --dest=org.kde.KWin /KWin org.kde.KWin.reconfigure 2>/dev/null
+    # plasmashell a veces se queda pegado al cerrarse (el portapapeles de Wayland) y
+    # systemd espera 40 s con la pantalla negra: si en 5 s no cerró, se mata.
     systemctl --user reset-failed plasma-plasmashell.service 2>/dev/null
-    systemctl --user restart plasma-plasmashell.service
+    timeout 5 systemctl --user stop plasma-plasmashell.service ||
+        systemctl --user kill --signal=SIGKILL plasma-plasmashell.service
+    for _ in $(seq 20); do
+        systemctl --user is-active -q plasma-plasmashell.service || break
+        sleep 0.5
+    done
+    systemctl --user reset-failed plasma-plasmashell.service 2>/dev/null
+    systemctl --user start plasma-plasmashell.service
 fi
 
 # Panel de KDE (el que tiene el menú de inicio): grosor y tamaño del menú, por
