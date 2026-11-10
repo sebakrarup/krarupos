@@ -13,7 +13,8 @@
 #   - Konsole: letra 16 en 4K (el perfil de la imagen), 14 en 1440p y 13 en 1080p,
 #     con una copia del perfil krarupOS en ~/.local/share/konsole (en 1080p se abre
 #     maximizado: /etc/skel/.local/state/konsolestaterc);
-#   - puntero del mouse: 28 en 4K (el de la imagen), 24 en 1440p y 20 en 1080p.
+#   - puntero del mouse: 28 en 4K (el de la imagen), 24 en 1440p y 20 en 1080p;
+#   - escala de cada pantalla en 100 % la primera vez que aparece.
 # Corre al entrar a la sesión y cada vez que KWin guarda la configuración de
 # pantallas (krarupos-letras.path). Cada valor que alguien cambie a mano (en
 # Configuración o en Dolphin) no se toca más. Dolphin abierto toma los cambios
@@ -26,6 +27,27 @@ config=${XDG_CONFIG_HOME:-$HOME/.config}
 # Solo con KWin corriendo: al salir de la sesión (por ejemplo al pasar a Game Mode)
 # KWin guarda las pantallas y se activa esto, pero kscreen-doctor sin KWin se cae.
 busctl --user status org.kde.KWin >/dev/null 2>&1 || exit 0
+
+# Escala 100 % en cada pantalla la primera vez que aparece: KWin calcula una por
+# los DPI (un 4K de 27" queda en 170 %) y krarupOS ajusta los tamaños para 100 %.
+# Cada pantalla se reconoce por conector y tamaño físico; si alguien le cambia
+# la escala después, se respeta.
+mkdir -p "$estado"
+kscreen-doctor -j 2>/dev/null | python3 -I -c '
+import json, os, sys
+vistas = sys.argv[1]
+conocidas = set(open(vistas).read().split()) if os.path.exists(vistas) else set()
+for o in json.load(sys.stdin)["outputs"]:
+    if not (o.get("enabled") and o.get("currentModeId")):
+        continue
+    clave = "{}:{}x{}".format(o["name"], o["sizeMM"]["width"], o["sizeMM"]["height"])
+    if clave in conocidas:
+        continue
+    if o.get("scale", 1) != 1:
+        print("output.{}.scale.1".format(o["name"]))
+    with open(vistas, "a") as f:
+        f.write(clave + "\n")
+' "$estado/escala-pantallas" | while read -r orden; do kscreen-doctor "$orden" >/dev/null 2>&1; done
 ancho=$(kscreen-doctor -j 2>/dev/null | python3 -I -c '
 import json, sys
 salidas = [o for o in json.load(sys.stdin)["outputs"] if o.get("enabled") and o.get("currentModeId")]
