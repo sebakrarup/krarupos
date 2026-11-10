@@ -44,12 +44,24 @@ bandeja.currentConfigGroup = ["General"]
 bandeja.writeConfig("shownItems", ["org.kde.plasma.volume", "org.kde.plasma.bluetooth", "org.kde.plasma.networkmanagement"])
 bandeja.writeConfig("hiddenItems", ["org.kde.kdeconnect", "org.kde.plasma.vault", "org.kde.kscreen", "org.kde.plasma.battery", "org.kde.plasma.brightness", "org.kde.plasma.cameraindicator", "org.kde.plasma.clipboard", "org.kde.plasma.devicenotifier", "org.kde.plasma.keyboardindicator", "org.kde.plasma.keyboardlayout", "org.kde.plasma.manage-inputmethod", "org.kde.plasma.mediacontroller", "org.kde.plasma.notifications", "org.kde.plasma.printmanager", "org.kde.plasma.weather", "steam", "TelegramDesktop", "Xwayland Video Bridge"])
 
-// Reloj: solo la hora, sin la fecha (se ve al pasar el mouse o al hacer clic).
-var reloj = panel.addWidget("org.kde.plasma.digitalclock")
-reloj.currentConfigGroup = ["Appearance"]
-reloj.writeConfig("showDate", false)
-
 var desktopsArray = desktopsForActivity(currentActivity());
 for (var j = 0; j < desktopsArray.length; j++) {
     desktopsArray[j].wallpaperPlugin = "org.kde.image";
+}
+
+// Reloj en el escritorio de la pantalla principal, abajo a la izquierda junto al
+// logo krarupOS del fondo (no en el panel): solo la hora, sin la fecha (se ve al
+// hacer clic). Donde lo dejó Seba en 4K (544,2000, 64x64), proporcional a la
+// pantalla con que se entra por primera vez.
+for (var j = 0; j < desktopsArray.length; j++) {
+    var escritorio = desktopsArray[j];
+    if (escritorio.screen != 0) continue;
+    var g = screenGeometry(escritorio.screen);
+    var lado = g.height >= 2160 ? 64 : (g.height >= 1440 ? 56 : 48);
+    var reloj = escritorio.addWidget("org.kde.plasma.digitalclock",
+        Math.round(g.width * 544 / 3840), Math.round(g.height * 2000 / 2160), lado, lado);
+    reloj.currentConfigGroup = ["Appearance"];
+    reloj.writeConfig("showDate", false);
+    reloj.writeConfig("showSeconds", "Never");
+    break;
 }
