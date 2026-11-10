@@ -3,7 +3,12 @@
 # Si ya existe /etc/systemd/system/lactd.service, ese manda.
 [Unit]
 Description=GPU Control Daemon (via Flatpak)
-After=multi-user.target
+# Sin After=multi-user.target (el de LACT): en las variantes NVIDIA,
+# multi-user.target espera a ublue-nvidia-flatpak-runtime-sync, que en el primer
+# arranque baja el runtime GL de NVIDIA (minutos). Mientras, LACT no tenía
+# servicio, la app mostraba su ventana de instalación y creaba otro en /etc.
+# Sin NVML al partir, lactd se reinicia cuando el runtime termina de bajar
+# (ublue-nvidia-flatpak-runtime-sync.service.d/50-krarupos-lact.conf).
 ConditionPathExists=/var/lib/flatpak/app/io.github.ilya_zlobintsev.LACT/x86_64/stable/active/files/bin/daemon.sh
 
 [Service]
