@@ -1,0 +1,40 @@
+#!/usr/bin/bash
+# Game Mode en la resolución nativa de cada monitor, sin "Ajustar la resolución
+# automáticamente" de Steam (en un 4K de 27" bajaba a la mitad). Esa opción
+# apagada es una línea en el archivo de modos de gamescope:
+#   <fabricante> <modelo>:<ancho>x<alto>@<Hz> 0
+# Se escribe una vez por monitor (la primera vez que se entra a Game Mode con
+# él), con su resolución nativa y la mayor frecuencia en esa resolución. Si
+# después se vuelve a activar en Steam, se respeta.
+# Lo llama /etc/gamescope-session-plus/sessions.d/steam antes de abrir gamescope.
+set -uo pipefail
+
+modos=${GAMESCOPE_MODE_SAVE_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/gamescope/modes.cfg}
+vistos=${XDG_STATE_HOME:-$HOME/.local/state}/krarupos/gamescope-monitores
+mkdir -p "$(dirname "$modos")" "$(dirname "$vistos")"
+touch "$modos" "$vistos"
+
+for c in /sys/class/drm/card*-*; do
+    [[ $(cat "$c/status" 2>/dev/null) == connected && $(wc -c <"$c/edid" 2>/dev/null) -gt 0 ]] || continue
+    linea=$(edid-decode "$c/edid" 2>/dev/null | python3 -I -c '
+import re, sys
+texto = sys.stdin.read()
+fab = re.search(r"Manufacturer: (\w{3})", texto)
+modelo = re.search(r"Display Product Name: \x27(.*)\x27", texto)
+nativa = re.search(r"DTD 1:\s+(\d+)x(\d+)", texto)
+if not (fab and modelo and nativa):
+    sys.exit(1)
+nombre = fab.group(1)
+for l in open("/usr/share/hwdata/pnp.ids", encoding="utf-8", errors="ignore"):
+    if l.startswith(fab.group(1) + "\t"):
+        nombre = l.split("\t", 1)[1].strip()
+        break
+ancho, alto = nativa.groups()
+hz = max(float(h) for h in re.findall(r"\b%sx%s\s+([\d.]+) Hz" % (ancho, alto), texto))
+print("%s %s:%sx%s@%d 0" % (nombre, modelo.group(1).strip(), ancho, alto, round(hz)))
+') || continue
+    monitor=${linea%%:*}
+    grep -qxF "$monitor" "$vistos" && continue
+    grep -q "^${monitor//[\[\]\\.*^$]/\\&}:" "$modos" || echo "$linea" >>"$modos"
+    echo "$monitor" >>"$vistos"
+done

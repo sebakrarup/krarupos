@@ -1,0 +1,5 @@
+# krarupOS: se lee después de /usr/share/gamescope-session-plus/sessions.d/steam,
+# al entrar a Game Mode y antes de abrir gamescope.
+# Resolución nativa de cada monitor la primera vez (sin "Ajustar la resolución
+# automáticamente"): /usr/libexec/krarupos-gamescope-resolucion.
+/usr/libexec/krarupos-gamescope-resolucion || true
