@@ -77,6 +77,7 @@ Hay tres variantes, que se construyen todos los días sobre la última Bazzite:
 - **Apps predeterminadas**: videos con mpv, Firefox como navegador y magnet links/torrents con Transmission Remote (sin que Firefox pregunte).
 - **mpv con decodificación por GPU** (`hwdec=vaapi`): evita tirones en AV1 y videos a muchos fps.
 - **mpv se cierra al terminar el video**, como antes de la versión 0.42.
+- **mpv sin pantalla negra al abrir en una TTY** (`target-colorspace-hint=no`): no le avisa SDR/HDR al monitor, que en monitores con HDR causaba unos segundos en negro. Los videos HDR se ven en SDR.
 - **Panel fijado**: Firefox, Configuración, Konsole, Dolphin y Mission Center, en ese orden, y Gaming Mode al final en krarupos-deck. **Favoritos** del menú sin esas apps (ya están en el panel).
 
 ## Cambiarse a krarupOS desde Bazzite
