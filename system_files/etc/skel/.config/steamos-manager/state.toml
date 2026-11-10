@@ -1,0 +1,7 @@
+version = 1
+
+[services]
+
+[session_manager]
+default_login_mode = "Desktop"
+desktop_session = "plasma.desktop"
