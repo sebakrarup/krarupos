@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 # Instala Decky Loader una sola vez, igual que "ujust setup-decky" de Bazzite
 # (91-bazzite-decky.just) pero sin preguntar, y después los plugins de
-# krarupos-decky-plugins.py. Si alguien desinstala Decky o un plugin, no se
+# krarupos-decky-plugins.py y los temas de krarupos-decky-temas.py. Si alguien desinstala Decky o un plugin, no se
 # vuelve a instalar.
 set -euo pipefail
 
@@ -37,6 +37,8 @@ if [[ ! -x "$casa/homebrew/services/PluginLoader" ]]; then
 fi
 
 /usr/libexec/krarupos-decky-plugins.py "$casa/homebrew/plugins" "$usuario"
+# Temas de CSS Loader activados con las opciones de Seba (Switch Like Home, Round, Clean Gameview).
+/usr/libexec/krarupos-decky-temas.py "$casa/homebrew/themes" "$usuario"
 
 # ~/homebrew (la carpeta de Decky) en café en Dolphin, si nadie le puso otro ícono.
 if [[ ! -e "$casa/homebrew/.directory" ]]; then
