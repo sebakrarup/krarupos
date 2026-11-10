@@ -38,6 +38,7 @@ Hay tres variantes, que se construyen todos los días sobre la última Bazzite:
 - **Decky Loader** se instala solo una vez (con el instalador oficial, como `ujust setup-decky`) cuando Steam ya abrió, con los plugins CSS Loader, Animation Changer, SteamGridDB y Tabs krarupOS (pestañas de colecciones, propio; reemplaza a TabMaster; código en `decky/tabs-krarupos`); si se desinstala, no vuelve.
 - **Deck sin cambiarse a Bazzite**: Steam ya no puede mover el sistema a la imagen oficial de Bazzite al elegir canal de actualizaciones.
 - **Deck parte en escritorio**: el primer arranque entra a KDE (sin pantalla negra mientras Steam se actualiza); "Gaming Mode" queda en los favoritos del menú (no en el escritorio).
+- **Steam no se abre solo en KDE** (Bazzite lo abre en cada inicio de sesión): se abre a mano o entrando a Game Mode. Para que abra solo: Configuración del sistema → Inicio automático → Agregar → Steam.
 - **SSH** activo desde el primer arranque, solo con llave (la de mi PC va en cada usuario nuevo).
 - **Wake-on-LAN** activo en el cable de red (paquete mágico), para prender el PC desde otro equipo. En la BIOS también tiene que estar permitido (en MSI: "Resume By PCI-E Device").
 - **Perfil de energía en performance** desde el primer arranque (en PCs sin batería; portátiles y Deck se quedan en balanced). Solo una vez: si se cambia en KDE, se respeta.

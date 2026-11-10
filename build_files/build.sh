@@ -576,6 +576,11 @@ EOF
 rm -f /etc/skel/.config/autostart/bazzite-portal.desktop
 # Ni los avisos de novedades de Bazzite al iniciar sesión.
 rm -f /etc/xdg/autostart/bazzite-announcement.desktop
+# Ni Steam en KDE: se abre a mano o entrando a Game Mode (ahí lo abre la sesión).
+# Para que abra solo: Configuración del sistema > Inicio automático > Agregar > Steam.
+# En los PCs ya instalados también se va (es igual al de Bazzite, /etc lo sigue).
+rm -f /etc/xdg/autostart/steam.desktop
+if [[ -e /etc/xdg/autostart/steam.desktop ]]; then exit 1; fi
 
 # input-remapper: los presets del G502 X LS vienen en /etc/skel.
 systemctl enable input-remapper.service
