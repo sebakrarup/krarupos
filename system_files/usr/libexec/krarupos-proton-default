@@ -11,27 +11,44 @@ proton="$HOME/.local/share/Steam/compatibilitytools.d/Proton-CachyOS Latest-x86_
 # Todavía no está instalado: se reintenta en otra sesión.
 [[ -f "$proton/compatibilitytool.vdf" ]] || exit 0
 
-# Lutris: también de predeterminado para Wine (su lista incluye los Proton de
-# Steam por el nombre de la carpeta; si no, usa GE-Proton). Una vez por
-# usuario y solo si no se ha elegido otra versión en Lutris.
-if [[ ! -f $estado/proton-lutris ]]; then
-    python3 -I - "$HOME/.local/share/lutris/runners/wine.yml" "$(basename "$proton")" <<'EOF'
+# Lutris: los ajustes de Seba (como en su FIFA 23), una vez por usuario y solo
+# los que no se hayan cambiado ya en Lutris:
+#   - Wine: Proton-CachyOS (la lista de Lutris incluye los Proton de Steam por
+#     el nombre de la carpeta; si no, usa GE-Proton), sin DXVK-NVAPI
+#     (d3d_extras), FSR, BattlEye ni Easy Anti-Cheat, que Lutris trae prendidos;
+#   - Sistema: sin GameMode (Lutris lo prende si está) ni MangoHud.
+if [[ ! -f $estado/lutris ]]; then
+    python3 -I - "$HOME/.local/share/lutris" "$(basename "$proton")" <<'EOF'
 import os, sys, yaml
-ruta, version = sys.argv[1:]
-config = {}
-if os.path.exists(ruta):
-    with open(ruta) as f:
-        config = yaml.safe_load(f) or {}
-wine = config.setdefault("wine", {}) or {}
-if not wine.get("version"):
-    wine["version"] = version
-    config["wine"] = wine
+carpeta, version = sys.argv[1:]
+
+def poner(archivo, seccion, valores):
+    ruta = os.path.join(carpeta, archivo)
+    config = {}
+    if os.path.exists(ruta):
+        with open(ruta) as f:
+            config = yaml.safe_load(f) or {}
+    grupo = config.get(seccion) or {}
+    nuevos = {k: v for k, v in valores.items() if k not in grupo}
+    if not nuevos:
+        return
+    grupo.update(nuevos)
+    config[seccion] = grupo
     os.makedirs(os.path.dirname(ruta), exist_ok=True)
     with open(ruta, "w") as f:
         yaml.safe_dump(config, f, sort_keys=False)
+
+poner("runners/wine.yml", "wine", {
+    "version": version,
+    "d3d_extras": False,
+    "fsr": False,
+    "battleye": False,
+    "eac": False,
+})
+poner("system.yml", "system", {"gamemode": False, "mangohud": False})
 EOF
     mkdir -p "$estado"
-    touch "$estado/proton-lutris"
+    touch "$estado/lutris"
 fi
 
 [[ -f "$marca" ]] && exit 0
