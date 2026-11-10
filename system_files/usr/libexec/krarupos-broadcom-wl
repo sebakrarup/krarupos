@@ -1,0 +1,21 @@
+#!/usr/bin/bash
+# WiFi Broadcom que solo funciona con el driver propietario wl (BCM4360 de los
+# Mac y las Fenvi, BCM4352, BCM43142): Bazzite trae wl pero lo bloquea por defecto
+# (/etc/modprobe.d/default-disable-broadcom-wl.conf), porque con wl activo el
+# paquete bloquea b43, brcmsmac y brcmfmac, que usan otras tarjetas. Si el PC
+# tiene una de estas, se activa wl (lo mismo que "ujust configure-broadcom-wl
+# enable") y se carga al tiro, para tener WiFi desde el primer inicio de sesión.
+# En PCs sin estas tarjetas no hace nada.
+set -euo pipefail
+
+for disp in /sys/bus/pci/devices/*; do
+    [[ $(<"$disp/vendor") == 0x14e4 ]] || continue
+    case $(<"$disp/device") in
+        0x43a0|0x43b1|0x4365) ;;     # BCM4360, BCM4352, BCM43142
+        *) continue ;;
+    esac
+    rm -f /etc/modprobe.d/default-disable-broadcom-wl.conf /etc/modprobe.d/broadcom-wl-blacklist.conf
+    modprobe wl
+    logger -t krarupos-broadcom-wl "Broadcom $(<"$disp/device") en $(basename "$disp"): driver wl activado"
+    exit 0
+done

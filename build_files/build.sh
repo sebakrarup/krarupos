@@ -591,6 +591,8 @@ systemctl enable krarupos-ocultar-sistema.service
 systemctl --global enable krarupos-letras.service krarupos-letras.path
 # Sensores (RAM, placa) detectados solos en el primer arranque (usr/libexec/krarupos-sensores).
 systemctl enable krarupos-sensores.service
+# WiFi Broadcom que solo anda con wl (BCM4360 de Mac, etc.): wl activado solo en esos PCs (usr/libexec/krarupos-broadcom-wl).
+systemctl enable krarupos-broadcom-wl.service
 # LACT sin la ventana de instalar su servicio; arranca cuando LACT ya está instalada.
 systemctl enable lactd.service
 # Decky Loader: se instala solo una vez, cuando Steam ya abrió (usr/libexec/krarupos-decky).

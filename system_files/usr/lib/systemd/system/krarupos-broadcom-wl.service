@@ -1,0 +1,14 @@
+[Unit]
+Description=Activar el driver wl para WiFi Broadcom que solo funciona con él
+# Mientras Bazzite lo tenga bloqueado; una vez activado (o desactivado a mano con
+# "ujust configure-broadcom-wl disable", que deja el symlink) no corre más.
+ConditionPathExists=/etc/modprobe.d/default-disable-broadcom-wl.conf
+ConditionPathExists=!/etc/modprobe.d/broadcom-wl-blacklist.conf
+Before=NetworkManager.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/krarupos-broadcom-wl
+
+[Install]
+WantedBy=multi-user.target
