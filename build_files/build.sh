@@ -582,6 +582,13 @@ rm -f /etc/xdg/autostart/bazzite-announcement.desktop
 rm -f /etc/xdg/autostart/steam.desktop
 if [[ -e /etc/xdg/autostart/steam.desktop ]]; then exit 1; fi
 
+# Spectacle: capturar una región con Ctrl+Shift+P (en vez de Meta+Shift+Print),
+# como en el PC de Seba. Es el atajo por defecto, así que lo cambiado a mano se respeta.
+sed -i '/^\[Desktop Action RectangularRegionScreenShot\]/,/^\[/ s/^X-KDE-Shortcuts=Meta+Shift+Print$/X-KDE-Shortcuts=Ctrl+Shift+P/' \
+    /usr/share/applications/org.kde.spectacle.desktop
+sed -n '/^\[Desktop Action RectangularRegionScreenShot\]/,/^\[Desktop Action WindowUnderCursor/p' \
+    /usr/share/applications/org.kde.spectacle.desktop | grep -qx 'X-KDE-Shortcuts=Ctrl+Shift+P'
+
 # input-remapper: los presets del G502 X LS vienen en /etc/skel.
 systemctl enable input-remapper.service
 # Bazzite deck esconde la app y apaga la carga de presets al entrar a KDE.
