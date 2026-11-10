@@ -1,0 +1,11 @@
+[Unit]
+Description=Descargas en Dolphin ordenada por fecha pero sin grupos
+# Crea ~/Downloads (o su nombre en el idioma del usuario).
+After=xdg-user-dirs.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/krarupos-dolphin-descargas
+
+[Install]
+WantedBy=default.target

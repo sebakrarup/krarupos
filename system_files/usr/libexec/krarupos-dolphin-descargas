@@ -1,0 +1,31 @@
+#!/usr/bin/bash
+# Dolphin trata Descargas como carpeta especial: la primera vez que se abre la
+# ordena por fecha (la más nueva arriba) y además la agrupa por fecha ("Group
+# By: Same as Sort"). En krarupOS se deja el mismo orden pero sin grupos
+# ("None"), como el resto de las carpetas. Una vez por usuario y solo si
+# Dolphin todavía no guardó nada para esa carpeta (si se cambia, se respeta).
+set -euo pipefail
+
+marca=${XDG_STATE_HOME:-$HOME/.local/state}/krarupos/dolphin-descargas
+[[ -f "$marca" ]] && exit 0
+
+descargas=$(xdg-user-dir DOWNLOAD 2>/dev/null || true)
+[[ -n $descargas && $descargas != "$HOME" ]] || descargas=$HOME/Downloads
+mkdir -p "$descargas"
+
+# Dolphin guarda la vista de cada carpeta en este atributo (formato KConfig).
+atributo=user.kde.fm.viewproperties#1
+if ! getfattr --only-values -n "$atributo" "$descargas" &>/dev/null; then
+    ahora=$(date +%Y,%-m,%-d,%-H,%-M,%-S.000)
+    setfattr -n "$atributo" -v "[Dolphin]
+GroupedSorting=false
+SortFoldersFirst=false
+SortOrder=1
+SortRole=modificationtime
+Timestamp=$ahora
+Version=4
+" "$descargas"
+fi
+
+mkdir -p "$(dirname "$marca")"
+touch "$marca"
