@@ -1,0 +1,39 @@
+#!/usr/bin/bash
+# Escala 100 % en cada pantalla la primera vez que aparece: KWin calcula una por
+# los DPI (un 4K de 27" queda en 170 %) y krarupOS ajusta los tamaños para 100 %.
+# Cada pantalla se reconoce por conector y tamaño físico; si alguien le cambia
+# la escala después, se respeta.
+# Corre al iniciar KDE antes de plasmashell (krarupos-escala.service: si no, el
+# escritorio se arma con la escala de KWin y el reloj queda corrido) y desde
+# krarupos-letras cuando cambian las pantallas.
+set -uo pipefail
+
+estado=${XDG_STATE_HOME:-$HOME/.local/state}/krarupos-letras.d
+busctl --user status org.kde.KWin >/dev/null 2>&1 || exit 0
+# Antes de plasmashell puede faltar WAYLAND_DISPLAY en el entorno del servicio.
+if [[ -z ${WAYLAND_DISPLAY:-} ]]; then
+    for _ in $(seq 20); do
+        WAYLAND_DISPLAY=$(systemctl --user show-environment | sed -n 's/^WAYLAND_DISPLAY=//p')
+        [[ -n $WAYLAND_DISPLAY ]] && break
+        sleep 0.5
+    done
+    [[ -n $WAYLAND_DISPLAY ]] || exit 0
+    export WAYLAND_DISPLAY
+fi
+
+mkdir -p "$estado"
+kscreen-doctor -j 2>/dev/null | python3 -I -c '
+import json, os, sys
+vistas = sys.argv[1]
+conocidas = set(open(vistas).read().split()) if os.path.exists(vistas) else set()
+for o in json.load(sys.stdin)["outputs"]:
+    if not (o.get("enabled") and o.get("currentModeId")):
+        continue
+    clave = "{}:{}x{}".format(o["name"], o["sizeMM"]["width"], o["sizeMM"]["height"])
+    if clave in conocidas:
+        continue
+    if o.get("scale", 1) != 1:
+        print("output.{}.scale.1".format(o["name"]))
+    with open(vistas, "a") as f:
+        f.write(clave + "\n")
+' "$estado/escala-pantallas" | while read -r orden; do kscreen-doctor "$orden" >/dev/null 2>&1; done

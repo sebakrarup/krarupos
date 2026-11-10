@@ -1,0 +1,8 @@
+# krarupOS: gamescope-session-plus lee este archivo después del suyo
+# (/usr/share/gamescope-session-plus/sessions.d/<sesión>), al entrar a Game Mode
+# y antes de abrir gamescope. Va con los dos nombres porque Bazzite usa
+# "ogui-steam" (que lee el de "steam") y otras imágenes "steam".
+
+# Resolución nativa de cada monitor la primera vez (sin "Ajustar la resolución
+# automáticamente"): /usr/libexec/krarupos-gamescope-resolucion.
+/usr/libexec/krarupos-gamescope-resolucion || true

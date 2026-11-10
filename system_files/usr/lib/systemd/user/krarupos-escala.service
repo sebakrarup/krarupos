@@ -1,0 +1,11 @@
+[Unit]
+Description=Escala 100 % en las pantallas nuevas, antes de armar el escritorio
+After=plasma-kwin_wayland.service
+Before=plasma-plasmashell.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/krarupos-escala
+
+[Install]
+WantedBy=plasma-workspace.target

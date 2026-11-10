@@ -62,6 +62,7 @@ for (var j = 0; j < desktopsArray.length; j++) {
         Math.round(g.width * 544 / 3840), Math.round(g.height * 2000 / 2160), lado, lado);
     reloj.currentConfigGroup = ["Appearance"];
     reloj.writeConfig("showDate", false);
-    reloj.writeConfig("showSeconds", "Never");
+    // Número y no nombre: con "Never" (texto) quedaba mostrando los segundos.
+    reloj.writeConfig("showSeconds", 0);
     break;
 }

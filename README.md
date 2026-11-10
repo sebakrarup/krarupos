@@ -41,7 +41,6 @@ Hay tres variantes, que se construyen todos los días sobre la última Bazzite:
 - **Scroll invertido** (como en Mac) en todos los mouse de KDE, también en los que se conecten después; si alguien lo deja normal en Configuración → Mouse, se respeta.
 - **Captura de una región** con Spectacle: **Ctrl+Shift+P** (en vez de Meta+Shift+Print).
 - **Game Mode en la resolución nativa** de cada monitor y su mayor frecuencia, sin "Ajustar la resolución automáticamente" (en un 4K de 27" Steam bajaba a la mitad); una vez por monitor, si se vuelve a activar se respeta.
-- **Game Mode sin HDR** (Steam lo prendía solo y se veía mal): `~/.config/environment.d/krarupos-sin-hdr.conf` en cada usuario nuevo; borrándolo vuelve la opción de HDR en Steam.
 - **Steam no se abre solo en KDE** (Bazzite lo abre en cada inicio de sesión): se abre a mano o entrando a Game Mode. Para que abra solo: Configuración del sistema → Inicio automático → Agregar → Steam.
 - **SSH** activo desde el primer arranque, solo con llave (la de mi PC va en cada usuario nuevo).
 - **Wake-on-LAN** activo en el cable de red (paquete mágico), para prender el PC desde otro equipo. En la BIOS también tiene que estar permitido (en MSI: "Resume By PCI-E Device").

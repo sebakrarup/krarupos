@@ -601,6 +601,8 @@ systemctl enable krarupos-ocultar-sistema.service
 # Letras de KDE y tamaños de Dolphin según la resolución de la pantalla principal
 # (usr/libexec/krarupos-letras); no toca lo que alguien cambie a mano.
 systemctl --global enable krarupos-letras.service krarupos-letras.path
+# Escala 100 % en las pantallas nuevas antes de armar el escritorio (usr/libexec/krarupos-escala).
+systemctl --global enable krarupos-escala.service
 # Sensores (RAM, placa) detectados solos en el primer arranque (usr/libexec/krarupos-sensores).
 systemctl enable krarupos-sensores.service
 # WiFi Broadcom que solo anda con wl (BCM4360 de Mac, etc.): wl activado solo en esos PCs (usr/libexec/krarupos-broadcom-wl).
