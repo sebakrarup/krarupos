@@ -1,16 +1,42 @@
 #!/usr/bin/bash
-# Deja Proton-CachyOS Latest como Proton predeterminado de Steam, una sola vez
+# Deja Proton-CachyOS Latest como Proton predeterminado de Steam y Lutris, una sola vez
 # por usuario (si después se cambia en Steam, se respeta). Corre antes de cada
 # sesión (KDE o modo juego) porque Steam tiene que estar cerrado, y también al
 # final de krarupos-proton-cachyos.
 set -euo pipefail
 
-marca=${XDG_STATE_HOME:-$HOME/.local/state}/krarupos/proton-default
-[[ -f "$marca" ]] && exit 0
+estado=${XDG_STATE_HOME:-$HOME/.local/state}/krarupos
+marca=$estado/proton-default
+proton="$HOME/.local/share/Steam/compatibilitytools.d/Proton-CachyOS Latest-x86_64_v3"
+# Todavía no está instalado: se reintenta en otra sesión.
+[[ -f "$proton/compatibilitytool.vdf" ]] || exit 0
 
+# Lutris: también de predeterminado para Wine (su lista incluye los Proton de
+# Steam por el nombre de la carpeta; si no, usa GE-Proton). Una vez por
+# usuario y solo si no se ha elegido otra versión en Lutris.
+if [[ ! -f $estado/proton-lutris ]]; then
+    python3 -I - "$HOME/.local/share/lutris/runners/wine.yml" "$(basename "$proton")" <<'EOF'
+import os, sys, yaml
+ruta, version = sys.argv[1:]
+config = {}
+if os.path.exists(ruta):
+    with open(ruta) as f:
+        config = yaml.safe_load(f) or {}
+wine = config.setdefault("wine", {}) or {}
+if not wine.get("version"):
+    wine["version"] = version
+    config["wine"] = wine
+    os.makedirs(os.path.dirname(ruta), exist_ok=True)
+    with open(ruta, "w") as f:
+        yaml.safe_dump(config, f, sort_keys=False)
+EOF
+    mkdir -p "$estado"
+    touch "$estado/proton-lutris"
+fi
+
+[[ -f "$marca" ]] && exit 0
 config=$HOME/.local/share/Steam/config/config.vdf
-# Todavía no está instalado, o Steam nunca abrió: se reintenta en otra sesión.
-[[ -f "$HOME/.local/share/Steam/compatibilitytools.d/Proton-CachyOS Latest-x86_64_v3/compatibilitytool.vdf" ]] || exit 0
+# Steam nunca abrió: se reintenta en otra sesión.
 [[ -f "$config" ]] || exit 0
 # Con Steam abierto, Steam pisaría el cambio al cerrar.
 pgrep -x steam >/dev/null && exit 0
