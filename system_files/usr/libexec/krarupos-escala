@@ -9,6 +9,12 @@
 set -uo pipefail
 
 estado=${XDG_STATE_HOME:-$HOME/.local/state}/krarupos-letras.d
+# plasma-kwin_wayland.service queda "iniciado" cuando el wrapper toma su nombre
+# en el bus, antes de que KWin mismo esté listo: hay que esperarlo (hasta 15 s).
+for _ in $(seq 30); do
+    busctl --user status org.kde.KWin >/dev/null 2>&1 && break
+    sleep 0.5
+done
 busctl --user status org.kde.KWin >/dev/null 2>&1 || exit 0
 # Antes de plasmashell puede faltar WAYLAND_DISPLAY en el entorno del servicio.
 if [[ -z ${WAYLAND_DISPLAY:-} ]]; then
