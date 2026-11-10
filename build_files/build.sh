@@ -638,6 +638,9 @@ systemctl --global enable krarupos-claude.service
 systemctl --global enable krarupos-sunshine-portal.service
 # Descargas en Dolphin ordenada por fecha pero sin grupos ("Group By: None"), para cada usuario.
 systemctl --global enable krarupos-dolphin-descargas.service
+# Scroll invertido (como en Mac) en todos los mouse de KDE, también los que se conecten
+# después; lo cambiado a mano se respeta (usr/libexec/krarupos-scroll-invertido).
+systemctl --global enable krarupos-scroll-invertido.service
 # Teclas de brillo del monitor con rampa suave por DDC/CI (powerdevil espera ~1 s
 # y cambia de golpe); mantener la tecla sigue subiendo. Sin monitor DDC no hace nada.
 systemctl --global enable krarupos-brillo-suave.service

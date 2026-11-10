@@ -1,0 +1,13 @@
+[Unit]
+Description=Scroll invertido en todos los mouse de KDE
+# Solo en KDE: en Game Mode no hay KWin.
+After=plasma-workspace.target
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=/usr/libexec/krarupos-scroll-invertido
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=plasma-workspace.target

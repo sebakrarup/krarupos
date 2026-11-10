@@ -1,0 +1,41 @@
+#!/usr/bin/bash
+# Scroll invertido ("natural", como en Mac) en todos los mouse de KDE. KDE lo
+# guarda por dispositivo (kcminputrc, [Libinput][vendor][product][nombre]) y un
+# mouse nuevo parte con el de libinput (normal). Al entrar a KDE y cada vez que
+# se conecta uno, a cada mouse (no touchpad) que todavía no tenga el ajuste
+# guardado se le activa por DBus, igual que en Configuración (KWin lo guarda).
+# Si alguien lo cambia a mano, queda guardado y no se toca más.
+set -uo pipefail
+
+kwin=org.kde.KWin
+raiz=/org/kde/KWin/InputDevice
+
+prop() { busctl --user get-property $kwin "$raiz/$1" org.kde.KWin.InputDevice "$2" 2>/dev/null | cut -d' ' -f2-; }
+
+aplicar() {
+    local e nombre vendor product
+    for e in $(busctl --user get-property $kwin $raiz org.kde.KWin.InputDeviceManager devicesSysNames 2>/dev/null | grep -o 'event[0-9]*'); do
+        [[ $(prop "$e" pointer) == true && $(prop "$e" touchpad) == false && $(prop "$e" supportsNaturalScroll) == true ]] || continue
+        [[ $(prop "$e" naturalScroll) == true ]] && continue
+        nombre=$(prop "$e" name); nombre=${nombre#\"}; nombre=${nombre%\"}
+        vendor=$(prop "$e" vendor); product=$(prop "$e" product)
+        # Ya tiene el ajuste guardado (alguien lo dejó normal a mano): se respeta.
+        [[ -n $(kreadconfig6 --file kcminputrc --group Libinput --group "$vendor" --group "$product" --group "$nombre" --key NaturalScroll) ]] && continue
+        busctl --user set-property $kwin "$raiz/$e" org.kde.KWin.InputDevice naturalScroll b true &&
+            echo "scroll invertido: $nombre ($e)"
+    done
+}
+
+# Espera a KWin (el servicio parte con la sesión).
+for _ in $(seq 60); do
+    busctl --user status $kwin &>/dev/null && break
+    sleep 1
+done
+busctl --user status $kwin &>/dev/null || exit 0
+
+aplicar
+# Mouse conectados después.
+gdbus monitor --session --dest $kwin --object-path $raiz 2>/dev/null |
+    while read -r linea; do
+        [[ $linea == *deviceAdded* ]] && { sleep 1; aplicar; }
+    done
