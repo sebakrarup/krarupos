@@ -7,3 +7,5 @@ alias ruedaOFF='/usr/libexec/krarupos-g502-rueda off'
 # Ver fotos en una TTY a resolución completa: foto ~/Pictures/*.jpg
 # Teclas: > siguiente, < anterior, q salir.
 alias foto='flatpak run io.mpv.Mpv --vo=drm --image-display-duration=inf'
+# mpv es Flatpak (io.mpv.Mpv): sin esto "mpv video.mp4" no existe en la terminal ni en las TTY.
+alias mpv='flatpak run io.mpv.Mpv'

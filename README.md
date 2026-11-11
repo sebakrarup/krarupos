@@ -65,7 +65,7 @@ Hay tres variantes, que se construyen todos los días sobre la última Bazzite:
 - **Sesión vacía** al entrar: no se vuelven a abrir las apps de la sesión anterior.
 - **Prompt** con los colores de krarupOS (`seba@krarupOS:~$`).
 - **fastfetch** con el logo de krarupOS y un color por línea, una vez por sesión, en la primera terminal.
-- **Alias**: `krarup` muestra `fastfetch` con el logo de krarupOS; `foto` muestra fotos en una TTY; `ruedaON` y `ruedaOFF` cambian la rueda del G502 X a alta resolución o a normal (para todos los usuarios).
+- **Alias**: `krarup` muestra `fastfetch` con el logo de krarupOS; `mpv` abre el reproductor (Flatpak) desde la terminal o una TTY; `foto` muestra fotos en una TTY; `ruedaON` y `ruedaOFF` cambian la rueda del G502 X a alta resolución o a normal (para todos los usuarios).
 - **Rueda del G502 X en resolución normal** al conectar (el kernel pone alta resolución y hace scroll con solo rozarla); solo si está ese mouse.
 - **Scroll natural en el G502 X** en KDE (solo ese mouse, también con input-remapper).
 - **LACT listo sin configurar** (también en las variantes NVIDIA): es la primera app que se instala y su servicio viene incluido; con la RX 9070 XT de Seba pone 250 W y Zero RPM apagado (como en CachyOS), y con la RTX 3080 Gigabyte de Erik su curva de ventiladores (40 % hasta 20 °C, 50 % a 50, 60 % a 60, 75 % a 70 y 100 % a 80 °C) y 300 W; una vez, lo que se cambie después en LACT se respeta. OverDrive de amdgpu activado (`amdgpu.ppfeaturemask`), que LACT necesita para Zero RPM y overclock.
