@@ -1,0 +1,81 @@
+#!/usr/bin/bash
+# Despertar el PC desde suspensión con un control Bluetooth (por ejemplo, Xbox).
+# Uso: krarupos-control-despertar on|off   (alias xboxcontrollerWake / xboxcontrollerNoWake)
+#      krarupos-control-despertar aplicar <ruta sysfs de la interfaz>   (lo llama la regla de udev)
+# Reconoce cualquier adaptador Bluetooth USB por su clase (e0/01/01), no por marca,
+# y les permite despertar al adaptador y a los hubs USB de los que cuelga (un
+# adaptador detrás de un hub no despierta si el hub no puede). No viene activado:
+# cualquier dispositivo Bluetooth enlazado (audífonos, mouse) también podría
+# despertar el PC, y algunos adaptadores lo despiertan solos.
+set -euo pipefail
+[[ $EUID == 0 ]] || exec sudo "$0" "$@"
+
+regla=/etc/udev/rules.d/90-krarupos-control-despertar.rules
+
+# Los dispositivos USB desde el adaptador hacia arriba, sin el root hub.
+cadena() {
+    local d
+    d=$(dirname "$1")
+    while [[ -f $d/idVendor && $(basename "$d") != usb* ]]; do
+        echo "$d"
+        d=$(dirname "$d")
+    done
+}
+
+interfaces_bt() {
+    local i
+    for i in /sys/bus/usb/devices/*:*; do
+        # realpath: /sys/bus/usb/devices son enlaces y cadena() sube por la ruta real.
+        [[ $(cat "$i/bInterfaceClass" 2>/dev/null)/$(cat "$i/bInterfaceSubClass" 2>/dev/null)/$(cat "$i/bInterfaceProtocol" 2>/dev/null) == e0/01/01 ]] && realpath "$i"
+    done
+    return 0
+}
+
+poner() {  # $1 = enabled|disabled, $2 = interfaz Bluetooth
+    local d
+    for d in $(cadena "$2"); do
+        [[ -w $d/power/wakeup ]] && echo "$1" > "$d/power/wakeup"
+    done
+    return 0
+}
+
+adaptadores() {  # nombre de cada adaptador encontrado, una vez
+    local i
+    for i in $(interfaces_bt); do
+        d=$(dirname "$i")
+        echo "$(cat "$d/manufacturer" 2>/dev/null) $(cat "$d/product" 2>/dev/null) ($(cat "$d/idVendor"):$(cat "$d/idProduct"))"
+    done | sort -u
+}
+
+case ${1:-} in
+    on)
+        cat > "$regla" <<'EOF'
+# krarupOS: creado por xboxcontrollerWake, se quita con xboxcontrollerNoWake.
+# Adaptadores Bluetooth USB (y sus hubs) pueden despertar el PC desde suspensión.
+ACTION=="add", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_interface", ATTR{bInterfaceClass}=="e0", ATTR{bInterfaceSubClass}=="01", ATTR{bInterfaceProtocol}=="01", RUN+="/usr/libexec/krarupos-control-despertar aplicar %S%p"
+EOF
+        udevadm control --reload
+        for i in $(interfaces_bt); do poner enabled "$i"; done
+        lista=$(adaptadores)
+        if [[ -n $lista ]]; then
+            echo "Listo: el control Bluetooth puede despertar el PC desde suspensión."
+            echo "Adaptador: $lista"
+        else
+            echo "Activado, pero no hay un adaptador Bluetooth USB conectado ahora."
+            echo "Se aplica solo cuando se conecte uno."
+        fi
+        ;;
+    off)
+        rm -f "$regla"
+        udevadm control --reload
+        for i in $(interfaces_bt); do poner disabled "$i"; done
+        echo "Listo: el Bluetooth ya no despierta el PC."
+        ;;
+    aplicar)
+        poner enabled "${2:?falta la ruta de la interfaz}"
+        ;;
+    *)
+        echo "Uso: $(basename "$0") on|off" >&2
+        exit 2
+        ;;
+esac
