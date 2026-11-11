@@ -57,7 +57,7 @@ Hay tres variantes, que se construyen todos los días sobre la última Bazzite:
 - **TTY hasta Ctrl+Alt+F12** (por defecto solo hasta F6).
 - **Mouse en las TTY** (gpm): seleccionar con el botón izquierdo y pegar con el del medio.
 - **Perilla de volumen en las TTY**: cambia el volumen del sistema (tope de 100 %), sin mpv ni otro programa abierto. En Plasma sigue mandando el escritorio.
-- **btop con la temperatura de la CPU** junto al promedio (sensor Tctl en Ryzen).
+- **btop con la temperatura de la CPU** junto al promedio (sensor Tctl en Ryzen) y **la GPU visible desde el inicio** (sin apretar 5).
 - **Bienvenida de la terminal** con "Welcome to krarupOS" y la imagen de krarupOS.
 - **Konsole** sin barra de desplazamiento (el scroll sigue funcionando).
 - **Dolphin sin discos del sistema** en Dispositivos: ni la raíz (composefs, ~50 MB al 100 % en rojo) ni `/boot`.
