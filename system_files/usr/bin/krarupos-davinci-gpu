@@ -1,0 +1,118 @@
+#!/usr/bin/bash
+# Prepara DaVinci Resolve Studio (contenedor davincibox):
+#  - GPU AMD/Intel: RPM Fusion + mesa-va-drivers-freeworld en el contenedor (el
+#    Mesa de Fedora trae H.264/H.265 por VAAPI desactivados: "No usable encoding
+#    profile found") y ffmpeg_encoder_plugin (EdvinNilsson) en /opt/resolve/IOPlugins,
+#    que agrega h264/hevc/av1_vaapi en la página Deliver.
+#    GPU NVIDIA: nada de eso; Resolve Studio exporta con NVENC por su cuenta.
+#  - ALSA del contenedor sin micrófono (salida a PipeWire, entrada nula): Resolve
+#    abre el micrófono al arrancar y, si no hay uno, reintenta cientos de veces por
+#    segundo y la bandeja de KDE parpadea. Solo afecta a davincibox. Para grabar
+#    voz en Fairlight: borrar /etc/alsa/conf.d/99-zz-sin-microfono.conf adentro.
+#  - Cursor de KDE: el contenedor no trae temas de cursor y Resolve (XWayland)
+#    caía en el cursor básico de X11. Se enlaza el tema del sistema y queda como
+#    predeterminado del contenedor.
+# Hay que volver a correrlo si se recrea davincibox o se cambia el cursor en KDE.
+# Después, reiniciar Resolve.
+set -euo pipefail
+
+contenedor=${1:-davincibox}
+version=v1.4.0
+url="https://github.com/EdvinNilsson/ffmpeg_encoder_plugin/releases/download/$version/ffmpeg_encoder_plugin.dvcp.bundle.zip"
+
+if ! podman container exists "$contenedor" 2>/dev/null; then
+    echo "No existe el contenedor $contenedor. Instala DaVinci Resolve con davincibox primero." >&2
+    exit 1
+fi
+
+if ! distrobox enter "$contenedor" -- test -x /opt/resolve/bin/resolve >/dev/null 2>&1; then
+    echo "DaVinci Resolve no está instalado dentro de $contenedor (falta /opt/resolve/bin/resolve)." >&2
+    echo "Instálalo primero con davincibox y después vuelve a correr esto." >&2
+    exit 1
+fi
+
+nvidia=0
+[[ -e /proc/driver/nvidia/version ]] && nvidia=1
+
+cursor=$(kreadconfig6 --file kcminputrc --group Mouse --key cursorTheme 2>/dev/null || true)
+cursor=${cursor:-breeze_cursors}
+
+tmp=$(mktemp -d "$HOME/.cache/krarupos-davinci-gpu.XXXXXX")
+trap 'rm -rf "$tmp"' EXIT
+
+if (( ! nvidia )); then
+    echo "==> Descargando ffmpeg_encoder_plugin $version"
+    curl -fL --retry 3 -o "$tmp/plugin.zip" "$url"
+    python3 -I -m zipfile -e "$tmp/plugin.zip" "$tmp/bundle"
+    chmod 755 "$tmp/bundle/ffmpeg_encoder_plugin.dvcp.bundle/Contents/Linux-x86-64/ffmpeg_encoder_plugin.dvcp"
+fi
+
+cat > "$tmp/99-zz-sin-microfono.conf" <<'EOF'
+# krarupOS: Resolve abre el micrófono por defecto al arrancar y, si no hay
+# micrófono, reintenta cientos de veces por segundo (la bandeja de KDE parpadea).
+# En este contenedor el audio sale a PipeWire y la entrada es nula (silencio).
+# Para grabar voz en Fairlight, borrar este archivo y reiniciar Resolve.
+pcm.!default {
+    type asym
+    playback.pcm {
+        type pipewire
+        playback_node "-1"
+    }
+    capture.pcm "null"
+    hint {
+        show on
+        description "PipeWire (salida) sin micrófono"
+    }
+}
+EOF
+
+if (( nvidia )); then
+    echo "==> GPU NVIDIA: Resolve exporta con NVENC, no hace falta plugin ni Mesa freeworld"
+else
+    echo "==> GPU AMD/Intel: RPM Fusion, Mesa freeworld y plugin ffmpeg"
+fi
+echo "==> Audio sin micrófono y cursor $cursor en $contenedor"
+
+distrobox enter "$contenedor" -- sh -euc '
+    tmp=$1 nvidia=$2 cursor=$3
+
+    if [ "$nvidia" = 0 ]; then
+        if ! rpm -q rpmfusion-free-release >/dev/null 2>&1; then
+            sudo dnf -y install "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm"
+        fi
+        sudo dnf -y install mesa-va-drivers-freeworld.x86_64 libva-utils
+        sudo mkdir -p /opt/resolve/IOPlugins
+        sudo rm -rf /opt/resolve/IOPlugins/ffmpeg_encoder_plugin.dvcp.bundle
+        sudo cp -r "$tmp/bundle/ffmpeg_encoder_plugin.dvcp.bundle" /opt/resolve/IOPlugins/
+    fi
+
+    sudo install -Dm644 "$tmp/99-zz-sin-microfono.conf" /etc/alsa/conf.d/99-zz-sin-microfono.conf
+
+    # Temas de cursor del sistema dentro del contenedor (los de ~/.local/share/icons
+    # ya se ven porque el home es compartido). Se enlazan todos para que también
+    # funcione si el tema hereda de otro.
+    for d in /run/host/usr/share/icons/*/cursors; do
+        [ -d "$d" ] || continue
+        tema=${d%/cursors}; tema=${tema##*/}
+        [ "$tema" = default ] && continue
+        destino=/usr/share/icons/$tema
+        if [ -L "$destino" ] || [ ! -e "$destino" ]; then
+            sudo ln -sfn "/run/host/usr/share/icons/$tema" "$destino"
+        fi
+    done
+    sudo mkdir -p /usr/share/icons/default
+    printf "[Icon Theme]\nInherits=%s\n" "$cursor" | sudo tee /usr/share/icons/default/index.theme >/dev/null
+
+    if [ "$nvidia" = 0 ]; then
+        echo
+        echo "==> Codificación por hardware (vainfo):"
+        vainfo 2>/dev/null | grep -E "VAEntrypointEncSlice" || echo "  (ninguna: revisar el driver VAAPI)"
+    fi
+' sh "$tmp" "$nvidia" "$cursor"
+
+echo
+if (( nvidia )); then
+    echo "Listo. Reinicia DaVinci Resolve; en Deliver los codecs H.264/H.265/AV1 usan NVENC."
+else
+    echo "Listo. Reinicia DaVinci Resolve y en Deliver elige un codec VAAPI (H.264, H.265 o AV1)."
+fi

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Preparar DaVinci Resolve
+Comment=Deja davincibox exportando con la GPU (VAAPI en AMD, NVENC en NVIDIA), sin micrófono para que no parpadee la bandeja y con el cursor de KDE
+Exec=konsole --hold -e /usr/bin/krarupos-davinci-gpu
+Icon=video-display
+Terminal=false
+Type=Application
+Categories=AudioVideo;Video;
