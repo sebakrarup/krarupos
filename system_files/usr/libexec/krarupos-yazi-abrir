@@ -3,6 +3,10 @@
 # Escritorio: app predeterminada. TTY: imágenes con fbi (empezando por la elegida
 # y siguiendo con las demás de la carpeta) y videos/audio con mpv.
 f=$1
+# yazi lanza esto en un grupo de procesos aparte y no le pasa el control de la
+# terminal: mpv se cree en segundo plano e ignora el teclado. Con control de
+# trabajos (set -m), bash pone a fbi/mpv en primer plano y al salir yazi lo recupera.
+set -m
 if [[ -n ${WAYLAND_DISPLAY:-}${DISPLAY:-} ]]; then
     setsid -f xdg-open "$f" >/dev/null 2>&1
     exit 0
@@ -25,10 +29,10 @@ image/*)
         if ((vista)); then lista+=("$i"); else antes+=("$i"); fi
     done
     ((${#lista[@]})) || lista=("$f")
-    exec /usr/bin/fbi ${card:+-d /dev/dri/$card} -a "${lista[@]}" "${antes[@]}"
+    /usr/bin/fbi ${card:+-d /dev/dri/$card} -a "${lista[@]}" "${antes[@]}"
     ;;
 video/* | audio/*)
-    exec flatpak run io.mpv.Mpv --vo=drm -- "$f"
+    flatpak run io.mpv.Mpv --vo=drm -- "$f"
     ;;
 *)
     echo "No sé cómo abrir $f en la TTY" >&2

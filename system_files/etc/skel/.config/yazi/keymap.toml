@@ -1,0 +1,6 @@
+# krarupOS: Enter sobre una carpeta entra en ella (por defecto yazi la abría con
+# el editor); sobre un archivo lo abre como siempre.
+[[mgr.prepend_keymap]]
+on   = "<Enter>"
+run  = "plugin smart-enter"
+desc = "Entrar a la carpeta o abrir el archivo"
