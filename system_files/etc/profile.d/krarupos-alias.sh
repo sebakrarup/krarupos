@@ -9,6 +9,8 @@ alias ruedaOFF='/usr/libexec/krarupos-g502-rueda off'
 alias foto='flatpak run io.mpv.Mpv --vo=drm --image-display-duration=inf'
 # mpv es Flatpak (io.mpv.Mpv): sin esto "mpv video.mp4" no existe en la terminal ni en las TTY.
 alias mpv='flatpak run io.mpv.Mpv'
+# Moonlight es Flatpak: abrirlo desde la terminal o una TTY con "moonlight".
+alias moonlight='flatpak run com.moonlight_stream.Moonlight'
 # Control Bluetooth (Xbox u otro) despierta el PC desde suspensión: se activa a mano
 # porque cualquier dispositivo Bluetooth enlazado también podría despertarlo. Pide sudo.
 alias xboxcontrollerWake='/usr/libexec/krarupos-control-despertar on'
