@@ -35,7 +35,6 @@ com.moonlight_stream.Moonlight
 dev.lizardbyte.app.Sunshine
 com.vysp3r.ProtonPlus
 # Temas para Steam (estilo Adwaita y otros)
-io.github.Foldex.AdwSteamGtk
 # Roblox
 org.vinegarhq.Sober
 

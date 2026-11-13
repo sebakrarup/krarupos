@@ -670,9 +670,6 @@ systemctl enable getty@.service
 systemctl enable gpm.service
 # YouTube (VacuumTube) en Steam, para cada usuario.
 systemctl --global enable krarupos-steam-youtube.service
-# Tema Dracula para Steam con AdwSteamGtk, para cada usuario (y de nuevo si Steam
-# lo borra al actualizarse).
-systemctl --global enable krarupos-steam-tema.service
 # Proton-CachyOS "Latest" (v3) con ProtonPlus, para cada usuario.
 systemctl --global enable krarupos-proton-cachyos.service
 systemctl --global enable krarupos-proton-default.service

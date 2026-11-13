@@ -28,7 +28,6 @@ Hay tres variantes, que se construyen todos los días sobre la última Bazzite:
 - **Logo krarupOS** (letra MuseoModerno, la del logo de Bazzite) en la pantalla de arranque, en la de inicio de KDE y en el instalador (la ISO).
 - **Disco del sistema** con el nombre "krarupOS" (el instalador lo dejaba `krarupos_<nombre del PC>`). En los dispositivos de KDE, el disco del sistema y los SSD llevan su propio ícono en vez del de disco duro (se verá desde KDE Frameworks 6.32: la 6.31 tiene un error que lo ignora).
 - **Sunshine** con los permisos de teclado, mouse y controles virtuales ya puestos (sin `additional-install.sh`), y preautorizado en el portal de KDE: captura la pantalla sin diálogo de permiso, así no queda bloqueado al entrar a distancia (una vez por usuario; si se quita, no vuelve). Si se cae (pasa a veces al desconectarse Moonlight), se reinicia solo a los 5 s.
-- **Steam con el tema Dracula** (AdwSteamGtk): se pone solo y vuelve si una actualización de Steam lo borra; si se desinstala desde AdwSteamGtk, no vuelve.
 - **YouTube en Steam**: VacuumTube se agrega solo a la biblioteca de Steam como "YouTube" (una vez por usuario; si se borra, no vuelve).
 - **Proton-CachyOS** se instala solo con ProtonPlus ("Latest", así ProtonPlus lo actualiza), en versión x86-64-v3 (CPUs desde ~2015), y queda como Proton predeterminado de Steam y de Lutris (una vez; se puede cambiar).
 - **Lutris** con los ajustes de Seba (una vez por usuario, sin pisar lo ya cambiado): Wine con Proton-CachyOS, sin DXVK-NVAPI, FSR, BattlEye ni Easy Anti-Cheat; sin GameMode ni MangoHud.
