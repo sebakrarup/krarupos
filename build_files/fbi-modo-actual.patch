@@ -1,0 +1,32 @@
+--- a/drmtools.c
++++ b/drmtools.c
+@@ -28,6 +28,7 @@
+ static drmModeCrtc *scrtc = NULL;
+ static gfxfmt *drm_fmt = NULL;
+ static char drm_dev[64];
++static bool user_mode = false;
+ 
+ struct drmfb {
+     uint32_t id;
+@@ -151,6 +152,7 @@
+             }
+         }
+     }
++    user_mode = (drm_mode != NULL);
+     if (!drm_mode) {
+         drm_mode = &drm_conn->modes[0];
+     }
+@@ -163,6 +165,13 @@
+ 
+     /* save crtc */
+     scrtc = drmModeGetCrtc(drm_fd, drm_enc->crtc_id);
++
++    /* krarupOS: sin -m, usar el modo que ya tiene la pantalla (misma
++     * frecuencia) en vez del preferido, para no hacer modeset (pantalla negra) */
++    if (drm_mode == &drm_conn->modes[0] && !user_mode &&
++        scrtc && scrtc->mode_valid) {
++        drm_mode = &scrtc->mode;
++    }
+     return 0;
+ }
+ 

@@ -138,15 +138,45 @@ cp /usr/share/dnf5/repos.d/fedora.repo /usr/share/dnf5/repos.d/fedora-updates.re
 # Red: iperf3 (velocidad entre equipos), wol (Wake-on-LAN), nethogs (red por programa).
 # headsetcontrol: luces/batería/sidetone del G733 (trae regla udev uaccess, sin sudo).
 # ncdu: espacio por carpeta. perl-Image-ExifTool: exiftool para datos de fotos.
+# fbida: fbi, visor de imágenes para la TTY (con previews: miniaturas de videos).
+# chafa: imágenes en la terminal con caracteres (lo usa yazi para las previews en la TTY).
 amd=(rocm-smi)
 [[ $nvidia == 1 ]] && amd=()
 dnf5 install -y nmap htop "${amd[@]}" liquidctl terminus-fonts-console gpm \
-    mediainfo mkvtoolnix yt-dlp iperf3 wol nethogs ncdu perl-Image-ExifTool headsetcontrol
+    mediainfo mkvtoolnix yt-dlp iperf3 wol nethogs ncdu perl-Image-ExifTool headsetcontrol \
+    fbida chafa
 # Mission Center: red por programa con nethogs sin pedir contraseña. Son los
 # permisos que pone su "preparación" (pkexec), que en krarupOS falla porque /usr
 # es de solo lectura.
 setcap "cap_net_admin,cap_net_raw,cap_dac_read_search,cap_sys_ptrace+pe" /usr/bin/nethogs
 getcap /usr/bin/nethogs | grep -q cap_sys_ptrace
+
+# fbi parcheado: sin -m usa el modo que ya tiene la pantalla (4K a 160 Hz en la TTY)
+# en vez del "preferido" del monitor, así no cambia la frecuencia y no queda unos
+# segundos en negro al abrir/cerrar. Se compila desde el código de Fedora (sigue sus
+# versiones) y reemplaza al /usr/bin/fbi del paquete; las herramientas de compilación
+# se borran después. Si el parche ya no aplica, se queda el fbi normal.
+antes=$(rpm -qa --qf '%{NAME}\n' | sort -u)
+dnf5 install -y patch meson cpio
+dnf5 builddep -y fbida
+fbi_src=$(mktemp -d)
+if (cd "$fbi_src" && dnf5 download --source fbida &&
+    rpm2cpio fbida-*.src.rpm | cpio -idm && tar xf fbida-*.tar.gz && cd fbida-*/ &&
+    patch -p1 < /ctx/fbi-modo-actual.patch &&
+    meson setup build && ninja -C build fbi); then
+    install -m755 "$fbi_src"/fbida-*/build/fbi /usr/bin/fbi
+else
+    echo "AVISO: fbi parcheado no compiló, queda el fbi normal de Fedora" >&2
+fi
+rm -rf "$fbi_src"
+nuevos=$(comm -13 <(echo "$antes") <(rpm -qa --qf '%{NAME}\n' | sort -u))
+[[ -n $nuevos ]] && dnf5 remove -y $nuevos
+# Si al fbi parcheado le falta alguna librería (se borró con lo de compilar), vuelve el de Fedora.
+if ldd /usr/bin/fbi | grep -q "not found"; then
+    echo "AVISO: al fbi parcheado le faltan librerías, se reinstala el de Fedora" >&2
+    dnf5 reinstall -y fbida
+fi
+! ldd /usr/bin/fbi | grep "not found"
 
 # liquidctl muestra SyntaxWarning de docopt en cada uso: la imagen deja la fecha
 # de los archivos en 0, el .pyc no coincide y Python recompila docopt (y liquidctl)
@@ -186,6 +216,18 @@ if [[ $nvidia != 1 ]]; then
         grep -oE '"browser_download_url": *"[^"]*\.x86_64\.rpm"' | cut -d'"' -f4 | head -1)
     dnf5 install -y "$amdgpu_top_rpm"
 fi
+
+# yazi: administrador de archivos para la terminal/TTY con previews de imágenes y
+# videos (ffmpeg + chafa). No está en los repos de Fedora: se baja el binario
+# oficial (musl, estático) de la última versión en cada build.
+yazi_zip=$(curl -fsSL --retry 3 https://api.github.com/repos/sxyazi/yazi/releases/latest |
+    grep -oE '"browser_download_url": *"[^"]*yazi-x86_64-unknown-linux-musl\.zip"' | cut -d'"' -f4 | head -1)
+yazi_tmp=$(mktemp -d)
+curl -fsSL --retry 3 -o "$yazi_tmp/yazi.zip" "$yazi_zip"
+unzip -q "$yazi_tmp/yazi.zip" -d "$yazi_tmp"
+install -m755 "$yazi_tmp"/yazi-x86_64-unknown-linux-musl/{yazi,ya} /usr/bin/
+rm -rf "$yazi_tmp"
+/usr/bin/yazi --version
 
 ### Modo juego
 

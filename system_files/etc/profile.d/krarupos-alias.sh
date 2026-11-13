@@ -13,3 +13,12 @@ alias mpv='flatpak run io.mpv.Mpv'
 # porque cualquier dispositivo Bluetooth enlazado también podría despertarlo. Pide sudo.
 alias xboxcontrollerWake='/usr/libexec/krarupos-control-despertar on'
 alias xboxcontrollerNoWake='/usr/libexec/krarupos-control-despertar off'
+# fbi busca /dev/dri/card0, pero la tarjeta con pantalla puede ser card1: se le pasa
+# la primera que tenga un monitor conectado. Teclas: espacio siguiente, RePág anterior, q salir.
+fbi() {
+    local s card=
+    for s in /sys/class/drm/card*-*/status; do
+        [ "$(cat "$s")" = connected ] && { card=${s#/sys/class/drm/}; card=${card%%-*}; break; }
+    done
+    command fbi ${card:+-d /dev/dri/$card} "$@"
+}

@@ -1,0 +1,24 @@
+#!/bin/bash
+# Uso: previews [carpeta] — saca un fotograma de cada video (al 10 %) y los muestra
+# con fbi en la TTY. Teclas: espacio/AvPág siguiente, RePág anterior, q salir.
+dir="${1:-.}"
+cache="$HOME/.cache/previews-fbi/$(realpath "$dir" | md5sum | cut -c1-12)"
+mkdir -p "$cache"
+imgs=()
+shopt -s nullglob nocaseglob
+for v in "$dir"/*.{mkv,mp4,avi,mov,webm,m4v,ts,wmv}; do
+  out="$cache/$(basename "$v").jpg"
+  if [ ! -s "$out" ]; then
+    dur=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$v" 2>/dev/null)
+    t=$(awk -v d="${dur:-0}" 'BEGIN{print (d>0)?d*0.1:0}')
+    ffmpeg -nostdin -v error -ss "$t" -i "$v" -frames:v 1 -vf scale=1920:-2 -y "$out" || continue
+  fi
+  imgs+=("$out")
+done
+[ ${#imgs[@]} -eq 0 ] && { echo "No hay videos en $dir"; exit 1; }
+echo "${#imgs[@]} videos. Espacio/AvPág = siguiente, RePág = anterior, q = salir"
+# Tarjeta con monitor conectado (fbi solo busca card0).
+for s in /sys/class/drm/card*-*/status; do
+  [ "$(cat "$s")" = connected ] && { card=${s#/sys/class/drm/}; card=${card%%-*}; break; }
+done
+exec /usr/bin/fbi ${card:+-d /dev/dri/$card} -a "${imgs[@]}"
