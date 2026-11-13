@@ -1,0 +1,13 @@
+# krarupOS: en una TTY, Enter sobre una imagen la abre con fbi a pantalla completa
+# (con las demás imágenes de la carpeta) y un video/audio con mpv; al salir (q)
+# se vuelve a yazi. En el escritorio abre con la app predeterminada, como siempre.
+[opener]
+krarupos = [
+	{ run = "/usr/libexec/krarupos-yazi-abrir %s1", block = true, desc = "Ver (fbi/mpv en la TTY)" },
+]
+
+[open]
+prepend_rules = [
+	{ mime = "image/*", use = [ "krarupos", "open", "reveal" ] },
+	{ mime = "{audio,video}/*", use = [ "krarupos", "play", "reveal" ] },
+]

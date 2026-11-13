@@ -1,0 +1,36 @@
+#!/bin/bash
+# Lo llama yazi (Enter) para imágenes, videos y audio.
+# Escritorio: app predeterminada. TTY: imágenes con fbi (empezando por la elegida
+# y siguiendo con las demás de la carpeta) y videos/audio con mpv.
+f=$1
+if [[ -n ${WAYLAND_DISPLAY:-}${DISPLAY:-} ]]; then
+    setsid -f xdg-open "$f" >/dev/null 2>&1
+    exit 0
+fi
+case $(file -b --mime-type -- "$f") in
+image/*)
+    # Tarjeta con monitor conectado (fbi solo busca card0).
+    for s in /sys/class/drm/card*-*/status; do
+        [[ $(<"$s") == connected ]] && { card=${s#/sys/class/drm/}; card=${card%%-*}; break; }
+    done
+    dir=$(dirname -- "$f")
+    shopt -s nullglob nocaseglob
+    todas=()
+    for i in "$dir"/*.{jpg,jpeg,png,gif,webp,tif,tiff,bmp}; do todas+=("$i"); done
+    mapfile -t todas < <(printf '%s\n' "${todas[@]}" | sort -V)
+    # La elegida primero, después las siguientes y al final las anteriores.
+    lista=() antes=() vista=0
+    for i in "${todas[@]}"; do
+        if [[ $i -ef $f ]]; then vista=1; fi
+        if ((vista)); then lista+=("$i"); else antes+=("$i"); fi
+    done
+    ((${#lista[@]})) || lista=("$f")
+    exec /usr/bin/fbi ${card:+-d /dev/dri/$card} -a "${lista[@]}" "${antes[@]}"
+    ;;
+video/* | audio/*)
+    exec flatpak run io.mpv.Mpv --vo=drm -- "$f"
+    ;;
+*)
+    echo "No sé cómo abrir $f en la TTY" >&2
+    ;;
+esac

@@ -57,7 +57,7 @@ Hay tres variantes, que se construyen todos los días sobre la última Bazzite:
 - **TTY hasta Ctrl+Alt+F12** (por defecto solo hasta F6).
 - **Mouse en las TTY** (gpm): seleccionar con el botón izquierdo y pegar con el del medio.
 - **Ver fotos y videos en las TTY**: `fbi foto.jpg` (o `fbi *.jpg`) muestra imágenes a resolución completa (espacio/AvPág siguiente, RePág anterior, `q` salir); fbi viene parcheado para usar el modo que ya tiene la pantalla, así que abre sin quedar unos segundos en negro por cambio de frecuencia. `previews ~/carpeta` saca un fotograma de cada video de la carpeta y los muestra con fbi.
-- **yazi**: administrador de archivos para la terminal y las TTY, con previews de imágenes, videos y PDFs (en la TTY con `chafa`, en Konsole a calidad real). Se baja la última versión en cada build.
+- **yazi**: administrador de archivos para la terminal y las TTY, con previews de imágenes, videos y PDFs (en la TTY con `chafa`, en Konsole a calidad real). Se baja la última versión en cada build. En una TTY, Enter sobre una imagen la abre con fbi (con las demás de la carpeta) y sobre un video con mpv; con `q` se vuelve a yazi.
 - **Perilla de volumen en las TTY**: cambia el volumen del sistema (tope de 100 %), sin mpv ni otro programa abierto. En Plasma sigue mandando el escritorio.
 - **btop con la temperatura de la CPU** junto al promedio (sensor Tctl en Ryzen) y **la GPU visible desde el inicio** (sin apretar 5), y la lista de procesos sin degradado de color.
 - **Bienvenida de la terminal** con "Welcome to krarupOS" y la imagen de krarupOS.
