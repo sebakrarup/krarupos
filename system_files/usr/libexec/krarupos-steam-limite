@@ -1,0 +1,79 @@
+#!/usr/bin/python3 -I
+# Pone el límite de cuadros de Game Mode (Menú rápido > Rendimiento) en el valor
+# pedido, por la depuración de Steam (CEF, 127.0.0.1:8080). Lo programa
+# krarupos-gamescope-modo unos segundos después de que el monitor cambia de modo,
+# cuando Steam ya se acomodó a la nueva frecuencia (Steam deja un límite que no
+# tiene que ver: 32 en 4K 160 Hz, 64 en 1080p 320 Hz).
+# Uso: krarupos-steam-limite <fps>
+# Sin la depuración de Steam activada (~/.local/share/Steam/.cef-enable-remote-debugging)
+# no hace nada.
+import base64
+import glob
+import json
+import os
+import re
+import socket
+import struct
+import sys
+import time
+import urllib.parse
+import urllib.request
+
+
+def varint(n):
+    o = b""
+    while True:
+        c, n = n & 0x7F, n >> 7
+        if not n:
+            return o + bytes([c])
+        o += bytes([c | 0x80])
+
+
+def evaluar(expresion):
+    pagina = [x for x in json.load(urllib.request.urlopen("http://127.0.0.1:8080/json", timeout=5))
+              if x.get("title") == "SharedJSContext"][0]
+    u = urllib.parse.urlparse(pagina["webSocketDebuggerUrl"])
+    s = socket.create_connection((u.hostname, u.port), timeout=5)
+    clave = base64.b64encode(os.urandom(16)).decode()
+    s.sendall((f"GET {u.path} HTTP/1.1\r\nHost: {u.hostname}:{u.port}\r\nUpgrade: websocket\r\n"
+               f"Connection: Upgrade\r\nSec-WebSocket-Key: {clave}\r\nSec-WebSocket-Version: 13\r\n\r\n").encode())
+    cab = b""
+    while b"\r\n\r\n" not in cab:
+        cab += s.recv(1)
+    datos = json.dumps({"id": 1, "method": "Runtime.evaluate",
+                        "params": {"expression": expresion, "returnByValue": True}}).encode()
+    n = len(datos)
+    h = struct.pack("!BB", 0x81, 0x80 | n) if n < 126 else struct.pack("!BBH", 0x81, 0x80 | 126, n)
+    m = os.urandom(4)
+    s.sendall(h + m + bytes(b ^ m[i % 4] for i, b in enumerate(datos)))
+    s.recv(65536)  # la respuesta no importa: se comprueba en localconfig.vdf
+    s.close()
+
+
+def guardado():
+    # El límite que Steam escribió en localconfig.vdf (Gamescope > AppTargetFrameRate).
+    archivos = glob.glob(os.path.expanduser("~/.local/share/Steam/userdata/*/config/localconfig.vdf"))
+    if not archivos:
+        return None
+    texto = open(max(archivos, key=os.path.getmtime), errors="ignore").read()
+    m = re.search(r'"AppTargetFrameRate"\s*\{\s*"\d+"\s*"(\d+)"', texto)
+    return int(m.group(1)) if m else None
+
+
+def main():
+    fps = int(sys.argv[1])
+    if not os.path.exists(os.path.expanduser("~/.local/share/Steam/.cef-enable-remote-debugging")):
+        return
+    # Ajuste de Steam gamescope_app_target_framerate (campo 21002 de CMsgClientSettings).
+    ajuste = base64.b64encode(varint(21002 << 3) + varint(fps)).decode()
+    for _ in range(3):
+        try:
+            evaluar("SteamClient.Settings.SetSetting('%s')" % ajuste)
+        except Exception:
+            pass
+        time.sleep(3)
+        if guardado() == fps:
+            return
+
+
+main()

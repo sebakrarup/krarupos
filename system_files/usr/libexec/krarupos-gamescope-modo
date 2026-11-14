@@ -7,7 +7,10 @@
 # Al reconectarse una pantalla con otra EDID, se guarda lo que había para la EDID
 # anterior y se deja en modes.cfg lo de la nueva (o su resolución nativa a la
 # mayor frecuencia, la primera vez). Lo que se elija en Steam en cada modo se
-# recuerda para ese modo.
+# recuerda para ese modo. Lo mismo con el límite de cuadros de Game Mode (Steam
+# lo deja en cualquier valor al cambiar la frecuencia): la primera vez, la
+# frecuencia del modo; después, el último elegido en ese modo
+# (krarupos-steam-limite, unos segundos después, cuando Steam ya se acomodó).
 # Lo llama udev en cada conexión de pantallas (90-krarupos-gamescope-modo.rules,
 # como servicio por systemd-run porque SELinux no deja a udev escribir en las
 # carpetas de los usuarios), antes de que gamescope se entere, para todos los
@@ -62,6 +65,17 @@ def pantallas():
         # El mismo nombre que usa gamescope en modes.cfg.
         nombre = "%s %s" % (nombres.get(fab.group(1), fab.group(1)), modelo.group(1).strip())
         yield nombre, hashlib.sha1(edid).hexdigest()[:16], "%sx%s@%d 0" % (ancho, alto, round(max(hz)))
+
+
+def limite_steam(casa):
+    # El límite de cuadros que Steam tiene guardado (Gamescope > AppTargetFrameRate).
+    # Al llegar el aviso de udev Steam todavía no vio el cambio: es el del modo anterior.
+    archivos = glob.glob(os.path.join(casa, ".local/share/Steam/userdata/*/config/localconfig.vdf"))
+    if not archivos:
+        return None
+    texto = open(max(archivos, key=os.path.getmtime), errors="ignore").read()
+    m = re.search(r'"AppTargetFrameRate"\s*\{\s*"\d+"\s*"(\d+)"', texto)
+    return int(m.group(1)) if m else None
 
 
 def usuarios():
@@ -119,7 +133,20 @@ def main():
                 st["modos"][st["ultimo"]] = actual
             nuevo = st["modos"].get(huella, nativa)
             st["modos"][huella] = nuevo
+            limites = st.setdefault("limites", {})
+            anterior = limite_steam(u.pw_dir)
+            if anterior:
+                limites[st["ultimo"]] = anterior
             st["ultimo"] = huella
+            m = re.search(r"@(\d+)", nuevo)
+            limite = limites.get(huella) or (int(m.group(1)) if m else None)
+            if limite and os.geteuid() == 0:
+                limites[huella] = limite
+                subprocess.run(["systemd-run", "--quiet", "--collect", "--uid=%d" % u.pw_uid,
+                                "--setenv=HOME=" + u.pw_dir, "--on-active=4",
+                                # Sin esto systemd puede atrasarlo hasta un minuto.
+                                "--timer-property=AccuracySec=100ms",
+                                "/usr/libexec/krarupos-steam-limite", str(limite)])
             linea = "%s:%s" % (nombre, nuevo)
             if i is None:
                 lineas.append(linea)
