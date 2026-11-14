@@ -14,7 +14,8 @@
 #     con una copia del perfil krarupOS en ~/.local/share/konsole (en 1080p se abre
 #     maximizado: /etc/skel/.local/state/konsolestaterc);
 #   - puntero del mouse: 28 en 4K (el de la imagen), 24 en 1440p y 20 en 1080p;
-#   - escala de cada pantalla en 100 % la primera vez que aparece.
+#   - escala de cada pantalla en 100 % la primera vez que aparece;
+#   - reloj del escritorio junto al logo del fondo en cada resolución (krarupos-reloj).
 # Corre al entrar a la sesión y cada vez que KWin guarda la configuración de
 # pantallas (krarupos-letras.path). Cada valor que alguien cambie a mano (en
 # Configuración o en Dolphin) no se toca más. Dolphin abierto toma los cambios
@@ -30,14 +31,21 @@ busctl --user status org.kde.KWin >/dev/null 2>&1 || exit 0
 
 # Escala 100 % en las pantallas nuevas (monitor conectado después del inicio).
 /usr/libexec/krarupos-escala
-ancho=$(kscreen-doctor -j 2>/dev/null | python3 -I -c '
+pantalla=$(kscreen-doctor -j 2>/dev/null | python3 -I -c '
 import json, sys
 salidas = [o for o in json.load(sys.stdin)["outputs"] if o.get("enabled") and o.get("currentModeId")]
 salidas.sort(key=lambda o: o.get("priority") or 99)
 o = salidas[0]
 modo = next(m for m in o["modes"] if m["id"] == o["currentModeId"])
-print(max(modo["size"]["width"], modo["size"]["height"]))
+a, b = modo["size"]["width"], modo["size"]["height"]
+if o.get("rotation") in (2, 8):
+    a, b = b, a
+e = o.get("scale") or 1
+# El lado mayor en píxeles reales, y el tamaño del escritorio (con la escala).
+print(max(a, b), round(a / e), round(b / e))
 ' 2>/dev/null) || exit 0
+read -r ancho escritorio_ancho escritorio_alto <<<"$pantalla"
+[[ -n $escritorio_alto ]] || exit 0
 
 if (( ancho >= 3840 )); then letra=15 lugares=48 zoom=192 panel=66 menu="816 684" konsole=16 mc="1202 823" firefox=1.2 puntero=28
 elif (( ancho >= 2560 )); then letra=13 lugares=32 zoom=160 panel=60 menu="776 618" konsole=14 mc="1191 793" firefox=1 puntero=24
@@ -203,11 +211,17 @@ if [[ -f $perfil_imagen ]] && { [[ ! -e $perfil ]] || cmp -s "$perfil" "$copia";
     fi
 fi
 
+# Reloj del escritorio: junto al logo del fondo también en esta resolución
+# (krarupos-reloj). Plasma no lo mueve en vivo: se escribe con plasmashell detenido.
+reloj=$(/usr/libexec/krarupos-reloj revisar "$escritorio_ancho" "$escritorio_alto" 2>/dev/null)
+
 # Avisar: las apps de KDE cambian al tiro; KWin, los títulos de ventana. El
 # panel (plasmashell) no toma las letras nuevas en vivo: se reinicia.
-if [[ " ${cambios[*]} " == *" kdeglobals "* ]]; then
-    dbus-send --session --type=signal /KGlobalSettings org.kde.KGlobalSettings.notifyChange int32:1 int32:0
-    dbus-send --session --type=method_call --dest=org.kde.KWin /KWin org.kde.KWin.reconfigure 2>/dev/null
+if [[ " ${cambios[*]} " == *" kdeglobals "* || $reloj == mover ]]; then
+    if [[ " ${cambios[*]} " == *" kdeglobals "* ]]; then
+        dbus-send --session --type=signal /KGlobalSettings org.kde.KGlobalSettings.notifyChange int32:1 int32:0
+        dbus-send --session --type=method_call --dest=org.kde.KWin /KWin org.kde.KWin.reconfigure 2>/dev/null
+    fi
     # plasmashell a veces se queda pegado al cerrarse (el portapapeles de Wayland) y
     # systemd espera 40 s con la pantalla negra: si en 5 s no cerró, se mata.
     systemctl --user reset-failed plasma-plasmashell.service 2>/dev/null
@@ -218,6 +232,8 @@ if [[ " ${cambios[*]} " == *" kdeglobals "* ]]; then
         sleep 0.5
     done
     systemctl --user reset-failed plasma-plasmashell.service 2>/dev/null
+    # Al cerrarse, plasmashell guarda dónde quedó el reloj: se corrige después.
+    [[ $reloj == mover ]] && /usr/libexec/krarupos-reloj mover "$escritorio_ancho" "$escritorio_alto"
     systemctl --user start plasma-plasmashell.service
 fi
 

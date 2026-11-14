@@ -1,0 +1,126 @@
+#!/usr/bin/python3 -I
+# Reloj del escritorio junto al logo krarupOS del fondo, en cualquier resolución.
+# panel-layout.js lo deja proporcional a la primera pantalla (544,2000 en 4K), pero
+# Plasma guarda la posición de cada widget por resolución y, en una nueva, solo lo
+# empuja para que quepa: en 1080p quedaba lejos del logo. Lo llama krarupos-letras.
+# Uso: krarupos-reloj revisar <ancho> <alto>   (dice "mover" si hay que moverlo)
+#      krarupos-reloj mover <ancho> <alto>     (con plasmashell detenido: lo escribe)
+# Solo si nadie lo movió a mano: en todas las otras resoluciones guardadas tiene
+# que estar donde lo habría puesto krarupOS.
+import os
+import re
+import sys
+
+ARCHIVO = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config"),
+                       "plasma-org.kde.plasma.desktop-appletsrc")
+
+
+def lugar(ancho, alto):
+    # Lo mismo que panel-layout.js (Math.round). El tamaño no se toca: Plasma deja
+    # el que ya tiene el reloj.
+    return (int(ancho * 544 / 3840 + 0.5), int(alto * 2000 / 2160 + 0.5))
+
+
+def es_de_krarupos(p, ancho, alto):
+    # Plasma lo sube unos píxeles si no cabe abajo: se acepta hasta su alto.
+    x, y = lugar(ancho, alto)
+    return p[0] == x and abs(p[1] - y) <= p[3]
+
+
+def leer():
+    grupos, actual = {}, None
+    with open(ARCHIVO) as f:
+        for linea in f:
+            linea = linea.rstrip("\n")
+            if linea.startswith("[") and linea.endswith("]"):
+                actual = linea
+                grupos.setdefault(actual, {})
+            elif actual and "=" in linea:
+                k, v = linea.split("=", 1)
+                grupos[actual][k] = v
+    return grupos
+
+
+def buscar(grupos):
+    # El escritorio de la pantalla principal y el id de su reloj.
+    for g, v in grupos.items():
+        m = re.fullmatch(r"\[Containments\]\[(\d+)\]", g)
+        if not m or v.get("plugin") != "org.kde.plasma.folder" or v.get("lastScreen") != "0":
+            continue
+        for g2, v2 in grupos.items():
+            m2 = re.fullmatch(r"\[Containments\]\[%s\]\[Applets\]\[(\d+)\]" % m.group(1), g2)
+            if m2 and v2.get("plugin") == "org.kde.plasma.digitalclock":
+                return g, m2.group(1)
+    return None, None
+
+
+def posicion(entrada, applet):
+    for parte in entrada.split(";"):
+        if parte.startswith("Applet-%s:" % applet):
+            return tuple(int(float(n)) for n in parte.split(":", 1)[1].split(",")[:4])
+    return None
+
+
+def con_posicion(entrada, applet, nueva):
+    partes = [p for p in entrada.split(";") if p and not p.startswith("Applet-%s:" % applet)]
+    partes.append("Applet-%s:%d,%d,%d,%d,0" % ((applet,) + nueva))
+    return ";".join(partes) + ";"
+
+
+def main():
+    orden, ancho, alto = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
+    try:
+        grupos = leer()
+    except OSError:
+        return
+    grupo, applet = buscar(grupos)
+    if not grupo:
+        return
+    v = grupos[grupo]
+    clave = "ItemGeometries-%dx%d" % (ancho, alto)
+    otras = 0
+    for k, entrada in v.items():
+        m = re.fullmatch(r"ItemGeometries-(\d+)x(\d+)", k)
+        if not m or k == clave:
+            continue
+        p = posicion(entrada, applet)
+        if p is None:
+            continue
+        if not es_de_krarupos(p, int(m.group(1)), int(m.group(2))):
+            return  # lo movieron a mano
+        otras += 1
+        tamano = p[2:4]
+    actual = posicion(v.get(clave, ""), applet)
+    if otras == 0 or (actual and es_de_krarupos(actual, ancho, alto)):
+        return
+    objetivo = lugar(ancho, alto) + tamano
+    if orden == "revisar":
+        print("mover")
+        return
+    # Reescribe solo las dos claves, sin tocar el resto del archivo.
+    with open(ARCHIVO) as f:
+        lineas = f.read().split("\n")
+    dentro, vistas, salida, cabecera = False, set(), [], None
+    for linea in lineas:
+        if linea.startswith("[") and linea.endswith("]"):
+            dentro = linea == grupo
+            if dentro:
+                cabecera = len(salida)
+        elif dentro:
+            k = linea.split("=", 1)[0]
+            if k in (clave, "ItemGeometriesHorizontal"):
+                linea = "%s=%s" % (k, con_posicion(linea.split("=", 1)[1], applet, objetivo))
+                vistas.add(k)
+        salida.append(linea)
+    # Las claves que faltaban, justo después de la cabecera del escritorio.
+    for k in (clave, "ItemGeometriesHorizontal"):
+        if k not in vistas:
+            salida.insert(cabecera + 1, "%s=%s" % (k, con_posicion("", applet, objetivo)))
+    tmp =ARCHIVO + ".krarupos-reloj"
+    with open(tmp, "w") as f:
+        f.write("\n".join(salida))
+    os.chmod(tmp, os.stat(ARCHIVO).st_mode & 0o777)
+    os.replace(tmp, ARCHIVO)
+
+
+main()
