@@ -16,9 +16,11 @@ ARCHIVO = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("
 
 
 def lugar(ancho, alto):
-    # Lo mismo que panel-layout.js (Math.round). El tamaño no se toca: Plasma deja
-    # el que ya tiene el reloj.
-    return (int(ancho * 544 / 3840 + 0.5), int(alto * 2000 / 2160 + 0.5))
+    # Lo mismo que panel-layout.js (Math.round). x proporcional al logo; y por los
+    # dos puntos que eligió Seba (4K 2000, 1080p 976: Plasma no deja el reloj bajo
+    # 64 px, así que en 1080p va más arriba que lo proporcional). El tamaño no se
+    # toca: Plasma deja el que ya tiene el reloj.
+    return (int(ancho * 544 / 3840 + 0.5), int(976 + (alto - 1080) * 1024 / 1080 + 0.5))
 
 
 def es_de_krarupos(p, ancho, alto):

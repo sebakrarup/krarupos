@@ -51,15 +51,16 @@ for (var j = 0; j < desktopsArray.length; j++) {
 
 // Reloj en el escritorio de la pantalla principal, abajo a la izquierda junto al
 // logo krarupOS del fondo (no en el panel): solo la hora, sin la fecha (se ve al
-// hacer clic). Donde lo dejó Seba en 4K (544,2000, 64x64), proporcional a la
-// pantalla con que se entra por primera vez.
+// hacer clic). Donde lo dejó Seba: 544,2000 en 4K y 272,976 en 1080p, siempre
+// 64x64 (el mínimo de Plasma en el escritorio); x proporcional, y entre esos dos
+// puntos. Lo mismo en /usr/libexec/krarupos-reloj, que lo reubica al cambiar de
+// resolución.
 for (var j = 0; j < desktopsArray.length; j++) {
     var escritorio = desktopsArray[j];
     if (escritorio.screen != 0) continue;
     var g = screenGeometry(escritorio.screen);
-    var lado = g.height >= 2160 ? 64 : (g.height >= 1440 ? 56 : 48);
     var reloj = escritorio.addWidget("org.kde.plasma.digitalclock",
-        Math.round(g.width * 544 / 3840), Math.round(g.height * 2000 / 2160), lado, lado);
+        Math.round(g.width * 544 / 3840), Math.round(976 + (g.height - 1080) * 1024 / 1080), 64, 64);
     reloj.currentConfigGroup = ["Appearance"];
     reloj.writeConfig("showDate", false);
     // Número y no nombre: con "Never" (texto) quedaba mostrando los segundos.
