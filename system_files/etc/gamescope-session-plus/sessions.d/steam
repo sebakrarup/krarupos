@@ -6,3 +6,7 @@
 # Resolución nativa de cada monitor la primera vez (sin "Ajustar la resolución
 # automáticamente"): /usr/libexec/krarupos-gamescope-resolucion.
 /usr/libexec/krarupos-gamescope-resolucion || true
+
+# Una resolución por cada EDID del monitor (si cambió de modo con Game Mode
+# cerrado): /usr/libexec/krarupos-gamescope-modo.
+/usr/libexec/krarupos-gamescope-modo || true

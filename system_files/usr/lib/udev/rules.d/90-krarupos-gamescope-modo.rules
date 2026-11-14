@@ -1,0 +1,6 @@
+# krarupOS: en cada conexión de pantallas, Game Mode recuerda una resolución por
+# cada EDID del monitor (monitores con dos modos, como el ASUS XG27UCG 4K/1080p).
+# udev avisa a gamescope después de correr esto, así que ya lee la resolución buena.
+# Por systemd-run (y esperando a que termine): desde udev directo SELinux no deja
+# escribir en las carpetas de los usuarios.
+ACTION=="change", SUBSYSTEM=="drm", KERNEL=="card[0-9]*", ENV{HOTPLUG}=="1", RUN+="/usr/bin/systemd-run --wait --quiet --collect --service-type=oneshot /usr/libexec/krarupos-gamescope-modo"

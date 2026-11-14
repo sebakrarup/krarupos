@@ -1,0 +1,137 @@
+#!/usr/bin/python3 -I
+# Game Mode: una resolución por cada EDID del monitor, no por su nombre.
+# gamescope guarda el modo elegido en modes.cfg por "fabricante modelo", pero hay
+# monitores con dos modos (ASUS XG27UCG: 4K 160 Hz o 1080p 320 Hz) que tienen el
+# mismo nombre y otra EDID en cada uno: al cambiar de modo gamescope usaba el del
+# otro (4K escalado en 1080p) o caía en 4K a 60 Hz.
+# Al reconectarse una pantalla con otra EDID, se guarda lo que había para la EDID
+# anterior y se deja en modes.cfg lo de la nueva (o su resolución nativa a la
+# mayor frecuencia, la primera vez). Lo que se elija en Steam en cada modo se
+# recuerda para ese modo.
+# Lo llama udev en cada conexión de pantallas (90-krarupos-gamescope-modo.rules,
+# como servicio por systemd-run porque SELinux no deja a udev escribir en las
+# carpetas de los usuarios), antes de que gamescope se entere, para todos los
+# usuarios con sesión; y el inicio de Game Mode (sessions.d/steam) para el propio
+# usuario.
+import glob
+import hashlib
+import json
+import os
+import pwd
+import re
+import subprocess
+
+
+def pantallas():
+    nombres = {}
+    try:
+        for l in open("/usr/share/hwdata/pnp.ids", encoding="utf-8", errors="ignore"):
+            if "\t" in l:
+                k, v = l.split("\t", 1)
+                nombres[k] = v.strip()
+    except OSError:
+        pass
+    for c in glob.glob("/sys/class/drm/card*-*"):
+        # Al llegar el aviso, el kernel todavía muestra el estado y la EDID de antes:
+        # los actualiza recién cuando alguien revisa la pantalla (gamescope, después
+        # de esto). Como root se le pide que la revise ahora.
+        if os.geteuid() == 0:
+            try:
+                with open(c + "/status", "w") as f:
+                    f.write("detect")
+            except OSError:
+                pass
+        try:
+            if open(c + "/status").read().strip() != "connected":
+                continue
+            edid = open(c + "/edid", "rb").read()
+        except OSError:
+            continue
+        if not edid:
+            continue
+        texto = subprocess.run(["edid-decode", c + "/edid"], capture_output=True, text=True).stdout
+        fab = re.search(r"Manufacturer: (\w{3})", texto)
+        modelo = re.search(r"Display Product Name: '(.*)'", texto)
+        nativa = re.search(r"DTD 1:\s+(\d+)x(\d+)", texto)
+        if not (fab and modelo and nativa):
+            continue
+        ancho, alto = nativa.groups()
+        hz = [float(h) for h in re.findall(r"\b%sx%s\s+([\d.]+) Hz" % (ancho, alto), texto)]
+        if not hz:
+            continue
+        # El mismo nombre que usa gamescope en modes.cfg.
+        nombre = "%s %s" % (nombres.get(fab.group(1), fab.group(1)), modelo.group(1).strip())
+        yield nombre, hashlib.sha1(edid).hexdigest()[:16], "%sx%s@%d 0" % (ancho, alto, round(max(hz)))
+
+
+def usuarios():
+    if os.geteuid() != 0:
+        yield pwd.getpwuid(os.geteuid())
+        return
+    for d in glob.glob("/run/user/*"):
+        try:
+            u = pwd.getpwuid(int(os.path.basename(d)))
+        except (ValueError, KeyError):
+            continue
+        if u.pw_uid >= 1000:
+            yield u
+
+
+def escribir(ruta, texto, u):
+    tmp = ruta + ".krarupos"
+    with open(tmp, "w") as f:
+        f.write(texto)
+    if os.geteuid() == 0:
+        os.chown(tmp, u.pw_uid, u.pw_gid)
+    os.replace(tmp, ruta)
+
+
+def main():
+    lista = list(pantallas())
+    if not lista:
+        return
+    for u in usuarios():
+        modos = os.path.join(u.pw_dir, ".config/gamescope/modes.cfg")
+        if os.geteuid() != 0:
+            modos = os.environ.get("GAMESCOPE_MODE_SAVE_FILE") or modos
+        if not os.path.isfile(modos):
+            continue  # nunca entró a Game Mode
+        carpeta = os.path.join(u.pw_dir, ".local/state/krarupos")
+        if not os.path.isdir(os.path.dirname(carpeta)):
+            continue  # sin ~/.local/state no se crea nada a nombre de root
+        ruta_estado = os.path.join(carpeta, "gamescope-modos.json")
+        try:
+            estado = json.load(open(ruta_estado))
+        except (OSError, ValueError):
+            estado = {}
+        lineas = open(modos).read().splitlines()
+        cambio = False
+        for nombre, huella, nativa in lista:
+            i = next((n for n, l in enumerate(lineas) if l.startswith(nombre + ":")), None)
+            actual = lineas[i].split(":", 1)[1] if i is not None else None
+            st = estado.setdefault(nombre, {"ultimo": huella, "modos": {}})
+            if st["ultimo"] == huella:
+                if actual:
+                    st["modos"][huella] = actual  # lo último elegido en Steam
+                continue
+            # Otra EDID del mismo monitor: se guarda lo de la anterior y se pone lo de esta.
+            if actual:
+                st["modos"][st["ultimo"]] = actual
+            nuevo = st["modos"].get(huella, nativa)
+            st["modos"][huella] = nuevo
+            st["ultimo"] = huella
+            linea = "%s:%s" % (nombre, nuevo)
+            if i is None:
+                lineas.append(linea)
+            else:
+                lineas[i] = linea
+            cambio = True
+        if cambio:
+            escribir(modos, "\n".join(lineas) + "\n", u)
+        os.makedirs(carpeta, exist_ok=True)
+        if os.geteuid() == 0:
+            os.chown(carpeta, u.pw_uid, u.pw_gid)
+        escribir(ruta_estado, json.dumps(estado, indent=1, ensure_ascii=False) + "\n", u)
+
+
+main()
