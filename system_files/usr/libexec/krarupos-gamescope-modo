@@ -134,12 +134,17 @@ def main():
             nuevo = st["modos"].get(huella, nativa)
             st["modos"][huella] = nuevo
             limites = st.setdefault("limites", {})
+            # Solo si cabe en la frecuencia del modo anterior: a veces Steam ya tiene
+            # el del otro modo (320 guardado para 4K 160 Hz, que Steam muestra como 32).
             anterior = limite_steam(u.pw_dir)
-            if anterior:
+            hz = re.search(r"@(\d+)", st["modos"].get(st["ultimo"], ""))
+            if anterior and hz and anterior <= int(hz.group(1)):
                 limites[st["ultimo"]] = anterior
             st["ultimo"] = huella
             m = re.search(r"@(\d+)", nuevo)
             limite = limites.get(huella) or (int(m.group(1)) if m else None)
+            if limite and m and limite > int(m.group(1)):
+                limite = int(m.group(1))
             if limite and os.geteuid() == 0:
                 limites[huella] = limite
                 subprocess.run(["systemd-run", "--quiet", "--collect", "--uid=%d" % u.pw_uid,
