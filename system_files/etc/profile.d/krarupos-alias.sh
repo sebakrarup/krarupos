@@ -1,5 +1,7 @@
 # Alias de krarupOS para todos los usuarios (bash).
 alias krarup='fastfetch'
+# Suspender el equipo.
+alias dormir='systemctl suspend'
 # Rueda del G502 X (solo con ese mouse): ruedaON = alta resolución (más sensible),
 # ruedaOFF = resolución normal (la que se pone sola al conectarlo).
 alias ruedaON='/usr/libexec/krarupos-g502-rueda on'
