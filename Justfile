@@ -124,6 +124,14 @@ build $target_image=image_name $tag=default_tag:
     LABELS+=("--label" "org.opencontainers.image.title={{ image_name }}")
     LABELS+=("--label" "org.opencontainers.image.vendor={{ repo_organization }}")
 
+    # krarupOS: token de GitHub como secreto de build (no queda en la imagen) para
+    # las consultas a api.github.com de build.sh: sin él, el límite es 60 por hora
+    # por IP y los runners de Actions la comparten (falló con 403). Vacío en local.
+    TOKEN_FILE=$(mktemp)
+    trap 'rm -f "$TOKEN_FILE"' EXIT
+    printf '%s' "${GITHUB_TOKEN:-}" >"$TOKEN_FILE"
+    BUILD_ARGS+=("--secret" "id=github_token,src=${TOKEN_FILE}")
+
     # This actually builds the image!
     PODMAN_BUILD_ARGS=("${BUILD_ARGS[@]}" "${LABELS[@]}" --pull=newer --tag "${target_image}:${tag}" --file Containerfile)
 

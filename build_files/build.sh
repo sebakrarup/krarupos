@@ -2,6 +2,23 @@
 
 set -ouex pipefail
 
+# Consultas a api.github.com con el token del workflow (secreto de build, ver
+# Justfile): sin token el límite es 60 por hora y los runners lo agotan (403).
+# Sin set -x adentro para que el token no salga en el registro.
+gh_api() {
+    { set +x; } 2>/dev/null
+    local token=""
+    [[ -s /run/secrets/github_token ]] && token=$(</run/secrets/github_token)
+    if [[ -n "$token" ]]; then
+        curl -fsSL --retry 3 -H "Authorization: Bearer $token" "$@"
+    else
+        curl -fsSL --retry 3 "$@"
+    fi
+    local r=$?
+    set -x
+    return $r
+}
+
 # Copy the contents of system_files/ of the git repo to /
 cp -avf "/ctx/system_files"/. /
 chmod +x /usr/libexec/krarupos-flatpaks
@@ -212,7 +229,7 @@ dnf5 remove -y plasma-applet-tdp-control
 # amdgpu_top no está en los repos de Fedora: se instala el .rpm oficial
 # de la última versión publicada por su autor. Solo con GPUs AMD.
 if [[ $nvidia != 1 ]]; then
-    amdgpu_top_rpm=$(curl -fsSL --retry 3 https://api.github.com/repos/Umio-Yasuno/amdgpu_top/releases/latest |
+    amdgpu_top_rpm=$(gh_api https://api.github.com/repos/Umio-Yasuno/amdgpu_top/releases/latest |
         grep -oE '"browser_download_url": *"[^"]*\.x86_64\.rpm"' | cut -d'"' -f4 | head -1)
     dnf5 install -y "$amdgpu_top_rpm"
 fi
@@ -220,7 +237,7 @@ fi
 # yazi: administrador de archivos para la terminal/TTY con previews de imágenes y
 # videos (ffmpeg + chafa). No está en los repos de Fedora: se baja el binario
 # oficial (musl, estático) de la última versión en cada build.
-yazi_zip=$(curl -fsSL --retry 3 https://api.github.com/repos/sxyazi/yazi/releases/latest |
+yazi_zip=$(gh_api https://api.github.com/repos/sxyazi/yazi/releases/latest |
     grep -oE '"browser_download_url": *"[^"]*yazi-x86_64-unknown-linux-musl\.zip"' | cut -d'"' -f4 | head -1)
 yazi_tmp=$(mktemp -d)
 curl -fsSL --retry 3 -o "$yazi_tmp/yazi.zip" "$yazi_zip"
@@ -261,7 +278,7 @@ if grep -qE '^(TEMPLATES|PUBLICSHARE|PROJECTS)=' /etc/xdg/user-dirs.defaults; th
 ### Tema
 
 # Íconos Tela-circle-dracula (claro, normal y oscuro), última versión.
-tela_tag=$(curl -fsSL --retry 3 https://api.github.com/repos/vinceliuice/Tela-circle-icon-theme/tags |
+tela_tag=$(gh_api https://api.github.com/repos/vinceliuice/Tela-circle-icon-theme/tags |
     grep -oE '"name": *"[^"]*"' | head -1 | cut -d'"' -f4)
 git clone --depth 1 --branch "$tela_tag" https://github.com/vinceliuice/Tela-circle-icon-theme.git /tmp/tela
 (cd /tmp/tela && ./install.sh -d /usr/share/icons dracula)
@@ -306,7 +323,7 @@ grep -q 'color:#5677fc' "$apps/preferences-system.svg"
 for t in /usr/share/icons/Tela-circle-dracula*; do gtk-update-icon-cache -f -q "$t"; done
 
 # Cursor Bibata-Modern-Ice, última versión.
-bibata_url=$(curl -fsSL --retry 3 https://api.github.com/repos/ful1e5/Bibata_Cursor/releases/latest |
+bibata_url=$(gh_api https://api.github.com/repos/ful1e5/Bibata_Cursor/releases/latest |
     grep -oE '"browser_download_url": *"[^"]*/Bibata-Modern-Ice\.tar\.xz"' | cut -d'"' -f4)
 curl -fsSL --retry 3 "$bibata_url" | tar -xJ -C /usr/share/icons
 
@@ -394,7 +411,7 @@ grep -A1 '^\[ksplashrc\]\[KSplash\]' "$lnf/contents/defaults" | grep -q '^Theme=
 # ícono archlinux en el menú, sin paginador ni "mostrar escritorio", y
 # transparente con Panel Colorizer (layout en /usr/share/krarupos/panel-layout.js).
 cp /usr/share/krarupos/panel-layout.js "$lnf/contents/layouts/org.kde.plasma.desktop-layout.js"
-colorizer_url=$(curl -fsSL --retry 3 https://api.github.com/repos/luisbocanegra/plasma-panel-colorizer/releases/latest |
+colorizer_url=$(gh_api https://api.github.com/repos/luisbocanegra/plasma-panel-colorizer/releases/latest |
     jq -r '.assets[] | select(.name | endswith(".plasmoid")) | .browser_download_url' | head -1)
 curl -fsSL --retry 3 -o /tmp/panel-colorizer.plasmoid "$colorizer_url"
 python3 - <<'EOF'

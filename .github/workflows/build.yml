@@ -120,6 +120,9 @@ jobs:
       - name: Build Image
         if: env.SKIP != 'true'
         id: build-image
+        env:
+          # Para las consultas a la API de GitHub de build.sh (secreto de build).
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           just build \
             ${IMAGE_NAME} \
