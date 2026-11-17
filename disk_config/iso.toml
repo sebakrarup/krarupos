@@ -48,6 +48,39 @@ for d in /mnt/sysroot /mnt/sysimage; do
     fi
 done
 %end
+
+%post --nochroot --erroronfail --log=/tmp/krarupos-compresion.log
+# Comprimir el sistema recién instalado (zstd). El instalador lo escribe sin
+# compresión (Fedora Atomic no aplica el compress del fstab) y después
+# krarupos-compresion.service solo comprime lo nuevo. --erroronfail: si no
+# funciona, la instalación se detiene y avisa en vez de dejar un sistema sin
+# comprimir sin que nadie se entere.
+set -euo pipefail
+raiz=""
+for d in /mnt/sysroot /mnt/sysimage; do
+    if [ "$(findmnt -no FSTYPE "$d" 2>/dev/null)" = btrfs ]; then
+        raiz=$d
+        break
+    fi
+done
+[ -n "$raiz" ] || { echo "krarupOS: no se encontró el btrfs del sistema"; exit 1; }
+antes=$(df -B1M --output=used "$raiz" | tail -1)
+btrfs filesystem defragment -r -czstd "$raiz"
+sync
+btrfs filesystem sync "$raiz"
+despues=$(df -B1M --output=used "$raiz" | tail -1)
+echo "krarupOS: compresión del sistema: ${antes} MB -> ${despues} MB"
+# Si no bajó al menos un 15 %, la compresión no hizo efecto.
+[ $((despues * 100)) -le $((antes * 85)) ] || { echo "krarupOS: la compresión no redujo el espacio"; exit 1; }
+var=""
+for d in "$raiz"/ostree/deploy/*/var; do
+    [ -d "$d" ] && var=$d && break
+done
+if [ -n "$var" ]; then
+    mkdir -p "$var/log"
+    cp /tmp/krarupos-compresion.log "$var/log/krarupos-compresion-instalacion.log" || true
+fi
+%end
 """
 
 [customizations.installer.modules]
