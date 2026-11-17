@@ -73,7 +73,15 @@ mkdir -p "$todo"
 mount -o subvolid=5,rw "$disco" "$todo"
 trap 'umount "$todo" 2>/dev/null || true' EXIT
 antes=$(df -B1M --output=used "$todo" | tail -1)
+# defragment -r no entra en otros subvolúmenes (los trata como otro disco), y
+# el sistema vive en los subvolúmenes root y home: se corre en cada uno.
+mapfile -t subvols < <(btrfs subvolume list "$todo" | sed 's/^.* path //')
+[ ${#subvols[@]} -gt 0 ] || { echo "krarupOS: no se encontraron subvolúmenes"; exit 1; }
 btrfs filesystem defragment -r -czstd "$todo"
+for sv in "${subvols[@]}"; do
+    echo "krarupOS: comprimiendo $sv"
+    btrfs filesystem defragment -r -czstd "$todo/$sv"
+done
 sync
 btrfs filesystem sync "$todo"
 despues=$(df -B1M --output=used "$todo" | tail -1)
