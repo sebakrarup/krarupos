@@ -706,6 +706,18 @@ systemctl --global enable krarupos-brillo-suave.service
 # En Plasma no hace nada, porque ahí la maneja el escritorio.
 systemctl --global enable krarupos-tty-volumen.service
 
+### Colores de ls
+
+# Carpetas con escritura para todos (777, comunes en discos de datos) y sticky:
+# Fedora les pone fondo verde/azul y con el tema de Konsole no se leen. Quedan
+# en azul negrita como cualquier carpeta. Vale para todos los usuarios, root incluido.
+sed -i -E \
+    -e 's/^OTHER_WRITABLE .*/OTHER_WRITABLE 01;34/' \
+    -e 's/^STICKY_OTHER_WRITABLE .*/STICKY_OTHER_WRITABLE 01;34/' \
+    -e 's/^STICKY .*/STICKY 01;34/' \
+    /etc/DIR_COLORS
+test "$(grep -cE '^(OTHER_WRITABLE|STICKY_OTHER_WRITABLE|STICKY) 01;34$' /etc/DIR_COLORS)" -eq 3
+
 ### Pantalla de arranque
 
 # Plymouth muestra system_files/usr/share/plymouth/themes/spinner/watermark.png
