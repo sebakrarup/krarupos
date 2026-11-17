@@ -3,17 +3,15 @@
 # (systemd-remount-fs está enmascarado y el initramfs monta solo con subvol=root).
 # En btrfs la compresión es de todo el sistema de archivos y se puede activar en
 # caliente, así que basta con remontar /var. Solo comprime lo que se escribe desde ahí.
-# Para no comprimir en una máquina: sudo touch /etc/krarupos/sin-compresion
 Description=Compresión zstd del btrfs del sistema
 DefaultDependencies=no
 After=var.mount ostree-remount.service
 Before=local-fs.target systemd-tmpfiles-setup.service systemd-journal-flush.service
-ConditionPathExists=!/etc/krarupos/sin-compresion
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecCondition=/usr/bin/test "$(/usr/bin/findmnt -no FSTYPE /var)" = btrfs
+ExecCondition=/usr/bin/sh -c '[ "$(findmnt -no FSTYPE /var)" = btrfs ]'
 ExecStart=/usr/bin/mount -o remount,compress=zstd:1 /var
 
 [Install]
