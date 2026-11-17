@@ -639,8 +639,10 @@ rm -f /etc/xdg/autostart/bazzite-announcement.desktop
 # Ni Steam en KDE: se abre a mano o entrando a Game Mode (ahí lo abre la sesión).
 # Para que abra solo: Configuración del sistema > Inicio automático > Agregar > Steam.
 # En los PCs ya instalados también se va (es igual al de Bazzite, /etc lo sigue).
-rm -f /etc/xdg/autostart/steam.desktop
-if [[ -e /etc/xdg/autostart/steam.desktop ]]; then exit 1; fi
+# La variante Deck lo deja en /etc/xdg; la de escritorio, en /etc/skel (se copia al
+# home de cada usuario nuevo). En los ya instalados lo quita krarupos-steam-sin-autostart.
+rm -f /etc/xdg/autostart/steam.desktop /etc/skel/.config/autostart/steam.desktop
+if [[ -e /etc/xdg/autostart/steam.desktop || -e /etc/skel/.config/autostart/steam.desktop ]]; then exit 1; fi
 
 # Spectacle: capturar una región con Ctrl+Shift+P (en vez de Meta+Shift+Print),
 # como en el PC de Seba. Es el atajo por defecto, así que lo cambiado a mano se respeta.
@@ -699,6 +701,7 @@ systemctl --global enable krarupos-claude.service
 systemctl --global enable krarupos-sunshine-portal.service
 # Descargas en Dolphin ordenada por fecha pero sin grupos ("Group By: None"), para cada usuario.
 systemctl --global enable krarupos-dolphin-descargas.service
+systemctl --global enable krarupos-steam-sin-autostart.service
 # Partición del sistema oculta en Dolphin, que la abre en /etc; se recupera con clic derecho
 # → "Mostrar todas las entradas" (usr/libexec/krarupos-ocultar-disco-sistema), para cada usuario.
 systemctl --global enable krarupos-ocultar-disco-sistema.service krarupos-ocultar-disco-sistema.path

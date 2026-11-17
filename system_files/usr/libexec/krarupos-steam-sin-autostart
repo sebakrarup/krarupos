@@ -1,0 +1,18 @@
+#!/usr/bin/bash
+# Bazzite de escritorio (no la Deck) copia al home de cada usuario nuevo
+# ~/.config/autostart/steam.desktop, y Steam se abre solo al entrar a KDE. La
+# imagen ya no lo trae en /etc/skel; esto lo quita en los PCs ya instalados, una
+# vez por usuario y solo si es el de Bazzite ("bazzite-steam -silent"): uno
+# agregado a mano en Configuración > Inicio automático no lleva -silent.
+set -euo pipefail
+
+marca=${XDG_STATE_HOME:-$HOME/.local/state}/krarupos/steam-sin-autostart
+[[ -f "$marca" ]] && exit 0
+
+archivo=${XDG_CONFIG_HOME:-$HOME/.config}/autostart/steam.desktop
+if [[ -f "$archivo" ]] && grep -q 'bazzite-steam -silent' "$archivo"; then
+    rm -f "$archivo"
+fi
+
+mkdir -p "$(dirname "$marca")"
+touch "$marca"

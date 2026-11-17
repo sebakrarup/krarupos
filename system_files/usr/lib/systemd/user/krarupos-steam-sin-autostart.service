@@ -1,0 +1,11 @@
+[Unit]
+Description=Steam no se abre solo al entrar a KDE
+# Antes de que KDE lea los programas de inicio automático.
+Before=graphical-session-pre.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/krarupos-steam-sin-autostart
+
+[Install]
+WantedBy=default.target
