@@ -11,7 +11,7 @@ Before=local-fs.target systemd-tmpfiles-setup.service systemd-journal-flush.serv
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecCondition=/usr/bin/sh -c '[ "$(findmnt -no FSTYPE /var)" = btrfs ]'
+ExecCondition=/usr/bin/sh -c '[ "$$(findmnt -no FSTYPE /var)" = btrfs ]'
 ExecStart=/usr/bin/mount -o remount,compress=zstd:1 /var
 
 [Install]
