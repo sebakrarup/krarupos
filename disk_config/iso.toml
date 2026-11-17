@@ -64,16 +64,24 @@ for d in /mnt/sysroot /mnt/sysimage; do
     fi
 done
 [ -n "$raiz" ] || { echo "krarupOS: no se encontró el btrfs del sistema"; exit 1; }
-antes=$(df -B1M --output=used "$raiz" | tail -1)
-btrfs filesystem defragment -r -czstd "$raiz"
+# En el instalador /usr del sistema está montado de solo lectura: se monta el
+# btrfs entero (subvolid=5) aparte, con escritura, y se comprime ahí.
+disco=$(findmnt -nvo SOURCE "$raiz")
+[ -b "$disco" ] || { echo "krarupOS: no se encontró el disco de $raiz ($disco)"; exit 1; }
+todo=/mnt/krarupos-btrfs
+mkdir -p "$todo"
+mount -o subvolid=5,rw "$disco" "$todo"
+trap 'umount "$todo" 2>/dev/null || true' EXIT
+antes=$(df -B1M --output=used "$todo" | tail -1)
+btrfs filesystem defragment -r -czstd "$todo"
 sync
-btrfs filesystem sync "$raiz"
-despues=$(df -B1M --output=used "$raiz" | tail -1)
+btrfs filesystem sync "$todo"
+despues=$(df -B1M --output=used "$todo" | tail -1)
 echo "krarupOS: compresión del sistema: ${antes} MB -> ${despues} MB"
 # Si no bajó al menos un 15 %, la compresión no hizo efecto.
 [ $((despues * 100)) -le $((antes * 85)) ] || { echo "krarupOS: la compresión no redujo el espacio"; exit 1; }
 var=""
-for d in "$raiz"/ostree/deploy/*/var; do
+for d in "$todo"/ostree/deploy/*/var "$todo"/*/ostree/deploy/*/var; do
     [ -d "$d" ] && var=$d && break
 done
 if [ -n "$var" ]; then
