@@ -13,6 +13,16 @@ cat >/etc/adjtime <<'EOF'
 UTC
 EOF
 bootc switch --mutate-in-place --enforce-container-sigpolicy --transport registry ghcr.io/sebakrarup/krarupos:latest
+
+# Secure Boot: el kernel está firmado con la llave de Universal Blue, que el firmware
+# no conoce ("bad shim signature"). Con Secure Boot activo se deja pedida su
+# inscripción (como "ujust enroll-secure-boot-key"): en el primer arranque aparece
+# la pantalla azul de MOK -> "Enroll MOK" -> contraseña "universalblue".
+if mokutil --sb-state 2>/dev/null | grep -q 'SecureBoot enabled'; then
+    mokutil --timeout -1 || true
+    printf 'universalblue\\nuniversalblue\\n' | mokutil --import /etc/pki/akmods/certs/akmods-ublue.der ||
+        echo "krarupOS: no se pudo pedir la inscripción de la llave de Secure Boot"
+fi
 %end
 
 %post --nochroot
@@ -49,13 +59,18 @@ for d in /mnt/sysroot /mnt/sysimage; do
 done
 %end
 
-%post --nochroot --erroronfail --log=/tmp/krarupos-compresion.log
+%post --nochroot --erroronfail
 # Comprimir el sistema recién instalado (zstd). El instalador lo escribe sin
 # compresión (Fedora Atomic no aplica el compress del fstab) y después
 # krarupos-compresion.service solo comprime lo nuevo. --erroronfail: si no
 # funciona, la instalación se detiene y avisa en vez de dejar un sistema sin
 # comprimir sin que nadie se entere.
 set -euo pipefail
+# Registro propio (lo que sale por pantalla también queda en el archivo, que se copia
+# al sistema instalado al final). Con --log, Anaconda lo escribe recién al terminar.
+registro=/tmp/krarupos-compresion.log
+exec > >(tee -a "$registro") 2>&1
+echo "krarupOS: compresión del sistema, $(date '+%F %T')"
 raiz=""
 for d in /mnt/sysroot /mnt/sysimage; do
     if [ "$(findmnt -no FSTYPE "$d" 2>/dev/null)" = btrfs ]; then
@@ -95,7 +110,8 @@ for d in "$todo"/ostree/deploy/*/var "$todo"/*/ostree/deploy/*/var; do
 done
 if [ -n "$var" ]; then
     mkdir -p "$var/log"
-    cp /tmp/krarupos-compresion.log "$var/log/krarupos-compresion-instalacion.log" || true
+    sync
+    cp "$registro" "$var/log/krarupos-compresion-instalacion.log" || true
 fi
 %end
 """
