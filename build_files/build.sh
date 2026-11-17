@@ -157,11 +157,12 @@ cp /usr/share/dnf5/repos.d/fedora.repo /usr/share/dnf5/repos.d/fedora-updates.re
 # ncdu: espacio por carpeta. perl-Image-ExifTool: exiftool para datos de fotos.
 # fbida: fbi, visor de imágenes para la TTY (con previews: miniaturas de videos).
 # chafa: imágenes en la terminal con caracteres (lo usa yazi para las previews en la TTY).
+# duperemove: deduplicar bloques repetidos en btrfs (prefijos de Wine en ~/500GB).
 amd=(rocm-smi)
 [[ $nvidia == 1 ]] && amd=()
 dnf5 install -y nmap htop "${amd[@]}" liquidctl terminus-fonts-console gpm \
     mediainfo mkvtoolnix yt-dlp iperf3 wol nethogs ncdu perl-Image-ExifTool headsetcontrol \
-    fbida chafa
+    fbida chafa duperemove
 # Mission Center: red por programa con nethogs sin pedir contraseña. Son los
 # permisos que pone su "preparación" (pkexec), que en krarupOS falla porque /usr
 # es de solo lectura.
