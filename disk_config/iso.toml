@@ -86,8 +86,9 @@ sync
 btrfs filesystem sync "$todo"
 despues=$(df -B1M --output=used "$todo" | tail -1)
 echo "krarupOS: compresión del sistema: ${antes} MB -> ${despues} MB"
-# Si no bajó al menos un 15 %, la compresión no hizo efecto.
-[ $((despues * 100)) -le $((antes * 85)) ] || { echo "krarupOS: la compresión no redujo el espacio"; exit 1; }
+# Si no bajó al menos un 5 %, la compresión no hizo efecto. (No se espera mucho más: los
+# Flatpaks de la ISO, ~4 GB en /var/lib/krarupos/flatpak-iso, ya vienen comprimidos.)
+[ $((despues * 100)) -le $((antes * 95)) ] || { echo "krarupOS: la compresión no redujo el espacio"; exit 1; }
 var=""
 for d in "$todo"/ostree/deploy/*/var "$todo"/*/ostree/deploy/*/var; do
     [ -d "$d" ] && var=$d && break
