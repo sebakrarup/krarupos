@@ -696,6 +696,9 @@ systemctl --global enable krarupos-claude.service
 systemctl --global enable krarupos-sunshine-portal.service
 # Descargas en Dolphin ordenada por fecha pero sin grupos ("Group By: None"), para cada usuario.
 systemctl --global enable krarupos-dolphin-descargas.service
+# Partición del sistema oculta en Dolphin, que la abre en /etc; se recupera con clic derecho
+# → "Mostrar todas las entradas" (usr/libexec/krarupos-ocultar-disco-sistema), para cada usuario.
+systemctl --global enable krarupos-ocultar-disco-sistema.service krarupos-ocultar-disco-sistema.path
 # Scroll invertido (como en Mac) en todos los mouse de KDE, también los que se conecten
 # después; lo cambiado a mano se respeta (usr/libexec/krarupos-scroll-invertido).
 systemctl --global enable krarupos-scroll-invertido.service

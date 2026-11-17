@@ -1,0 +1,69 @@
+#!/usr/bin/python3 -I
+# Dolphin abre la partición del sistema en /etc: está montada en /etc, /sysroot,
+# /var, /var/home... y Solid toma el primer montaje por orden alfabético. Se
+# oculta en los Lugares de cada usuario, igual que "Ocultar" con clic derecho:
+# vuelve con clic derecho en la barra lateral → "Mostrar todas las entradas".
+# Una vez por usuario: si después se muestra, se respeta. Si KDE todavía no creó
+# user-places.xbel, no se hace nada (lo crea KDE con los lugares por defecto) y
+# krarupos-ocultar-disco-sistema.path vuelve a llamar cuando aparezca.
+import os
+import re
+import subprocess
+from pathlib import Path
+
+home = Path.home()
+estado = Path(os.environ.get("XDG_STATE_HOME") or home / ".local/state")
+marca = estado / "krarupos/ocultar-disco-sistema"
+datos = Path(os.environ.get("XDG_DATA_HOME") or home / ".local/share")
+lugares = datos / "user-places.xbel"
+
+if marca.exists() or not lugares.exists():
+    raise SystemExit(0)
+
+
+def findmnt(campo):
+    r = subprocess.run(["findmnt", "-no", campo, "/sysroot"], capture_output=True, text=True)
+    return r.stdout.strip()
+
+
+uuid = findmnt("UUID")
+dev = re.sub(r"\[.*\]$", "", findmnt("SOURCE"))
+if not uuid or not dev.startswith("/dev/"):
+    raise SystemExit(0)  # sin /sysroot (no es ostree): nada que ocultar
+udi = "/org/freedesktop/UDisks2/block_devices/" + os.path.basename(os.path.realpath(dev))
+
+texto = lugares.read_text(encoding="utf-8")
+entradas = list(re.finditer(r" *<separator>.*?</separator>\n", texto, re.S))
+entrada = next((e for e in entradas
+                if f"<UDI>{udi}</UDI>" in e.group(0) or f"<uuid>{uuid}</uuid>" in e.group(0)), None)
+
+if entrada is None:
+    # KDE todavía no la anotó: se crea ya oculta, con el formato que usa KDE.
+    nueva = f""" <separator>
+  <info>
+   <metadata owner="http://www.kde.org">
+    <UDI>{udi}</UDI>
+    <isSystemItem>true</isSystemItem>
+    <uuid>{uuid}</uuid>
+    <IsHidden>true</IsHidden>
+   </metadata>
+  </info>
+ </separator>
+"""
+    if "</xbel>" not in texto:
+        raise SystemExit("user-places.xbel sin </xbel>, no se toca")
+    pos = texto.rindex("</xbel>")
+    texto = texto[:pos] + nueva + texto[pos:]
+elif "<IsHidden>" not in entrada.group(0):
+    bloque = entrada.group(0).replace("   </metadata>", "    <IsHidden>true</IsHidden>\n   </metadata>", 1)
+    texto = texto[:entrada.start()] + bloque + texto[entrada.end():]
+else:
+    texto = None  # ya tiene IsHidden (oculta o mostrada a mano): se respeta
+
+if texto is not None:
+    temporal = lugares.with_name(lugares.name + ".krarupos")
+    temporal.write_text(texto, encoding="utf-8")
+    os.replace(temporal, lugares)
+
+marca.parent.mkdir(parents=True, exist_ok=True)
+marca.touch()

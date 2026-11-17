@@ -1,0 +1,9 @@
+[Unit]
+Description=Partición del sistema oculta en Dolphin (abre /etc); se vuelve a mostrar desde Dolphin
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/krarupos-ocultar-disco-sistema
+
+[Install]
+WantedBy=default.target
