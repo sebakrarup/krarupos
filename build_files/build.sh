@@ -135,6 +135,10 @@ for m in d["modules"]:
         m["keyColor"] = m["outputColor"] = COLORES[m["type"]]
         hechos += 1
 assert hechos >= 10, "fastfetch: la configuración de Bazzite cambió"
+# IP local (la de la red de la casa), después del tiempo encendido.
+i = next(i for i, m in enumerate(d["modules"]) if isinstance(m, dict) and m["type"] == "uptime")
+d["modules"].insert(i + 1, {"type": "localip", "key": " 󰩟", "showIpv6": False,
+                            "keyColor": CIAN, "outputColor": CIAN})
 d["display"]["brightColor"] = False
 json.dump(d, open(ruta, "w"), ensure_ascii=False, indent=4)
 PYEOF
