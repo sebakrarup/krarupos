@@ -65,7 +65,7 @@ Hay tres variantes, que se construyen todos los días sobre la última Bazzite:
 - **Ventanas**: el foco sigue al puntero del mouse.
 - **Sesión vacía** al entrar: no se vuelven a abrir las apps de la sesión anterior.
 - **Prompt** con los colores de krarupOS (`seba@krarupOS:~$`).
-- **fastfetch** con el logo de krarupOS y un color por línea, una vez por sesión, en la primera terminal.
+- **fastfetch** con el logo de krarupOS, ícono y nombre en cada línea, y cada disco con su uso abajo y su propio color. No se abre solo: se ve con `fastfetch` o `krarup`.
 - **Alias**: `krarup` muestra `fastfetch` con el logo de krarupOS; `mpv` abre el reproductor (Flatpak) desde la terminal o una TTY; `moonlight` abre Moonlight (Flatpak) desde la terminal o una TTY; `foto` muestra fotos en una TTY; `ruedaON` y `ruedaOFF` cambian la rueda del G502 X a alta resolución o a normal; `xboxcontrollerWake` y `xboxcontrollerNoWake` permiten o quitan despertar el PC desde suspensión con un control Bluetooth (sirve con cualquier adaptador Bluetooth USB; no viene activado porque audífonos o mouse Bluetooth también podrían despertarlo) (para todos los usuarios).
 - **Rueda del G502 X en resolución normal** al conectar (el kernel pone alta resolución y hace scroll con solo rozarla); solo si está ese mouse.
 - **Scroll natural en el G502 X** en KDE (solo ese mouse, también con input-remapper).
@@ -73,7 +73,7 @@ Hay tres variantes, que se construyen todos los días sobre la última Bazzite:
 - **WiFi Broadcom BCM4360, BCM4352 y BCM43142** (las de los Mac y las Fenvi): funcionan desde el primer inicio. Bazzite trae su driver `wl` bloqueado porque rompe otras tarjetas; krarupOS lo activa solo si el PC tiene una de estas.
 - **input-remapper** activado, con los presets de un Logitech G502 X LS.
 - **Apps GTK** (como Transmission Remote) con el tema Breeze y los colores de KDE, también las Flatpak.
-- **Konsole** con el perfil krarupOS (colores Vapor sin transparencia, Fira Code 16); la primera ventana se abre de 124×42 para que quepan la bienvenida y fastfetch, en ese orden.
+- **Konsole** con el perfil krarupOS (colores Vapor sin transparencia, Fira Code 16); la primera ventana se abre de 124×42 para que quepan la bienvenida y fastfetch.
 - **Dolphin** con íconos y vistas previas grandes, ruta completa y barra de herramientas propia. Descargas ordenada por fecha (la más nueva arriba) pero sin grupos (Group By: None; Dolphin la agrupa por fecha), una vez por usuario.
 - **Apps predeterminadas**: videos con mpv, Firefox como navegador y magnet links/torrents con Transmission Remote (sin que Firefox pregunte).
 - **mpv con decodificación por GPU** (`hwdec=vaapi`): evita tirones en AV1 y videos a muchos fps.
