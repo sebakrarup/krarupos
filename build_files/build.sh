@@ -139,6 +139,20 @@ assert hechos >= 10, "fastfetch: la configuración de Bazzite cambió"
 i = next(i for i, m in enumerate(d["modules"]) if isinstance(m, dict) and m["type"] == "uptime")
 d["modules"].insert(i + 1, {"type": "localip", "key": " 󰩟", "showIpv6": False,
                             "keyColor": CIAN, "outputColor": CIAN})
+# Ícono + nombre en cada línea, con los datos alineados en una columna (los discos
+# solo "Disk": con la carpeta se descuadra). El título (usuario@equipo) va aparte.
+NOMBRES = {
+    "command": "Image", "os": "OS", "kernel": "Kernel", "uptime": "Uptime",
+    "localip": "Local IP", "host": "Host", "cpu": "CPU", "gpu": "GPU", "memory": "Memory",
+    "disk": "Disk", "display": "Display", "battery": "Battery", "gamepad": "Gamepad",
+    "de": "DE", "wm": "WM", "shell": "Shell", "terminal": "Terminal", "packages": "Packages",
+}
+for m in d["modules"]:
+    if isinstance(m, dict) and m["type"] in NOMBRES:
+        m["key"] = m["key"].rstrip() + " " + NOMBRES[m["type"]]
+    if isinstance(m, dict) and m["type"] == "title":
+        m["keyWidth"] = 5
+d["display"]["key"] = {"width": 14}
 d["display"]["brightColor"] = False
 json.dump(d, open(ruta, "w"), ensure_ascii=False, indent=4)
 PYEOF
