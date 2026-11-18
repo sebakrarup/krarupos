@@ -123,11 +123,13 @@ ruta = sys.argv[1]
 d = json.loads(re.sub(r",(\s*[}\]])", r"\1", open(ruta).read()))
 VERDE, NARANJA, AZUL, MORADO, AMARILLO, CIAN = "38;5;40", "38;5;3", "94", "95", "93", "38;5;51"
 ROJO, BLANCO = "38;5;196", "38;5;231"
+# Elegidos por el usuario (2026-11-18): Host gris, discos crema, shell celeste, IP verde claro.
+GRIS, CREMA, CELESTE, VERDE_CLARO = "38;5;8", "38;5;230", "38;5;116", "38;5;10"
 COLORES = {
     "command": VERDE, "os": AZUL, "kernel": NARANJA, "uptime": MORADO,
-    "host": AMARILLO, "cpu": VERDE, "gpu": ROJO, "memory": AMARILLO, "disk": BLANCO,
+    "host": GRIS, "cpu": VERDE, "gpu": ROJO, "memory": AMARILLO, "disk": CREMA,
     "display": AZUL, "battery": AMARILLO, "gamepad": CIAN,
-    "de": VERDE, "wm": NARANJA, "shell": VERDE, "terminal": MORADO, "packages": AMARILLO,
+    "de": VERDE, "wm": NARANJA, "shell": CELESTE, "terminal": MORADO, "packages": AMARILLO,
 }
 hechos = 0
 for m in d["modules"]:
@@ -138,7 +140,7 @@ assert hechos >= 10, "fastfetch: la configuración de Bazzite cambió"
 # IP local (la de la red de la casa), después del tiempo encendido.
 i = next(i for i, m in enumerate(d["modules"]) if isinstance(m, dict) and m["type"] == "uptime")
 d["modules"].insert(i + 1, {"type": "localip", "key": " 󰩟", "showIpv6": False,
-                            "keyColor": CIAN, "outputColor": CIAN})
+                            "keyColor": VERDE_CLARO, "outputColor": VERDE_CLARO})
 # Ícono + nombre en cada línea, con los datos alineados en una columna (los discos
 # solo "Disk": con la carpeta se descuadra). El título (usuario@equipo) va aparte.
 NOMBRES = {
