@@ -6,7 +6,6 @@ if [ -n "${PS1:-}" ] && [ -n "${BASH_VERSION:-}" ] && [ -n "${XDG_RUNTIME_DIR:-}
     [ -t 1 ] && [ ! -e "$HOME/.config/no-show-user-motd" ]; then
     # noclobber: si se abren varias terminales a la vez, solo una crea la marca.
     if (set -C; : >"$XDG_RUNTIME_DIR/krarupos-fastfetch-visto") 2>/dev/null; then
-        /usr/bin/fastfetch --color "$(/usr/libexec/bazzite-bling-fastfetch)" \
-            -c /usr/share/ublue-os/bazzite/fastfetch.jsonc
+        /usr/libexec/krarupos-fastfetch
     fi
 fi

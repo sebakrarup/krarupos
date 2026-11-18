@@ -121,40 +121,91 @@ python3 - "$fastfetch" <<'PYEOF'
 import json, re, sys
 ruta = sys.argv[1]
 d = json.loads(re.sub(r",(\s*[}\]])", r"\1", open(ruta).read()))
+M = d["modules"]
 VERDE, NARANJA, AZUL, MORADO, AMARILLO, CIAN = "38;5;40", "38;5;3", "94", "95", "93", "38;5;51"
-ROJO, BLANCO = "38;5;196", "38;5;231"
-# Elegidos por el usuario (2026-11-18): Host gris, discos crema, shell celeste, IP verde claro.
-GRIS, CREMA, CELESTE, VERDE_CLARO = "38;5;8", "38;5;230", "38;5;116", "38;5;10"
+ROJO = "38;5;196"
+# Elegidos por el usuario (2026-11-18), números de la paleta de 256.
+def c(n):
+    return "38;5;%d" % n
 COLORES = {
     "command": VERDE, "os": AZUL, "kernel": NARANJA, "uptime": MORADO,
-    "host": GRIS, "cpu": VERDE, "gpu": ROJO, "memory": AMARILLO, "disk": CREMA,
+    "host": c(8), "cpu": VERDE, "gpu": ROJO, "memory": AMARILLO, "disk": c(15),
     "display": AZUL, "battery": AMARILLO, "gamepad": CIAN,
-    "de": VERDE, "wm": NARANJA, "shell": CELESTE, "terminal": MORADO, "packages": AMARILLO,
+    "de": VERDE, "wm": NARANJA, "shell": c(116), "terminal": c(219), "packages": AMARILLO,
 }
 hechos = 0
-for m in d["modules"]:
+for m in M:
     if isinstance(m, dict) and m["type"] in COLORES:
         m["keyColor"] = m["outputColor"] = COLORES[m["type"]]
         hechos += 1
 assert hechos >= 10, "fastfetch: la configuración de Bazzite cambió"
-# IP local (la de la red de la casa), después del tiempo encendido.
-i = next(i for i, m in enumerate(d["modules"]) if isinstance(m, dict) and m["type"] == "uptime")
-d["modules"].insert(i + 1, {"type": "localip", "key": " 󰩟", "showIpv6": False,
-                            "keyColor": VERDE_CLARO, "outputColor": VERDE_CLARO})
-# Ícono + nombre en cada línea, con los datos alineados en una columna (los discos
-# solo "Disk": con la carpeta se descuadra). El título (usuario@equipo) va aparte.
+
+
+def modulo(tipo, icono, color, **extra):
+    m = {"type": tipo, "key": " " + icono, "keyColor": color, "outputColor": color}
+    m.update(extra)
+    return m
+
+
+def despues(tipo, *nuevos):
+    i = max(i for i, m in enumerate(M) if isinstance(m, dict) and m["type"] == tipo)
+    M[i + 1:i + 1] = nuevos
+
+
+def cambiar(tipo, nuevo, **extra):
+    m = next(m for m in M if isinstance(m, dict) and m["type"] == tipo)
+    m["type"] = nuevo
+    m.update(extra)
+
+
+# Líneas agregadas. Las del escritorio (tema, íconos, cursor, letra) no salen en la TTY.
+# Public IP consulta un servicio de internet cada vez (máximo 2 s).
+despues("uptime", modulo("datetime", "\U000f00f0", MORADO))
+despues("datetime", modulo("localip", "\U000f0a5f", c(10), showIpv6=False))
+despues("localip", modulo("publicip", "\U000f059f", c(10), timeout=2000))
+cambiar("host", "board")                       # el modelo de la placa en vez del código
+despues("board", modulo("bios", "", c(8)))
+# Cada disco (Physical Disk) con su uso (Disk) abajo: krarupos-fastfetch arma los pares
+# en cada PC; sin él salen todos los discos y después todos los usos.
+despues("disk", modulo("physicaldisk", "\U000f02ca", c(15), hideVirtual=True,
+                       format="{name} - {size} [{physical-type}]"))
+cambiar("display", "monitor", format='{name} - {width}x{height} @ {refresh-rate} Hz - {inch}"')
+despues("monitor", modulo("sound", "\U000f057e", AMARILLO))
+despues("gamepad",
+        modulo("command", "\U000f030c", CIAN, text="/usr/libexec/krarupos-fetch-entrada teclado"),
+        modulo("command", "\U000f037d", CIAN, text="/usr/libexec/krarupos-fetch-entrada mouse"))
+despues("wm", modulo("wmtheme", "", c(150)), modulo("theme", "\U000f027c", c(90)),
+        modulo("icons", "\U000f003b", c(58)), modulo("cursor", "\U000f01c0", NARANJA),
+        modulo("font", "", MORADO))
+# Ícono + nombre en cada línea, con los datos alineados en una columna. El título
+# (usuario@equipo) va aparte.
 NOMBRES = {
     "command": "Image", "os": "OS", "kernel": "Kernel", "uptime": "Uptime",
-    "localip": "Local IP", "host": "Host", "cpu": "CPU", "gpu": "GPU", "memory": "Memory",
-    "disk": "Disk", "display": "Display", "battery": "Battery", "gamepad": "Gamepad",
-    "de": "DE", "wm": "WM", "shell": "Shell", "terminal": "Terminal", "packages": "Packages",
+    "datetime": "Date & Time", "localip": "Local IP", "publicip": "Public IP",
+    "board": "Board", "bios": "BIOS", "cpu": "CPU", "gpu": "GPU", "memory": "Memory",
+    "physicaldisk": "Physical Disk", "disk": "Disk", "monitor": "Monitor", "sound": "Sound",
+    "battery": "Battery", "gamepad": "Gamepad",
+    "de": "DE", "wm": "WM", "wmtheme": "WM Theme", "theme": "Theme", "icons": "Icons",
+    "cursor": "Cursor", "font": "Font", "shell": "Shell", "terminal": "Terminal",
+    "packages": "Packages",
 }
-for m in d["modules"]:
-    if isinstance(m, dict) and m["type"] in NOMBRES:
-        m["key"] = m["key"].rstrip() + " " + NOMBRES[m["type"]]
-    if isinstance(m, dict) and m["type"] == "title":
+for m in M:
+    if not isinstance(m, dict):
+        continue
+    nombre = NOMBRES.get(m["type"])
+    if m.get("text", "").endswith(" teclado"):
+        nombre = "Keyboard"
+    elif m.get("text", "").endswith(" mouse"):
+        nombre = "Mouse"
+    if nombre:
+        m["key"] = m["key"].rstrip() + " " + nombre
+    if m["type"] == "title":
         m["keyWidth"] = 5
-d["display"]["key"] = {"width": 14}
+# Physical Disk justo antes de Disk (krarupos-fastfetch los busca juntos).
+i = next(i for i, m in enumerate(M) if isinstance(m, dict) and m["type"] == "physicaldisk")
+M.insert(i - 1, M.pop(i))
+assert [m["type"] for m in M[i - 1:i + 1]] == ["physicaldisk", "disk"]
+d["display"]["key"] = {"width": 21}
 d["display"]["brightColor"] = False
 json.dump(d, open(ruta, "w"), ensure_ascii=False, indent=4)
 PYEOF

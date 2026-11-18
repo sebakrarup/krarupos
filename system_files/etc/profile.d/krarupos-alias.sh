@@ -1,5 +1,10 @@
 # Alias de krarupOS para todos los usuarios (bash).
-alias krarup='fastfetch'
+# fastfetch con cada disco junto a su uso (usr/libexec/krarupos-fastfetch); reemplaza
+# los alias de Bazzite (bazzite-neofetch.sh, que se lee antes).
+alias fastfetch='/usr/libexec/krarupos-fastfetch'
+alias neofetch='/usr/libexec/krarupos-fastfetch'
+alias neowofetch='/usr/libexec/krarupos-fastfetch'
+alias krarup='/usr/libexec/krarupos-fastfetch'
 # Suspender el equipo.
 alias dormir='systemctl suspend'
 # Rueda del G502 X (solo con ese mouse): ruedaON = alta resolución (más sensible),

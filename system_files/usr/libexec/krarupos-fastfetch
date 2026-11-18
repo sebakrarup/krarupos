@@ -1,0 +1,110 @@
+#!/usr/bin/python3 -I
+# fastfetch de krarupOS: la configuración de la imagen, pero con cada disco (Physical
+# Disk) seguido de su uso (Disk), que fastfetch no sabe juntar solo. Orden: el disco del
+# sistema, después los SSD, después los discos duros. Cada par con su color.
+# Uso: krarupos-fastfetch [opciones de fastfetch]
+import json
+import os
+import re
+import subprocess
+import sys
+
+BASE = "/usr/share/ublue-os/bazzite/fastfetch.jsonc"
+COLORES = [15, 153, 150, 217, 225, 117, 186, 183]   # por posición (el sistema primero)
+FASTFETCH = "/usr/bin/fastfetch"
+
+
+def tamano(n):
+    for unidad in ("B", "KiB", "MiB", "GiB", "TiB"):
+        if n < 1024 or unidad == "TiB":
+            return "%.2f %s" % (n, unidad) if unidad != "B" else "%d B" % n
+        n /= 1024
+
+
+def carpeta(puntos):
+    # Una carpeta por sistema de archivos: /var/home en el disco del sistema; si no, la
+    # más corta que no sea del sistema (/boot, /sysroot, /usr, /etc, /var).
+    if "/var/home" in puntos:
+        return "/var/home"
+    buenos = [p for p in puntos if p and p not in ("/", "/var", "/etc", "[SWAP]")
+              and not re.match(r"/(boot|sysroot|usr)(/|$)", p)]
+    return min(buenos, key=len) if buenos else None
+
+
+def montajes():
+    # {"/dev/nvme0n1": ["/var/home", ...]} y el disco del sistema.
+    arbol = json.loads(subprocess.run(
+        ["lsblk", "-J", "--tree=PATH", "-o", "PATH,TYPE,FSTYPE,MOUNTPOINTS"],
+        capture_output=True, text=True, check=True).stdout)["blockdevices"]
+    por_disco, sistema = {}, None
+
+    def recorrer(nodo, disco):
+        nonlocal sistema
+        puntos = [p for p in (nodo.get("mountpoints") or []) if p]
+        if "/sysroot" in puntos or "/var/home" in puntos:
+            sistema = disco
+        if nodo.get("fstype") not in (None, "vfat", "swap"):
+            c = carpeta(puntos)
+            if c and c not in por_disco.setdefault(disco, []):
+                por_disco[disco].append(c)
+        for hijo in nodo.get("children") or []:
+            recorrer(hijo, disco)
+
+    for d in arbol:
+        if d.get("type") == "disk":
+            recorrer(d, d["path"])
+    return por_disco, sistema
+
+
+def discos():
+    salida = subprocess.run([FASTFETCH, "-c", "none", "-s", "physicaldisk", "--format", "json"],
+                            capture_output=True, text=True).stdout
+    for modulo in json.loads(salida or "[]"):
+        if modulo.get("type") == "PhysicalDisk":
+            return [d for d in modulo.get("result") or [] if d.get("kind") != "Virtual"]
+    return []
+
+
+def pares(plantilla_fisico, plantilla_uso):
+    por_disco, sistema = montajes()
+    lista = discos()
+    natural = lambda s: [int(x) if x.isdigit() else x for x in re.split(r"(\d+)", s)]
+    lista.sort(key=lambda d: (d["devPath"] != sistema, d.get("kind") != "SSD",
+                              natural(d["devPath"])))
+    modulos = []
+    for n, d in enumerate(lista):
+        color = "38;5;%d" % COLORES[n % len(COLORES)]
+        fisico = {"type": "custom", "key": plantilla_fisico["key"],
+                  "format": "%s - %s [%s]" % (d["name"], tamano(d["size"]), d.get("kind") or "?")}
+        modulos.append(fisico)
+        for c in por_disco.get(d["devPath"], []):
+            uso = {k: v for k, v in plantilla_uso.items() if k != "folders"}
+            uso["folders"] = c
+            modulos.append(uso)
+        for m in modulos[-1 - len(por_disco.get(d["devPath"], [])):]:
+            m["keyColor"] = m["outputColor"] = color
+    return modulos
+
+
+def main():
+    config = json.load(open(BASE))
+    m = config["modules"]
+    i = next((i for i in range(len(m) - 1) if isinstance(m[i], dict) and isinstance(m[i + 1], dict)
+              and m[i]["type"] == "physicaldisk" and m[i + 1]["type"] == "disk"), None)
+    destino = BASE
+    if i is not None:
+        try:
+            m[i:i + 2] = pares(m[i], m[i + 1])
+            carpeta_tmp = os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
+            destino = os.path.join(carpeta_tmp, "krarupos-fastfetch-%d.jsonc" % os.getuid())
+            with open(destino, "w") as f:
+                json.dump(config, f, ensure_ascii=False)
+        except Exception:
+            destino = BASE        # si algo falla, la configuración normal
+    color = subprocess.run(["/usr/libexec/bazzite-bling-fastfetch"],
+                           capture_output=True, text=True).stdout.strip()
+    os.execv(FASTFETCH, [FASTFETCH] + (["--color", color] if color else [])
+             + ["-c", destino] + sys.argv[1:])
+
+
+main()

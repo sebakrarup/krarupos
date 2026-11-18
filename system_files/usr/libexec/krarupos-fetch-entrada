@@ -1,0 +1,17 @@
+#!/usr/bin/bash
+# Teclados o mouses conectados, cada uno una sola vez, para fastfetch (sus módulos
+# keyboard/mouse repiten el mismo aparato por cada interfaz USB que tiene).
+# Uso: krarupos-fetch-entrada teclado|mouse
+awk -v que="$1" '
+    /^N: Name=/ { sub(/^N: Name="/, ""); sub(/" *$/, ""); nombre = $0 }
+    /^H: Handlers=/ {
+        h = " " $0 " "
+        if (h ~ / kbd / && h ~ / leds / && h !~ / mouse[0-9]+ /) teclado[nombre] = 1
+        else if (h ~ / mouse[0-9]+ /) { sub(/ Mouse$/, "", nombre); raton[nombre] = 1 }
+    }
+    END {
+        sep = ""
+        if (que == "teclado") for (n in teclado) { printf "%s%s", sep, n; sep = ", " }
+        else for (n in raton) if (!(n in teclado)) { printf "%s%s", sep, n; sep = ", " }
+        print ""
+    }' /proc/bus/input/devices
