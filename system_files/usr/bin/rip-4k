@@ -4,10 +4,10 @@
 #           HDR10/HLG se mantienen; Dolby Vision -> HDR10 (sin capa DV)
 #   Audio:  pista original + inglés + español -> AAC estéreo 192 kbps
 #   Subs:   inglés + español (copiados)
-#   Salida: MKV; los originales no se tocan
+#   Salida: MKV en la carpeta donde estás parado; el original no se toca
 #
 # Uso: rip-4k [-o carpeta_salida] archivo_o_carpeta...
-#   Sin -o, deja los archivos en ./hevc-4k
+#   Sin -o, sale en la carpeta actual (si ahí está el original: " - 4K" en el nombre)
 #   Las carpetas se recorren completas y se mantiene la estructura.
 
 set -uo pipefail
@@ -16,7 +16,8 @@ DEV=/dev/dri/renderD128
 BITRATE=20M
 MAXRATE=30M
 BUFSIZE=40M
-SALIDA=./hevc-4k
+SALIDA=.
+SUFIJO=" - 4K"
 EXTS='mkv|mp4|m4v|avi|mov|ts|m2ts|wmv|webm|mpg|mpeg'
 
 while getopts "o:h" opt; do
@@ -29,7 +30,14 @@ shift $((OPTIND - 1))
 [ $# -eq 0 ] && { sed -n '2,12p' "$0"; exit 1; }
 
 mkdir -p "$SALIDA"
-LOG="$SALIDA/hevc-4k.log"
+
+# Destino = carpeta de salida + nombre del original en .mkv;
+# si eso pisaría al original (misma carpeta), se le agrega el sufijo
+destino_para() {
+    local origen=$1 d=${2%.*}.mkv
+    [ "$(realpath -m "$d")" = "$(realpath -m "$origen")" ] && d="${2%.*}$SUFIJO.mkv"
+    echo "$d"
+}
 
 es_ingles='^(eng|en)$'
 es_espanol='^(spa|es|esp)$'
@@ -55,12 +63,12 @@ convertir() {
     local entrada=$1 destino=$2
     local info
     info=$(ffprobe -v error -show_streams -show_format -of json "$entrada") || {
-        echo "ERROR ffprobe: $entrada" | tee -a "$LOG"; return 1; }
+        echo "ERROR ffprobe: $entrada"; return 1; }
 
     # Video: primer stream que no sea carátula
     local v
     v=$(jq -c '[.streams[] | select(.codec_type=="video" and (.disposition.attached_pic // 0)==0)][0]' <<<"$info")
-    [ "$v" = null ] && { echo "SIN VIDEO: $entrada" | tee -a "$LOG"; return 1; }
+    [ "$v" = null ] && { echo "SIN VIDEO: $entrada"; return 1; }
     local vidx w h codec pixfmt
     vidx=$(jq -r .index <<<"$v"); w=$(jq -r .width <<<"$v"); h=$(jq -r .height <<<"$v")
     codec=$(jq -r .codec_name <<<"$v"); pixfmt=$(jq -r .pix_fmt <<<"$v")
@@ -162,7 +170,9 @@ convertir() {
     done
 
     mkdir -p "$(dirname "$destino")"
-    local tmp="${destino%.mkv}.part.mkv"
+    # Oculto mientras se codifica, para que Jellyfin no lo agregue a medias
+    local tmp
+    tmp="$(dirname "$destino")/.$(basename "${destino%.mkv}").part.mkv"
 
     echo "==> $entrada (${w}x${h} $codec$etiqueta -> ${nw}x${nh})"
     if ffmpeg -hide_banner -loglevel error -stats -nostdin -y \
@@ -176,33 +186,38 @@ convertir() {
         -max_muxing_queue_size 4096 \
         "$tmp"; then
         mv -f "$tmp" "$destino"
-        echo "OK: $destino" >>"$LOG"
     else
         rm -f "$tmp"
-        echo "ERROR: $entrada" | tee -a "$LOG"
+        echo "ERROR: $entrada"
         return 1
     fi
 }
 
-errores=0
+fallados=()
 for item in "$@"; do
     if [ -d "$item" ]; then
         base=$(realpath "$item")
         while IFS= read -r -d '' f; do
             rel=${f#"$base"/}
-            destino="$SALIDA/$(basename "$base")/${rel%.*}.mkv"
+            destino=$(destino_para "$f" "$SALIDA/$(basename "$base")/$rel")
             if [ -e "$destino" ]; then echo "YA EXISTE, salto: $destino"; continue; fi
-            convertir "$f" "$destino" || errores=$((errores + 1))
+            convertir "$f" "$destino" || fallados+=("$f")
         done < <(find "$base" -type f -regextype posix-extended -iregex ".*\.($EXTS)$" \
-                     ! -name '*.part.mkv' -print0 | sort -z)
+                     ! -name '*.part.mkv' ! -name '.*' ! -name '* - 1080p.mkv' ! -name '* - 4K.mkv' -print0 | sort -z)
     elif [ -f "$item" ]; then
-        destino="$SALIDA/$(basename "${item%.*}").mkv"
+        destino=$(destino_para "$item" "$SALIDA/$(basename "$item")")
         if [ -e "$destino" ]; then echo "YA EXISTE, salto: $destino"; continue; fi
-        convertir "$item" "$destino" || errores=$((errores + 1))
+        convertir "$item" "$destino" || fallados+=("$item")
     else
         echo "No existe: $item"
     fi
 done
 
-echo "Listo. Errores: $errores (detalle en $LOG)"
-[ "$errores" -eq 0 ]
+if [ ${#fallados[@]} -eq 0 ]; then
+    echo "Listo, sin errores."
+else
+    echo
+    echo "Listo. Fallaron ${#fallados[@]}:"
+    printf '  %s\n' "${fallados[@]}"
+    exit 1
+fi
