@@ -479,21 +479,36 @@ cp /usr/share/krarupos/splash-preview.png "$lnf/contents/previews/splash.png"
 sed -i '/^\[ksplashrc\]\[KSplash\]/,/^\[/ s/^Theme=.*/Theme=com.krarupos.desktop/' "$lnf/contents/defaults"
 grep -A1 '^\[ksplashrc\]\[KSplash\]' "$lnf/contents/defaults" | grep -q '^Theme=com.krarupos.desktop$'
 
-# Panel de krarupOS: abajo, centrado, flotante, ajustado al contenido, 56 px,
-# ícono archlinux en el menú, sin paginador ni "mostrar escritorio", y
-# transparente con Panel Colorizer (layout en /usr/share/krarupos/panel-layout.js).
+# Panel de krarupOS (layout en /usr/share/krarupos/panel-layout.js).
 cp /usr/share/krarupos/panel-layout.js "$lnf/contents/layouts/org.kde.plasma.desktop-layout.js"
-colorizer_url=$(gh_api https://api.github.com/repos/luisbocanegra/plasma-panel-colorizer/releases/latest |
-    jq -r '.assets[] | select(.name | endswith(".plasmoid")) | .browser_download_url' | head -1)
-curl -fsSL --retry 3 -o /tmp/panel-colorizer.plasmoid "$colorizer_url"
+# Panel transparente desde el tema: el fondo y la sombra de panel-background de Breeze
+# (las 4 variantes: normal, translucent, solid y opaque) quedan invisibles; las piezas
+# mask-* y los márgenes no se tocan, así la zona del panel y sus clics quedan iguales.
+# Antes era con Panel Colorizer, pero con él partes del panel dejaban de recibir clics
+# (el triángulo de la bandeja no abría; con el panel a todo el alto, el volumen).
 python3 - <<'EOF'
-import json, zipfile
-z = zipfile.ZipFile("/tmp/panel-colorizer.plasmoid")
-plugin_id = json.loads(z.read("metadata.json"))["KPlugin"]["Id"]
-assert plugin_id == "luisbocanegra.panel.colorizer", plugin_id
-z.extractall("/usr/share/plasma/plasmoids/" + plugin_id)
+import gzip, pathlib, re
+visibles = {"center", "top", "bottom", "left", "right", "topleft", "topright",
+            "bottomleft", "bottomright", "thick-center"}
+for v in ("", "translucent/", "solid/", "opaque/"):
+    f = pathlib.Path(f"/usr/share/plasma/desktoptheme/default/{v}widgets/panel-background.svgz")
+    svg = gzip.decompress(f.read_bytes()).decode()
+    n = 0
+    def invisible(m):
+        global n
+        tag = m.group(0)
+        i = re.search(r'\bid="([^"]+)"', tag).group(1)
+        if i not in visibles and not (i.startswith("shadow-") and "hint" not in i):
+            return tag
+        n += 1
+        tag = re.sub(r'\sopacity="[^"]*"', "", tag)
+        cierre = "/>" if tag.endswith("/>") else ">"
+        return tag[:-len(cierre)] + ' opacity="0"' + cierre
+    svg = re.sub(r'<(?:g|rect|path)\b[^>]*\bid="[^"]+"[^>]*>', invisible, svg)
+    assert n >= 10, (f, n)
+    assert 'id="mask-center"' in svg, f
+    f.write_bytes(gzip.compress(svg.encode(), 9, mtime=0))
 EOF
-test -f /usr/share/plasma/plasmoids/luisbocanegra.panel.colorizer/contents/ui/main.qml
 # Unreal Tournament (99) y 2004: instaladores oficiales de OldUnreal (el juego no
 # va en la imagen: cada uno acepta las condiciones de Epic y lo baja de archive.org).
 # Los usan los accesos "Instalar Unreal Tournament" (/usr/bin/krarupos-instalar-ut).
