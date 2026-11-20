@@ -1,0 +1,44 @@
+#!/usr/bin/bash
+# Escala 100 % en la pantalla de inicio (Plasma Login): su KWin calcula una por
+# los DPI de cada pantalla (un 4K de 27" queda en 170 %, la pantalla virtual de
+# QEMU en 270 %) y krarupos-escala solo cubre los escritorios de los usuarios.
+# Cada pantalla se pone en 100 % la primera vez que aparece; si alguien le
+# cambia la escala después, se respeta. Corre con el KWin del inicio detenido
+# (antes de que arranque y después de que se cierre): si no, lo pisa al salir.
+set -uo pipefail
+
+config=/var/lib/plasmalogin/.config/kwinoutputconfig.json
+vistas=/var/lib/krarupos/escala-login-pantallas
+[[ -f $config ]] || exit 0
+mkdir -p "$(dirname "$vistas")"
+
+python3 -I - "$config" "$vistas" <<'PY'
+import json, os, sys
+config, vistas = sys.argv[1], sys.argv[2]
+conocidas = set(open(vistas).read().split()) if os.path.exists(vistas) else set()
+datos = json.load(open(config))
+cambio, nuevas = False, []
+for x in datos:
+    if x.get("name") != "outputs":
+        continue
+    for o in x.get("data", []):
+        clave = "{}:{}".format(o.get("connectorName", ""), o.get("edidHash", ""))
+        if clave in conocidas:
+            continue
+        nuevas.append(clave)
+        if o.get("scale", 1) != 1:
+            o["scale"] = 1
+            cambio = True
+if cambio:
+    tmp = config + ".krarupos"
+    with open(tmp, "w") as f:
+        json.dump(datos, f, indent=4)
+    st = os.stat(config)
+    os.chown(tmp, st.st_uid, st.st_gid)
+    os.chmod(tmp, st.st_mode & 0o7777)
+    os.replace(tmp, config)
+if nuevas:
+    with open(vistas, "a") as f:
+        f.write("\n".join(nuevas) + "\n")
+PY
+exit 0
