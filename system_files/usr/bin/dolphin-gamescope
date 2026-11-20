@@ -1,0 +1,34 @@
+#!/bin/bash
+# Lanzador de Dolphin para gamescope-session (opciones de Steam: dolphin-gamescope %command%).
+source /usr/libexec/krarupos-gamescope-comun
+# xcb para el Xwayland de gamescope; XDG_CURRENT_DESKTOP + PLATFORMTHEME para el tema de KDE.
+export QT_QPA_PLATFORM=xcb XDG_CURRENT_DESKTOP=KDE QT_QPA_PLATFORMTHEME=kde
+# KIO abre los programas (mpv, Gwenview...) como servicio de systemd: gamescope no los asocia
+# a la app de Steam (busca el reaper entre los padres) y no los muestra. Forzar fork normal.
+export _KDE_APPLICATIONS_AS_FORKING=1
+
+# VRR apagado mientras Dolphin está en primer plano: con VRR la pantalla refresca al ritmo
+# irregular de Dolphin en vez de 120 fijos. Se vuelve a encender al cambiar de app o al salir.
+vrr_apagado=0
+vrr() { DISPLAY=:0 xprop -root GAMESCOPE_VRR_ENABLED 2>/dev/null | awk '{print $3}'; }
+vrr_poner() { DISPLAY=:0 xprop -root -f GAMESCOPE_VRR_ENABLED 32c -set GAMESCOPE_VRR_ENABLED "$1"; }
+trap '[ "$vrr_apagado" = 1 ] && vrr_poner 1; exit' TERM INT HUP
+cada_vuelta() {
+  enfocada=$(DISPLAY=:0 xprop -root GAMESCOPE_FOCUSED_APP 2>/dev/null | awk '{print $3}')
+  if [ "$enfocada" = "$SteamAppId" ]; then
+    if [ "$(vrr)" = 1 ]; then vrr_poner 0; vrr_apagado=1; fi
+  elif [ "$vrr_apagado" = 1 ]; then
+    vrr_poner 1; vrr_apagado=0
+  fi
+}
+
+# El acceso de Steam llama a /usr/bin/dolphin: si el usuario tiene un Dolphin propio en
+# ~/.local/bin (p. ej. el parcheado con thumbnails de 960 px), usar ese.
+# (%command% trae delante steam-launch-wrapper y reaper: revisar todos los argumentos).
+if [ -x ~/.local/bin/dolphin ]; then
+  args=()
+  for a in "$@"; do [ "$a" = /usr/bin/dolphin ] && a=~/.local/bin/dolphin; args+=("$a"); done
+  set -- "${args[@]}"
+fi
+lanzar_y_ajustar "--class dolphin" "$@"
+[ "$vrr_apagado" = 1 ] && vrr_poner 1

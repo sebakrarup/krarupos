@@ -1,0 +1,60 @@
+#!/usr/bin/python3 -I
+# Gamescope anuncia _NET_WM_STATE_FULLSCREEN en _NET_SUPPORTED pero nunca marca la propiedad
+# _NET_WM_STATE en la ventana que la pide, así que Firefox/GTK no se entera de que entró en
+# pantalla completa (videos y F11 no funcionan). Esto escucha los pedidos en la raíz y escribe
+# la propiedad, como haría un gestor de ventanas. Uso: gamescope-wmstate [PID a seguir]
+import os
+import select
+import sys
+
+from Xlib import X, Xatom, display
+from Xlib.error import XError
+
+pid = int(sys.argv[1]) if len(sys.argv) > 1 else None
+d = display.Display()
+root = d.screen().root
+root.change_attributes(event_mask=X.SubstructureNotifyMask)
+NET_WM_STATE = d.intern_atom('_NET_WM_STATE')
+FULLSCREEN = d.intern_atom('_NET_WM_STATE_FULLSCREEN')
+fd = d.fileno()
+
+
+def vivo():
+    if pid is None:
+        return True
+    try:
+        os.kill(pid, 0)
+        return True
+    except OSError:
+        return False
+
+
+def aplicar(win, accion, atomos):
+    try:
+        prop = win.get_full_property(NET_WM_STATE, Xatom.ATOM)
+        estado = list(prop.value) if prop else []
+        for a in atomos:
+            if not a:
+                continue
+            if accion == 1 or (accion == 2 and a not in estado):
+                if a not in estado:
+                    estado.append(a)
+            elif a in estado:
+                estado.remove(a)
+        win.change_property(NET_WM_STATE, Xatom.ATOM, 32, estado)
+        if FULLSCREEN in estado:
+            g = root.get_geometry()
+            win.configure(x=0, y=0, width=g.width, height=g.height)
+        d.flush()
+    except XError:
+        pass
+
+
+while vivo():
+    if not d.pending_events():
+        select.select([fd], [], [], 2)
+    while d.pending_events():
+        e = d.next_event()
+        if e.type == X.ClientMessage and e.client_type == NET_WM_STATE:
+            fmt, datos = e.data
+            aplicar(e.window, datos[0], datos[1:3])

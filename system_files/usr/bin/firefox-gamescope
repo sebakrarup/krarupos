@@ -1,0 +1,8 @@
+#!/bin/bash
+# Lanzador de Firefox (Flatpak) para gamescope-session (opciones de Steam: firefox-gamescope %command%).
+source /usr/libexec/krarupos-gamescope-comun
+# X11 (Xwayland de gamescope), no Wayland.
+unset WAYLAND_DISPLAY
+export MOZ_ENABLE_WAYLAND=0
+/usr/bin/gamescope-wmstate $$ &
+lanzar_y_ajustar "--classname Navigator" "$@"

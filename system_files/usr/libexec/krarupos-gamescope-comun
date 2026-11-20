@@ -1,0 +1,31 @@
+# Parte común de los lanzadores *-gamescope (se carga con source, no se ejecuta).
+# Gamescope no tiene gestor de ventanas: ajusta las ventanas de la app al tamaño de la pantalla
+# mientras corre. Uso desde el lanzador: lanzar_y_ajustar "--class X" comando...
+
+# El overlay de Steam (gameoverlayrenderer.so) cuelga o hace caer a varias apps.
+unset LD_PRELOAD
+# Puntero de KDE (kcminputrc).
+export XCURSOR_THEME=Bibata-Modern-Ice XCURSOR_SIZE=28
+
+# Se llama en cada vuelta del bucle; los lanzadores pueden redefinirla.
+cada_vuelta() { :; }
+
+lanzar_y_ajustar() {
+  local busqueda=$1; shift
+  "$@" &
+  pid=$!
+  while kill -0 "$pid" 2>/dev/null; do
+    read -r W H < <(xdotool getdisplaygeometry 2>/dev/null)
+    if [ -n "$W" ]; then
+      for w in $(xdotool search --onlyvisible $busqueda 2>/dev/null); do
+        eval "$(xdotool getwindowgeometry --shell "$w" 2>/dev/null)"
+        if [ "$WIDTH" != "$W" ] || [ "$HEIGHT" != "$H" ]; then
+          xdotool windowmove "$w" 0 0 windowsize "$w" "$W" "$H" 2>/dev/null
+        fi
+      done
+    fi
+    cada_vuelta
+    sleep 1
+  done
+  wait "$pid"
+}

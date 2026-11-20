@@ -1,0 +1,15 @@
+#!/bin/bash
+# Lanzador de Konsole para gamescope-session (opciones de Steam: konsole-gamescope %command%).
+source /usr/libexec/krarupos-gamescope-comun
+# xcb para el Xwayland de gamescope; XDG_CURRENT_DESKTOP + PLATFORMTHEME para el tema de KDE.
+export QT_QPA_PLATFORM=xcb XDG_CURRENT_DESKTOP=KDE QT_QPA_PLATFORMTHEME=kde
+# KIO abre programas (enlaces con Ctrl+clic) como servicio de systemd y gamescope no los muestra.
+export _KDE_APPLICATIONS_AS_FORKING=1
+
+# Pantalla completa sin menú, barras, pestañas ni barra de desplazamiento (solo aquí; KDE sin cambios).
+# Konsole guarda el estado de la ventana al cerrar: respaldar y restaurar para no tocar el de KDE.
+cfg=(~/.config/konsolerc ~/.local/state/konsolestaterc)
+for f in "${cfg[@]}"; do [ -f "$f" ] && cp -p "$f" "$f.gamescope-tmp"; done
+lanzar_y_ajustar "--class konsole" "$@" \
+  --hide-menubar --hide-toolbars --hide-tabbar --fullscreen -p ScrollBarPosition=2
+for f in "${cfg[@]}"; do [ -f "$f.gamescope-tmp" ] && mv -f "$f.gamescope-tmp" "$f"; done

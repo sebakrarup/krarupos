@@ -1,0 +1,6 @@
+#!/bin/bash
+# Lanzador de Telegram (Flatpak) para gamescope-session (opciones de Steam: telegram-gamescope %command%).
+source /usr/libexec/krarupos-gamescope-comun
+# xcb para el Xwayland de gamescope; XDG_CURRENT_DESKTOP + PLATFORMTHEME para el tema de KDE.
+export QT_QPA_PLATFORM=xcb XDG_CURRENT_DESKTOP=KDE QT_QPA_PLATFORMTHEME=kde
+lanzar_y_ajustar "--class TelegramDesktop" "$@"
