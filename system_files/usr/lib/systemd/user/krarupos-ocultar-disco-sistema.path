@@ -1,4 +1,6 @@
 [Unit]
+# Solo usuarios normales: no en el de la pantalla de inicio (plasmalogin).
+ConditionUser=!@system
 Description=Ocultar la partición del sistema cuando KDE crea los Lugares
 
 [Path]

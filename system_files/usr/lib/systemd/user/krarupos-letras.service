@@ -1,4 +1,6 @@
 [Unit]
+# Solo usuarios normales: no en el de la pantalla de inicio (plasmalogin).
+ConditionUser=!@system
 Description=Letras de KDE y tamaños de Dolphin según la resolución de la pantalla
 After=plasma-workspace.target
 

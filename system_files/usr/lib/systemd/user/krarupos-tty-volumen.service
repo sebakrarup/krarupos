@@ -1,4 +1,6 @@
 [Unit]
+# Solo usuarios normales: no en el de la pantalla de inicio (plasmalogin).
+ConditionUser=!@system
 Description=Perilla de volumen en las TTY (volumen del sistema, tope 100 %)
 After=wireplumber.service
 

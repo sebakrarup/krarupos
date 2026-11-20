@@ -1,4 +1,6 @@
 [Unit]
+# Solo usuarios normales: no en el de la pantalla de inicio (plasmalogin).
+ConditionUser=!@system
 Description=Proton-CachyOS como Proton predeterminado de Steam
 # Antes de KDE y de gamescope-session, que abren Steam después.
 Before=graphical-session-pre.target

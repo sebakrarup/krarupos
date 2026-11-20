@@ -1,4 +1,6 @@
 [Unit]
+# Solo usuarios normales: no en el de la pantalla de inicio (plasmalogin).
+ConditionUser=!@system
 Description=Instalar Claude Code
 
 [Service]

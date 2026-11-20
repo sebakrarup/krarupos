@@ -1,4 +1,6 @@
 [Unit]
+# Solo usuarios normales: no en el de la pantalla de inicio (plasmalogin).
+ConditionUser=!@system
 Description=Ajustar tamaños cuando cambia la resolución de la pantalla (o Firefox crea su perfil)
 
 [Path]

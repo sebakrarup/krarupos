@@ -1,4 +1,6 @@
 [Unit]
+# Solo usuarios normales: no en el de la pantalla de inicio (plasmalogin).
+ConditionUser=!@system
 Description=Teclas de brillo con rampa suave (DDC/CI directo, sin la espera de powerdevil)
 PartOf=graphical-session.target
 After=plasma-workspace.target

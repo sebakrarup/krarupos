@@ -1,4 +1,6 @@
 [Unit]
+# Solo usuarios normales: no en el de la pantalla de inicio (plasmalogin).
+ConditionUser=!@system
 Description=Escala 100 % en las pantallas nuevas, antes de armar el escritorio
 After=plasma-kwin_wayland.service
 Before=plasma-plasmashell.service
