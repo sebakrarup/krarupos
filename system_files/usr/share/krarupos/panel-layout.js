@@ -1,10 +1,12 @@
 // Panel de krarupOS (lo usa el aspecto global com.krarupos.desktop).
-// A la derecha, centrado, flotante, esquiva las ventanas, ajustado al contenido y transparente con
-// Panel Colorizer. Los puntos de las apps abiertas vienen de tasks.svgz.
+// A la derecha, centrado, pegado al borde, esquiva las ventanas, ajustado al contenido y transparente
+// con Panel Colorizer. Los puntos de las apps abiertas vienen de tasks.svgz. No flotante: al pasar de
+// flotante a pegado (cuando se acerca una ventana) la zona de clics quedaba desactualizada y el
+// triángulo de la bandeja no abría (el clic llegaba al escritorio).
 var panel = new Panel
 panel.location = "right"
 panel.height = 66
-panel.floating = true
+panel.floating = false
 panel.lengthMode = "fit"
 panel.alignment = "center"
 panel.opacity = "translucent"
