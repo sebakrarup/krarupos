@@ -767,7 +767,7 @@ systemctl enable krarupos-performance.service
 # modo juego; krarupOS deck parte en el escritorio, así que se dejan como en desktop.
 systemctl enable uupd.timer
 # SSH desde el primer arranque, solo con llave (etc/ssh/sshd_config.d/40-krarupos.conf).
-# La llave de CachyOS va en /etc/skel/.ssh/authorized_keys para cada usuario nuevo.
+# La llave de Seba (seba@RX9070XT, ~/.ssh/id_ed25519 de su PC) va en /etc/skel/.ssh/authorized_keys para cada usuario nuevo.
 systemctl enable sshd.service
 # Consola clásica en las TTY en vez de kmscon (el valor por defecto de Fedora 45):
 # con kmscon mpv no muestra video, y no aplican la letra grande ni gpm.
