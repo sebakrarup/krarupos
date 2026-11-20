@@ -1,0 +1,23 @@
+#!/usr/bin/bash
+# Si un update de Flatpak (uupd) cambia la extensión GL.nvidia con Sunshine
+# abierto, la versión vieja se borra y el sandbox se queda sin
+# libnvidia-encode.so.1: Moonlight conecta y se corta al instante ("Cannot load
+# libnvidia-encode.so.1"). Esto revisa cada Sunshine abierto y reinicia solo
+# los que perdieron la librería. Sin NVIDIA (o si todo está bien) no hace nada.
+set -uo pipefail
+
+for pid in $(pgrep -x sunshine); do
+    raiz=/proc/$pid/root/usr/lib/x86_64-linux-gnu/GL
+    compgen -G "$raiz/nvidia-*" >/dev/null || continue
+    compgen -G "$raiz/nvidia-*/lib/libnvidia-encode.so.1" >/dev/null && continue
+
+    usuario=$(ps -o user= -p "$pid") || continue
+    uid=$(id -u "$usuario")
+    echo "Sunshine de $usuario sin libnvidia-encode: reiniciando"
+    # restart solo deja el proceso viejo con los puertos tomados: primero kill.
+    runuser -u "$usuario" -- env XDG_RUNTIME_DIR=/run/user/$uid \
+        flatpak kill dev.lizardbyte.app.Sunshine
+    sleep 3
+    systemctl --user -M "$usuario@" restart app-dev.lizardbyte.app.Sunshine@autostart.service
+done
+exit 0
