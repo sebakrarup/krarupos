@@ -31,3 +31,5 @@ fbi() {
     done
     command fbi ${card:+-d /dev/dri/$card} "$@"
 }
+# Reinicia la interfaz de Steam cuando se traba (Steam la vuelve a abrir sola). Funciona por SSH.
+alias steamfix='pkill -x steamwebhelper && echo "Interfaz de Steam reiniciada" || echo "steamwebhelper no estaba corriendo"'
