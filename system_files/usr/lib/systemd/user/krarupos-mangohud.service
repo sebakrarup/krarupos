@@ -1,0 +1,11 @@
+[Unit]
+# Solo usuarios normales: no en el de la pantalla de inicio (plasmalogin).
+ConditionUser=!@system
+Description=Overlay de rendimiento de Game Mode con el nombre de la GPU
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/krarupos-mangohud
+
+[Install]
+WantedBy=default.target

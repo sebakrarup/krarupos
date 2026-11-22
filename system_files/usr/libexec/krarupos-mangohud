@@ -1,0 +1,51 @@
+#!/usr/bin/bash
+# Overlay de rendimiento de Game Mode (MangoHud, nivel 2): copia
+# /usr/share/krarupos/mangohud-presets.conf a ~/.config/MangoHud/presets.conf con
+# el nombre de la GPU (por ejemplo RX9070XT o RTX3080) en vez de "GAMESCOPE".
+# Corre en cada inicio de sesión, así que si se cambia la GPU el nombre se
+# actualiza. Si alguien edita el archivo (borra la primera línea), no se toca más.
+set -uo pipefail
+
+destino=${XDG_CONFIG_HOME:-$HOME/.config}/MangoHud/presets.conf
+plantilla=/usr/share/krarupos/mangohud-presets.conf
+marca='# krarupOS: generado por /usr/libexec/krarupos-mangohud (borra esta línea para editarlo a mano)'
+
+if [[ -e $destino ]] && [[ $(head -n1 "$destino") != "$marca" ]]; then
+    exit 0
+fi
+
+# GPU principal: la que arrancó la pantalla (boot_vga), si no la primera.
+dev=
+for d in /sys/class/drm/card[0-9]*/device; do
+    [[ -r $d/vendor ]] || continue
+    [[ -z $dev ]] && dev=$d
+    if [[ $(cat "$d/boot_vga" 2>/dev/null) == 1 ]]; then dev=$d; break; fi
+done
+
+nombre=
+if [[ -n $dev ]]; then
+    case $(cat "$dev/vendor") in
+        0x1002)  # AMD: nombre comercial de libdrm por ID y revisión
+            id=$(sed 's/^0x//' "$dev/device"); rev=$(sed 's/^0x//' "$dev/revision")
+            nombre=$(awk -F'\t' -v id="${id^^}," -v rev="${rev^^}," \
+                'toupper($1)==id && toupper($2)==rev {print $3; exit}' \
+                /usr/share/libdrm/amdgpu.ids 2>/dev/null)
+            nombre=${nombre#AMD }; nombre=${nombre#Radeon } ;;
+        0x10de)  # NVIDIA
+            nombre=$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -n1)
+            nombre=${nombre#NVIDIA }; nombre=${nombre#GeForce } ;;
+    esac
+fi
+nombre=${nombre// /}
+
+if [[ -n $nombre ]]; then
+    fps_text="fps_text=$nombre"
+else
+    fps_text='# sin nombre de GPU: queda el de MangoHud'
+fi
+
+mkdir -p "${destino%/*}"
+nuevo=$( { echo "$marca"; sed "s|^@FPS_TEXT@\$|$fps_text|" "$plantilla"; } )
+if [[ ! -e $destino ]] || [[ $(cat "$destino") != "$nuevo" ]]; then
+    printf '%s\n' "$nuevo" > "$destino"
+fi

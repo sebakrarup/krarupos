@@ -757,6 +757,9 @@ systemctl enable krarupos-ocultar-sistema.service
 # Letras de KDE y tamaños de Dolphin según la resolución de la pantalla principal
 # (usr/libexec/krarupos-letras); no toca lo que alguien cambie a mano.
 systemctl --global enable krarupos-letras.service krarupos-letras.path
+# Overlay de rendimiento de Game Mode (nivel 2) con temperaturas, ventilador y el
+# nombre de la GPU en vez de "GAMESCOPE" (usr/libexec/krarupos-mangohud).
+systemctl --global enable krarupos-mangohud.service
 # Escala 100 % en las pantallas nuevas antes de armar el escritorio (usr/libexec/krarupos-escala).
 systemctl --global enable krarupos-escala.service
 # Sensores (RAM, placa) detectados solos en el primer arranque (usr/libexec/krarupos-sensores).
