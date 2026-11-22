@@ -554,6 +554,12 @@ kwriteconfig6 --file /etc/xdg/konsolerc --group "Desktop Entry" --key DefaultPro
 # Ícono de Konsole: utilities-x-terminal del tema Tela-circle (el que eligió el usuario).
 sed -i 's/^Icon=utilities-terminal$/Icon=utilities-x-terminal/' /usr/share/applications/org.kde.konsole.desktop
 grep -qx 'Icon=utilities-x-terminal' /usr/share/applications/org.kde.konsole.desktop
+# ISO desde Dolphin: gnome-disk-image-mounter solo crea el loop y espera que GNOME
+# lo monte; en KDE nadie lo monta. Se reemplaza por uno que monta y abre la carpeta.
+sed -i -e 's|^Exec=gnome-disk-image-mounter |Exec=/usr/libexec/krarupos-montar-iso |' \
+    -e '/^TryExec=/d' -e '/^DBusActivatable=/d' \
+    /usr/share/applications/gnome-disk-image-mounter.desktop
+grep -q '^Exec=/usr/libexec/krarupos-montar-iso ' /usr/share/applications/gnome-disk-image-mounter.desktop
 # Ventanas: el foco sigue al puntero del mouse.
 kwriteconfig6 --file /etc/xdg/kwinrc --group Windows --key FocusPolicy FocusFollowsMouse
 # Sin efecto de zoom (lupa): se activaba sin querer con Meta+rueda / Meta+=.

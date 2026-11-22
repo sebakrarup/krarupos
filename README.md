@@ -74,7 +74,7 @@ Hay tres variantes, que se construyen todos los días sobre la última Bazzite:
 - **input-remapper** activado, con los presets de un Logitech G502 X LS.
 - **Apps GTK** (como Transmission Remote) con el tema Breeze y los colores de KDE, también las Flatpak.
 - **Konsole** con el perfil krarupOS (colores Vapor sin transparencia, Fira Code 16); la primera ventana se abre de 124×42 para que quepan la bienvenida y fastfetch.
-- **Dolphin** con íconos y vistas previas grandes, ruta completa y barra de herramientas propia. Descargas ordenada por fecha (la más nueva arriba) pero sin grupos (Group By: None; Dolphin la agrupa por fecha), una vez por usuario.
+- **Dolphin** con íconos y vistas previas grandes, ruta completa y barra de herramientas propia. Descargas ordenada por fecha (la más nueva arriba) pero sin grupos (Group By: None; Dolphin la agrupa por fecha), una vez por usuario. "Montador de imágenes de discos" monta la ISO de verdad y abre la carpeta (el de GNOME solo crea el loop).
 - **Apps predeterminadas**: videos con mpv, Firefox como navegador y magnet links/torrents con Transmission Remote (sin que Firefox pregunte).
 - **mpv con decodificación por GPU** (`hwdec=vaapi`): evita tirones en AV1 y videos a muchos fps.
 - **mpv se cierra al terminar el video**, como antes de la versión 0.42.

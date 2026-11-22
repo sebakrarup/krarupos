@@ -1,0 +1,15 @@
+#!/usr/bin/bash
+# krarupOS: monta imágenes ISO desde Dolphin ("Montador de imágenes de discos").
+# gnome-disk-image-mounter solo crea el loop y espera que GNOME lo monte;
+# en KDE nadie lo monta. Esto crea el loop (o reutiliza el que ya exista),
+# lo monta y abre la carpeta en Dolphin.
+for f in "$@"; do
+    f=${f#file://}; f=$(printf '%b' "${f//%/\\x}")
+    dev=$(losetup -j "$f" -O NAME -n 2>/dev/null | head -1)
+    [[ -n $dev ]] || dev=$(udisksctl loop-setup -r -f "$f" --no-user-interaction | grep -o '/dev/loop[0-9]*')
+    [[ -n $dev ]] || { notify-send -i dialog-error "No se pudo montar" "$f"; continue; }
+    udevadm settle -t 5 2>/dev/null
+    punto=$(lsblk -no MOUNTPOINT "$dev" | head -1)
+    [[ -n $punto ]] || punto=$(udisksctl mount -b "$dev" --no-user-interaction | sed -n 's/^Mounted .* at //p')
+    [[ -n $punto ]] && dolphin --new-window "$punto" &>/dev/null &
+done
