@@ -7,8 +7,8 @@ alias neowofetch='/usr/libexec/krarupos-fastfetch'
 alias krarup='/usr/libexec/krarupos-fastfetch'
 # Suspender el equipo.
 alias dormir='systemctl suspend'
-# Rueda del G502 X (solo con ese mouse): ruedaON = alta resolución (más sensible),
-# ruedaOFF = resolución normal (la que se pone sola al conectarlo), rueda = alterna entre las dos.
+# Rueda del G502 X (solo con ese mouse): ruedaON = alta resolución (la que pone el kernel al conectarlo),
+# ruedaOFF = resolución normal (hasta que el mouse se reconecte o despierte), rueda = alterna entre las dos.
 alias ruedaON='/usr/libexec/krarupos-g502-rueda on'
 alias ruedaOFF='/usr/libexec/krarupos-g502-rueda off'
 alias rueda='/usr/libexec/krarupos-g502-rueda alternar'
