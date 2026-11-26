@@ -2,12 +2,21 @@
 # Lanzado por 92-krarupos-g502-rueda.rules cuando aparece el G502 X o cambia su
 # batería: deja la rueda en resolución normal, porque el kernel
 # (hid-logitech-hidpp) pone alta resolución en cada conexión. Igual que en CachyOS.
+# Si el mouse se duerme no se reintenta: consultarlo dormido hace que el receptor
+# lo reanuncie, la batería cambia y la regla se dispara otra vez (bucle). Al
+# despertar llega un evento nuevo con online=1.
+despierto() {
+    [ -z "$DEVPATH" ] && return 0
+    [ "$(cat "/sys$DEVPATH/online" 2>/dev/null)" = 1 ]
+}
 sleep 2
 for i in 1 2 3 4 5; do
+    despierto || exit 0
     if msg=$(/usr/libexec/krarupos-g502-rueda off 2>&1); then
         logger -t g502-rueda "$ACTION: $msg"
         exit 0
     fi
     sleep 2
 done
+despierto || exit 0
 logger -t g502-rueda "$ACTION: falló: $msg"
