@@ -1,6 +1,6 @@
 #!/usr/bin/python3 -I
 # Cambia la resolución de la rueda del G502 X (HID++ 2.0, función HIRES WHEEL 0x2121).
-# Uso: krarupos-g502-rueda on|off|estado   (on = alta resolución, off = resolución normal / punto muerto)
+# Uso: krarupos-g502-rueda on|off|alternar|estado   (on = alta resolución, off = resolución normal / punto muerto)
 # Habla directo con el receptor Lightspeed por hidraw. No usa solaar: al enumerar, solaar hace que
 # el receptor vuelva a anunciar el mouse y el kernel (hid-logitech-hidpp) reactiva la alta resolución.
 import glob, os, select, sys, time
@@ -33,8 +33,8 @@ def pedir(fd, idx, feat, fn, params=b""):
                 return r[4:]
     raise OSError("sin respuesta")
 
-if len(sys.argv) != 2 or sys.argv[1] not in ("on", "off", "estado"):
-    sys.exit("uso: krarupos-g502-rueda on|off|estado")
+if len(sys.argv) != 2 or sys.argv[1] not in ("on", "off", "alternar", "estado"):
+    sys.exit("uso: krarupos-g502-rueda on|off|alternar|estado")
 
 fd = os.open(buscar_hidraw(), os.O_RDWR)
 for idx in range(1, 7):
@@ -47,7 +47,8 @@ for idx in range(1, 7):
         continue
     modo = pedir(fd, idx, feat, 1)[0]  # getWheelMode
     if sys.argv[1] != "estado":
-        nuevo = (modo | 0x02) if sys.argv[1] == "on" else (modo & ~0x02)
+        alta = not (modo & 0x02) if sys.argv[1] == "alternar" else sys.argv[1] == "on"
+        nuevo = (modo | 0x02) if alta else (modo & ~0x02)
         pedir(fd, idx, feat, 2, bytes([nuevo]))  # setWheelMode
         modo = pedir(fd, idx, feat, 1)[0]
     print("Rueda en", "alta resolución" if modo & 0x02 else "resolución normal")

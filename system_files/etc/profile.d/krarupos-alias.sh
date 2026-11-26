@@ -8,9 +8,10 @@ alias krarup='/usr/libexec/krarupos-fastfetch'
 # Suspender el equipo.
 alias dormir='systemctl suspend'
 # Rueda del G502 X (solo con ese mouse): ruedaON = alta resolución (más sensible),
-# ruedaOFF = resolución normal (la que se pone sola al conectarlo).
+# ruedaOFF = resolución normal (la que se pone sola al conectarlo), rueda = alterna entre las dos.
 alias ruedaON='/usr/libexec/krarupos-g502-rueda on'
 alias ruedaOFF='/usr/libexec/krarupos-g502-rueda off'
+alias rueda='/usr/libexec/krarupos-g502-rueda alternar'
 # Ver fotos en una TTY a resolución completa: foto ~/Pictures/*.jpg
 # Teclas: > siguiente, < anterior, q salir.
 alias foto='flatpak run io.mpv.Mpv --vo=drm --image-display-duration=inf'
